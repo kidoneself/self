@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.water.mapper.SimCardAccountMapper">
+
+    <select id="listAll" resultType="com.yimao.cloud.pojo.dto.water.SimCardAccountDTO">
+        select
+        id,
+        company_name as companyName
+        from sim_card_account
+        order by create_time desc
+    </select>
+
+    <select id="selectByUsername" resultType="com.yimao.cloud.water.po.SimCardAccount">
+        SELECT
+            id
+        from
+            sim_card_account
+        where
+            username = #{username}
+    </select>
+
+</mapper>

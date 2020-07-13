@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.showroom.mapper.AdvertDataConfigMapper">
+
+    <select id="queryAllAdvertDataConfig" resultType="com.yimao.cloud.showroom.dto.AdvertDataConfigDTO">
+        SELECT
+            id,
+            config_coefficient AS configCoefficient,
+            advert_type AS advertType,
+            case advert_type
+            when 1 then "大屏累计物料投放"
+            when 2 then "小屏累计物料投放"
+            when 3 then "累计投放设备"
+            when 4 then "累计广告到达设备"
+            when 5 then "大屏数据展示"
+            when 6 then "小屏数据展示"
+            when 7 then "小屏数据点击"
+            end as advertTypeName
+        FROM advert_data_config
+    </select>
+
+
+    <select id="queryAdvertDataConfigByType" resultType="com.yimao.cloud.showroom.dto.AdvertDataConfigDTO">
+        SELECT
+            id,
+            config_coefficient AS configCoefficient,
+            advert_type AS advertType
+        FROM advert_data_config
+        WHERE 1=1 AND advert_type = #{type}
+    </select>
+</mapper>

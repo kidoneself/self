@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.hra.mapper.DiscountCardRecordMapper">
+
+    <!-- 我的优惠卡红点提醒-待发放的优惠卡数量 -->
+    <select id="listNotReceivedCardCount" resultType="java.lang.Integer">
+      select
+      SUM(dcr.give_count)
+      from hra_discount_card_record dcr
+      where
+      dcr.user_id = #{userId} and dcr.received = 0
+    </select>
+
+    <select id="cardGiveRecordList" resultType="com.yimao.cloud.hra.po.DiscountCardRecord">
+        select
+        dcr.id as id,
+        dcr.user_id as userId,
+        dcr.give_name as giveName,
+        dcr.give_type as giveType,
+        dcr.give_count as giveCount,
+        dcr.received,
+        dcr.remark ,
+        dcr.give_time as giveTime
+        from hra_discount_card_record dcr
+        where 1 = 1
+        <if test="userId != null">
+            and dcr.user_id = #{userId}
+        </if>
+        <if test="received != null ">
+            and dcr.received = #{received}
+        </if>
+        <if test="giveType != null">
+            and dcr.give_type = #{giveType}
+        </if>
+        <if test="beginTime != null and beginTime != '' ">
+            and dcr.give_time &gt;= #{beginTime}
+        </if>
+        <if test="endTime != endTime and endTime != '' ">
+            and dcr.give_time &lt;= #{endTime}
+        </if>
+        order by dcr.give_time desc
+    </select>
+
+</mapper>

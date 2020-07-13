@@ -1,0 +1,422 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.order.mapper.MoveWaterDeviceOrderMapper">
+
+    <update id="updateDismantleEngineerStationInfoByPCR">
+        UPDATE move_water_device_order
+        SET dismantle_engineer_station_id = #{dismantleEngineerStationId},
+        dismantle_engineer_station_name = #{dismantleEngineerStationName}
+        WHERE
+        `status` != 5
+        and orig_province = #{origProvince}
+        and orig_city = #{origCity}
+        and orig_region = #{origRegion}
+    </update>
+
+    <update id="updateInstallEngineerStationInfoByPCR">
+        UPDATE move_water_device_order
+        SET install_engineer_station_id = #{installEngineerStationId},
+        install_engineer_station_name = #{installEngineerStationName}
+        WHERE
+        `status` != 5
+        and dest_province = #{destProvince}
+        and dest_city = #{destCity}
+        and dest_region = #{destRegion}
+    </update>
+
+    <update id="updateDismantleEngineerInfoByPCR">
+        UPDATE move_water_device_order
+        SET
+        dismantle_engineer_id = #{dismantleEngineerId},
+        dismantle_engineer_name = #{dismantleEngineerName},
+        dismantle_engineer_phone = #{dismantleEngineerPhone},
+        dismantle_engineer_station_id = #{dismantleEngineerStationId},
+        dismantle_engineer_station_name = #{dismantleEngineerStationName}
+        WHERE
+        `status` != 5
+        and orig_province = #{origProvince}
+        and orig_city = #{origCity}
+        and orig_region = #{origRegion}
+    </update>
+
+    <update id="updateInstallEngineerInfoByPCR">
+        UPDATE move_water_device_order
+        SET
+        install_engineer_id = #{installEngineerId},
+        install_engineer_name = #{installEngineerName},
+        install_engineer_phone = #{installEngineerPhone},
+        install_engineer_station_id = #{installEngineerStationId},
+        install_engineer_station_name = #{installEngineerStationName}
+        WHERE
+        `status` != 5
+        and dest_province = #{destProvince}
+        and dest_city = #{destCity}
+        and dest_region = #{destRegion}
+    </update>
+
+    <update id="updateDismantleEngineerInfo">
+        UPDATE move_water_device_order
+        SET
+        dismantle_engineer_id = #{dismantleEngineerId},
+        dismantle_engineer_name = #{dismantleEngineerName},
+        dismantle_engineer_phone = #{dismantleEngineerPhone}
+        WHERE
+        `status` != 5
+        and dismantle_engineer_id =  #{oldEngineerId}
+    </update>
+
+    <update id="updateInstallEngineerInfo">
+        UPDATE move_water_device_order
+        SET
+        install_engineer_id = #{installEngineerId},
+        install_engineer_name = #{installEngineerName},
+        install_engineer_phone = #{installEngineerPhone}
+        WHERE
+        `status` != 5
+        and install_engineer_id = #{oldEngineerId}
+    </update>
+
+    <select id="getWaitDisposeListByEngineerId"
+            resultType="com.yimao.cloud.pojo.dto.order.MoveWaterDeviceOrderDTO">
+        SELECT
+        id,
+        device_user_name AS deviceUserName,
+        device_user_phone AS deviceUserPhone,
+        device_model AS deviceModel,
+        distributor_name AS distributorName,
+        orig_province AS origProvince,
+        orig_city AS origCity,
+        orig_region AS origRegion,
+        orig_address AS origAddress,
+        orig_latitude AS origLatitude,
+        orig_longitude AS origLongitude,
+        dest_province AS destProvince,
+        dest_city AS destCity,
+        dest_region AS destRegion,
+        dest_address AS destAddress,
+        dest_latitude AS destLatitude,
+        dest_longitude AS destLongitude,
+        create_time AS createTime,
+        start_dismantle_time AS startDismantleTime,
+        end_dismantle_time AS endDismantleTime,
+        CONCAT(DATE_FORMAT(start_dismantle_time,'%Y-%m-%d %H'),"点-",DATE_FORMAT(end_dismantle_time,'%H'),"点") as
+        displayDismantleTime,
+        start_install_time AS startInstallTime,
+        end_install_time AS endInstallTime,
+        CONCAT(DATE_FORMAT(start_install_time,'%Y-%m-%d %H'),"点-",DATE_FORMAT(end_install_time,'%H'),"点") as
+        displayInstallTime
+        `status`,
+        CASE
+        WHEN (
+        dismantle_engineer_id = #{engineerId}
+        AND dismantle_hang_up_status = 0
+        AND `status` = 1
+        ) THEN
+        '移出拆机'
+        ELSE
+        '移入安装'
+        END AS serviceType
+        FROM
+        move_water_device_order
+        where
+        (
+        (
+        dismantle_engineer_id = #{engineerId}
+        AND dismantle_hang_up_status = 0
+        AND `status` = 1
+        )
+        OR (
+        install_engineer_id = #{engineerId}
+        AND install_hang_up_status = 0
+        AND `status` IN (1, 2, 3)
+        )
+        )
+        <choose>
+            <when test="serviceType != null and serviceType == 1">
+                having serviceType = '移出拆机'
+            </when>
+            <when test="serviceType != null and serviceType == 2">
+                having serviceType = '移入安装'
+            </when>
+        </choose>
+    </select>
+
+    <select id="getPendingListByEngineerId"
+            resultType="com.yimao.cloud.pojo.dto.order.MoveWaterDeviceOrderDTO">
+        SELECT
+            id,
+            device_user_name AS deviceUserName,
+            device_user_phone AS deviceUserPhone,
+            device_model AS deviceModel,
+            distributor_name AS distributorName,
+            orig_province AS origProvince,
+            orig_city AS origCity,
+            orig_region AS origRegion,
+            orig_address AS origAddress,
+            orig_latitude AS origLatitude,
+            orig_longitude AS origLongitude,
+            dest_province AS destProvince,
+            dest_city AS destCity,
+            dest_region AS destRegion,
+            dest_address AS destAddress,
+            dest_latitude AS destLatitude,
+            dest_longitude AS destLongitude,
+            create_time AS createTime,
+            start_dismantle_time AS startDismantleTime,
+            end_dismantle_time AS endDismantleTime,
+            CONCAT(DATE_FORMAT(start_dismantle_time,'%Y-%m-%d %H'),"点-",DATE_FORMAT(end_dismantle_time,'%H'),"点") as displayDismantleTime,
+            start_install_time AS startInstallTime,
+            end_install_time AS endInstallTime,
+            CONCAT(DATE_FORMAT(start_install_time,'%Y-%m-%d %H'),"点-",DATE_FORMAT(end_install_time,'%H'),"点") as displayInstallTime,
+            dismantle_hang_up_cause AS dismantleHangUpCause,
+            install_hang_up_cause AS installHangUpCause,
+             `status`,
+            CASE
+        WHEN (
+            dismantle_engineer_id = #{engineerId}
+            AND dismantle_hang_up_status = 1
+            AND `status` = 1
+        ) THEN
+            '移出拆机'
+        ELSE
+            '移入安装'
+        END AS serviceType
+        FROM
+            move_water_device_order
+        WHERE
+            (
+                dismantle_engineer_id = #{engineerId}
+                AND dismantle_hang_up_status = 1
+                AND `status` = 1
+            )
+        OR (
+            install_engineer_id = #{engineerId}
+            AND install_hang_up_status = 1
+            AND `status` IN (1, 2, 3)
+        )
+    </select>
+
+    <select id="getDisposeListByEngineerId" resultType="com.yimao.cloud.pojo.dto.order.MoveWaterDeviceOrderDTO">
+        SELECT
+            id,
+            device_user_name AS deviceUserName,
+            device_user_phone AS deviceUserPhone,
+            device_model AS deviceModel,
+            distributor_name AS distributorName,
+            distributor_phone AS distributorPhone,
+            orig_province AS origProvince,
+            orig_city AS origCity,
+            orig_region AS origRegion,
+            orig_address AS origAddress,
+            orig_latitude AS origLatitude,
+            orig_longitude AS origLongitude,
+            dest_province AS destProvince,
+            dest_city AS destCity,
+            dest_region AS destRegion,
+            dest_address AS destAddress,
+            dest_latitude AS destLatitude,
+            dest_longitude AS destLongitude,
+            create_time AS createTime,
+            start_dismantle_time AS startDismantleTime,
+            end_dismantle_time AS endDismantleTime,
+            CONCAT(DATE_FORMAT(start_dismantle_time,'%Y-%m-%d %H'),"点-",DATE_FORMAT(end_dismantle_time,'%H'),"点") as displayDismantleTime,
+            start_install_time AS startInstallTime,
+            end_install_time AS endInstallTime,
+            install_engineer_id AS installEngineerId,
+            CONCAT(DATE_FORMAT(start_install_time,'%Y-%m-%d %H'),"点-",DATE_FORMAT(end_install_time,'%H'),"点") as displayInstallTime,
+            CASE
+        WHEN (
+            dismantle_engineer_id = #{engineerId}
+            AND `status` = 2
+        ) THEN
+            '移出拆机'
+        ELSE
+            '移入安装'
+        END AS serviceType
+        FROM
+            move_water_device_order
+        WHERE
+            (
+                install_engineer_id = #{engineerId}
+                AND `status` = 4
+            )
+        OR (
+            dismantle_engineer_id = #{engineerId}
+            AND `status` IN (2,3,4)
+        )
+    </select>
+
+    <select id="getMoveWaterDeviceList" resultType="com.yimao.cloud.pojo.dto.order.RenewDTO">
+        SELECT
+        mwdo.device_model AS costNameType,
+        mwdo.device_scope AS categoryName,
+        count(1) AS orderNum
+        FROM
+        `move_water_device_order` mwdo
+        WHERE mwdo.status = 5
+        <if test="engineerId != null">
+            and install_engineer_id = #{engineerId}
+        </if>
+        <if test="timeType != null and timeType == 1">
+            DATE_FORMAT(mwdo.complete_time,'%Y-%m-%d') = #{completeTime}
+        </if>
+        <if test="timeType != null and timeType == 2">
+            DATE_FORMAT(mwdo.complete_time,'%Y-%m') = #{completeTime}
+        </if>
+        <if test="timeType != null and timeType == 3">
+            DATE_FORMAT(mwdo.complete_time,'%Y') = #{completeTime}
+        </if>
+        GROUP BY
+        mwdo.device_model,
+        mwdo.device_scope
+    </select>
+
+    <select id="getPage" resultType="com.yimao.cloud.pojo.dto.order.MoveWaterDeviceOrderDTO">
+        SELECT
+        mwdo.id,
+        mwdo.orig_province AS origProvince,
+        mwdo.orig_city AS origCity,
+        mwdo.orig_region AS origRegion,
+        mwdo.orig_address AS origAddress,
+        mwdo.dest_province AS destProvince,
+        mwdo.dest_city AS destCity,
+        mwdo.dest_region AS destRegion,
+        mwdo.dest_address AS destAddress,
+        mwdo.device_user_name AS deviceUserName,
+        mwdo.device_user_phone AS deviceUserPhone,
+        mwdo.distributor_name AS distributorName,
+        mwdo.dismantle_engineer_name AS dismantleEngineerName,
+        mwdo.install_engineer_name AS installEngineerName,
+        mwdo.install_engineer_station_name AS installEngineerStationName,
+        mwdo.dismantle_engineer_station_name AS dismantleEngineerStationName,
+        mwdo.create_time AS createTime,
+        mwdo.device_model AS deviceModel,
+        mwdo.`status`,
+        mwdo.dismantle_hang_up_status AS dismantleHangUpStatus,
+        mwdo.install_hang_up_status AS installHangUpStatus,
+        mwdo.is_client_dismantle AS isClientDismantle,
+        mwdo.real_start_dismantle_time AS realStartDismantleTime,
+        mwdo.real_end_dismantle_time AS realEndDismantleTime,
+        mwdo.real_start_install_time AS realStartInstallTime,
+        mwdo.complete_time AS completeTime,
+        mwdo.sn
+        FROM
+        move_water_device_order mwdo
+        WHERE
+        1 = 1
+        <if test=" id != null and id.trim() != '' ">
+            and mwdo.id = #{id}
+        </if>
+        <if test="status != null">
+            and mwdo.status = #{status}
+        </if>
+        <if test=" origProvince != null and origProvince.trim() != '' ">
+            and mwdo.orig_province = #{origProvince}
+        </if>
+        <if test="origCity != null and origCity.trim() != '' ">
+            and mwdo.orig_city = #{origCity}
+        </if>
+        <if test="origRegion != null and origRegion.trim() != '' ">
+            and mwdo.orig_region = #{origRegion}
+        </if>
+        <if test="destProvince != null and destProvince.trim() != '' ">
+            and mwdo.dest_province = #{destProvince}
+        </if>
+        <if test="destCity != null and destCity.trim() != '' ">
+            and mwdo.dest_city = #{destCity}
+        </if>
+        <if test="destRegion != null and destRegion.trim() != '' ">
+            and mwdo.dest_region = #{destRegion}
+        </if>
+        <if test="deviceUserName != null and deviceUserName.trim() != '' ">
+            and mwdo.device_user_name = #{deviceUserName}
+        </if>
+        <if test="deviceUserPhone != null and deviceUserPhone.trim() != '' ">
+            and mwdo.device_user_phone = #{deviceUserPhone}
+        </if>
+        <if test="distributorName != null and distributorName.trim() != '' ">
+            and mwdo.distributor_name = #{distributorName}
+        </if>
+        <if test="deviceModel != null and deviceModel.trim() != ''">
+            and mwdo.device_model = #{deviceModel}
+        </if>
+        <if test="dismantleHangUpStatus != null">
+            and mwdo.dismantle_hang_up_status = #{dismantleHangUpStatus}
+        </if>
+        <if test="installHangUpStatus != null">
+            and mwdo.install_hang_up_status = #{installHangUpStatus}
+        </if>
+        <if test="createTimeStart != null">
+            and mwdo.create_time &gt;= #{createTimeStart}
+        </if>
+        <if test="createTimeEnd! = null">
+            and mwdo.create_time &lt;= #{createTimeEnd}
+        </if>
+        <if test=" engineerIds != null and engineerIds.size > 0">
+            AND (
+            mwdo.dismantle_engineer_id in
+            <foreach collection="engineerIds" item="item" index="index" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+            or mwdo.install_engineer_id in
+            <foreach collection="engineerIds" item="item" index="index" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+            )
+        </if>
+    </select>
+
+    <select id="getCompleteListByEngineerId" resultType="com.yimao.cloud.pojo.vo.order.MoveWaterDeviceOrderVO">
+        SELECT
+        id,
+        device_user_name AS deviceUserName,
+        device_user_phone AS deviceUserPhone,
+        device_model AS deviceModel,
+        distributor_name AS distributorName,
+        distributor_phone AS distributorPhone,
+        CONCAT(dest_province,dest_city,dest_region,dest_address) AS serviceAddress,
+        dest_latitude AS latitude,
+        dest_longitude AS longitude,
+        create_time AS createTime,
+        complete_time AS completeTime
+        FROM
+        move_water_device_order
+        WHERE
+        `status` = 5
+        <choose>
+            <when test="sort != null and sort">
+                order by complete_time asc
+            </when>
+            <otherwise>
+                order by complete_time desc
+            </otherwise>
+        </choose>
+    </select>
+    <select id="getMoveWaterDeviceOrder" resultType="com.yimao.cloud.pojo.dto.order.MapOrderDTO">
+        SELECT
+            mo.id,
+            mo.device_user_name AS userName,
+            mo.device_user_phone AS userPhone,
+            mo.`status` AS moveStatus,
+            mo.distributor_name AS distributorName,
+            mo.create_time AS createTime,
+            mo.orig_province AS province,
+            mo.orig_city AS city,
+            mo.orig_region AS region,
+            mo.orig_address AS address,
+            mo.orig_latitude AS addrLatitude,
+            mo.orig_longitude AS addlongitude,
+            mo.dest_province AS destProvince,
+            mo.dest_city AS destCity,
+            mo.dest_region AS destRegion,
+            mo.dest_address AS destAddress,
+            mo.dest_latitude AS destLatitude,
+            mo.dest_longitude AS destLongitude
+        FROM
+            move_water_device_order mo
+        WHERE
+        (mo.install_engineer_id = #{engineerId} OR mo.dismantle_engineer_id = #{engineerId} )
+        AND mo.`status` IN (1,2,3,4)
+    </select>
+</mapper>

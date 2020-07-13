@@ -1,0 +1,752 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.order.mapper.ProductIncomeRecordMapper">
+    <update id="updateStatusAndSettlementMonth">
+        update product_income_record set `status` = #{status}, settlement_month = #{settlementMonth} where id = #{id}
+    </update>
+    <update id="updateStatusAndSettlementMonthByDistributorId">
+        update
+            product_income_record
+        set `status` = #{newStatus}, settlement_month = #{settlementMonth}
+        where distributor_id = #{distributorId} and `status` = #{oldStatus}
+    </update>
+
+    <select id="queryProductIncomeList" resultType="com.yimao.cloud.pojo.vo.order.ProductIncomeVO">
+        SELECT
+        p1.id,
+        p1.order_id AS orderId,
+        o1.main_order_id AS mainOrderId ,
+        p1.user_id AS userId,
+        p1.user_type AS userType,
+        p1.income_type AS incomeType,
+        osd.product_category_id AS productCategoryId,
+        p1.product_company_id AS productCompanyId,
+        p1.settlement_amount AS settlementAmount,
+        o1.product_price AS productPrice,
+        p1.settlement_fee AS allocationMoney,
+        p1.distributor_id AS distributorId,
+        p1.distributor_province AS distributorProvince,
+        p1.distributor_city AS distributorCity,
+        p1.distributor_region AS distributorRegion,
+        p1.order_complete_time AS orderCompleteTime ,
+        o1.fee AS amountFee,
+        o1.logistics_fee AS logisticsFee,
+        DATE_FORMAT(o1.pay_time,"%Y-%m-%d %H:%i:%s")  AS payTime,
+        CONCAT_WS("/",osd.product_first_category_name,osd.product_two_category_name,osd.product_category_name) AS
+        productCategoryName,
+        p1.distributor_name AS distributorName,
+        p1.distributor_account AS distributorAccount,
+        p1.`status` as status,
+        p1.engineer_settlement_month as engineerSettlementTime,
+        p1.settlement_month as orderSettlementTime
+        FROM
+        product_income_record p1
+        LEFT JOIN order_sub o1 ON p1.order_id = o1.id
+        LEFT JOIN order_sub_detail osd ON osd.sub_order_id = o1.id
+        <trim prefix="where" prefixOverrides="and | or">
+            o1.`status` = 5
+            <if test="productCompanyId!=null">
+                and p1.product_company_id =#{productCompanyId}
+            </if>
+            <if test="userId!=null">
+                and p1.user_id like CONCAT('%',trim(#{userId}),'%')
+            </if>
+            <if test="orderId!=null">
+                and ( p1.main_order_id like CONCAT('%',trim(#{orderId}),'%')
+                or p1.order_id like CONCAT('%',trim(#{orderId}),'%'))
+            </if>
+            <if test="productCategoryId!=null">
+                and (osd.product_first_category_id = #{productCategoryId} or osd.product_two_category_id =
+                #{productCategoryId} or osd.product_category_id = #{productCategoryId})
+            </if>
+            <if test="userType!=null">
+                and p1.user_type =#{userType}
+            </if>
+            <if test="distributorProvince!=null and distributorProvince!='' ">
+                and p1.distributor_province = #{distributorProvince}
+            </if>
+            <if test="distributorCity!=null and distributorCity!='' ">
+                and p1.distributor_city = #{distributorCity}
+            </if>
+            <if test="distributorRegion!=null and distributorRegion!='' ">
+                and p1.distributor_region = #{distributorRegion}
+            </if>
+            <if test="settlementTime!=null and settlementTime!='' ">
+                and p1.settlement_month = #{settlementTime}
+            </if>
+            <if test="startTime!=null and startTime!='' ">
+                and p1.order_complete_time &gt;= #{startTime}
+            </if>
+            <if test="endTime!=null and endTime!='' ">
+                and p1.order_complete_time &lt;= #{endTime}
+            </if>
+            <if test="payStartTime!=null and payStartTime!='' ">
+                and o1.pay_time &gt;= #{payStartTime}
+            </if>
+            <if test="payEndTime!=null and payEndTime!='' ">
+                and o1.pay_time &lt;= #{payEndTime}
+            </if>
+            <if test="productMode!=null">
+                and o1.product_type = #{productMode}
+            </if>
+            <if test="distributorName!=null and distributorName!='' ">
+                and p1.distributor_name like CONCAT('%',trim(#{distributorName}),'%')
+            </if>
+            <if test="distributorAccount!=null and distributorAccount!='' ">
+                and p1.distributor_account like CONCAT('%',trim(#{distributorAccount}),'%')
+            </if>
+            <if test="incomeType!=null">
+                and p1.income_type = #{incomeType}
+            </if>
+            <if test="settlementStatus!=null">
+                and p1.status = #{settlementStatus}
+            </if>
+            <if test="engineerSettlementTime!=null and engineerSettlementTime!='' ">
+                and p1.engineer_settlement_month = #{engineerSettlementTime}
+            </if>
+        </trim>
+        order by p1.create_time desc
+    </select>
+
+    <select id="queryRenewProductIncomeList" resultType="com.yimao.cloud.pojo.vo.order.ProductIncomeVO">
+        SELECT
+        p1.id,
+        p1.renew_order_id as renewOrderId,
+        orw.sn_code as snCode,
+        p1.user_id AS userId,
+        p1.user_type AS userType,
+        CONCAT_WS("/",p1.product_one_category_name,p1.product_two_category_name,p1.product_category_name) AS
+        productCategoryName,
+        orw.amount_fee as amountFee,
+        p1.settlement_fee AS allocationMoney,
+        p1.distributor_name AS distributorName,
+        p1.distributor_account AS distributorAccount,
+        p1.distributor_province AS distributorProvince,
+        p1.distributor_city AS distributorCity,
+        p1.distributor_region AS distributorRegion,
+        DATE_FORMAT(orw.pay_time,"%Y-%m-%d %H:%i:%s")  AS payTime,
+        p1.order_complete_time AS orderCompleteTime,
+        p1.`status` AS status,
+        p1.engineer_settlement_month AS engineerSettlementTime,
+        p1.settlement_month AS orderSettlementTime
+        FROM
+        product_income_record p1
+        INNER JOIN order_renew orw on p1.renew_order_id = orw.id
+        INNER JOIN order_sub os ON p1.order_id = os.id
+        <trim prefix="where" prefixOverrides="and | or">
+            and orw.`status` = 2
+            <if test="productCompanyId!=null">
+                and p1.product_company_id =#{productCompanyId}
+            </if>
+            <if test="userId!=null">
+                and p1.user_id like CONCAT('%',trim(#{userId}),'%')
+            </if>
+            <if test="orderId!=null">
+                and ( p1.main_order_id like CONCAT('%',trim(#{orderId}),'%')
+                or p1.order_id like CONCAT('%',trim(#{orderId}),'%')
+                or p1.renew_order_id like CONCAT('%',trim(#{orderId}),'%'))
+            </if>
+            <if test="productCategoryId!=null">
+                and (p1.product_one_category_id = #{productCategoryId}
+                or p1.product_two_category_id = #{productCategoryId}
+                or p1.product_category_id = #{productCategoryId})
+            </if>
+            <if test="userType!=null">
+                and p1.user_type = #{userType}
+            </if>
+            <if test="distributorProvince!=null and distributorProvince!=''">
+                and p1.distributor_province = #{distributorProvince}
+            </if>
+            <if test="distributorCity!=null and distributorCity!=''">
+                and p1.distributor_city = #{distributorCity}
+            </if>
+            <if test="distributorRegion!=null and distributorRegion!=''">
+                and p1.distributor_region = #{distributorRegion}
+            </if>
+            <if test="settlementTime!=null and settlementTime!=''">
+                and p1.settlement_month = #{settlementTime}
+            </if>
+            <if test="startTime!=null and startTime!=''">
+                and p1.order_complete_time &gt;= #{startTime}
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                and p1.order_complete_time &lt;= #{endTime}
+            </if>
+            <if test="payStartTime!=null and payStartTime!=''">
+                and orw.pay_time &gt;= #{payStartTime}
+            </if>
+            <if test="payEndTime!=null and payEndTime!=''">
+                and orw.pay_time &lt;= #{payEndTime}
+            </if>
+            <if test="productMode!=null">
+                and os.product_type = #{productMode}
+            </if>
+            <if test="distributorName!=null and distributorName!=''">
+                and p1.distributor_name like CONCAT('%',trim(#{distributorName}),'%')
+            </if>
+            <if test="distributorAccount!=null and distributorAccount!=''">
+                and p1.distributor_account like CONCAT('%',trim(#{distributorAccount}),'%')
+            </if>
+            <if test="incomeType!=null">
+                and p1.income_type = #{incomeType}
+            </if>
+            <if test="settlementStatus!=null">
+                and p1.status = #{settlementStatus}
+            </if>
+            <if test="engineerSettlementTime!=null and engineerSettlementTime!=''">
+                and p1.engineer_settlement_month = #{engineerSettlementTime}
+            </if>
+        </trim>
+        order by p1.create_time desc
+    </select>
+
+    <select id="productRenewIncomeExport" resultType="com.yimao.cloud.pojo.dto.order.IncomeExportDTO">
+        SELECT
+        pir.renew_order_id AS renewOrderId,
+        orw.work_order_id AS workOrderId,
+        orw.sn_code AS snCode,
+        orw.device_model AS deviceModel,
+        DATE_FORMAT(orw.create_time,"%Y-%m-%d %H:%i:%s") AS renewDate,
+        orw.water_user_name AS waterUserName,
+        orw.water_user_phone AS waterUserPhone,
+        pir.id AS id,
+        pir.main_order_id AS mainOrderId,
+        pir.order_id AS orderId,
+        CASE os.terminal
+        WHEN 1 THEN "终端app"
+        WHEN 2 THEN "微信公众号"
+        WHEN 3 THEN "经销商APP"
+        WHEN 4 THEN "小程序"
+        END AS orderSource,
+        DATE_FORMAT(os.create_time,"%Y-%m-%d %H:%i:%s") AS createTime,
+        CASE pir.user_type
+        WHEN 0 THEN "经销商（体验版）"
+        WHEN 1 THEN "经销商（微创版）"
+        WHEN 2 THEN "经销商（个人版）"
+        WHEN 3 THEN "普通用户"
+        WHEN 4 THEN "普通用户"
+        WHEN 5 THEN "企业版经销商（主）"
+        WHEN 6 THEN "企业版经销商（子）"
+        WHEN 7 THEN "会员用户"
+        WHEN 8 THEN "折机版经销商"
+        END AS userType,
+        pir.user_id AS userId,
+        pir.user_name AS userName,
+        osd.product_first_category_name AS firstProductCategory,
+        osd.product_two_category_name AS secondProductCategory,
+        osd.product_category_name AS productCategory,
+        pir.product_company_name AS productCompanyName,
+        osd.cost_name AS costName,
+        os.count AS productCount,
+        pir.order_fee AS orderFee,
+        orw.trade_no AS tradeNo,
+        DATE_FORMAT(orw.pay_time,"%Y-%m-%d %H:%i:%s") AS payTime,
+        CASE orw.pay_type
+        WHEN 1 THEN "微信"
+        WHEN 2 THEN "支付宝"
+        WHEN 3 THEN "POS机"
+        WHEN 4 THEN "转账"
+        END AS payType,
+        pir.settlement_fee AS settlementFee,
+        DATE_FORMAT(pir.order_complete_time,"%Y-%m-%d %H:%i:%s") AS orderCompleteTime,
+        pir.settlement_month as settlementMonth,
+        pir.engineer_settlement_month as engineerSettlementMonth,
+        case pir.status
+        when 0 then "未完成"
+        when 1 then "可结算"
+        when 2 then "已结算"
+        when 3 then "已失效"
+        when 4 then "暂停结算"
+        end as settlementStatus,
+        pir.distributor_type_name AS distributorType,
+        pir.distributor_id AS distributorId,
+        pir.distributor_name AS distributorName,
+        pir.distributor_account AS distributorAccount,
+        pir.distributor_province AS distributorProvince,
+        pir.distributor_city AS distributorCity,
+        pir.distributor_region AS distributorRegion,
+        pir.income_rule_id AS incomeRuleId,
+        osd.engineer_name AS engineerName,
+        osd.engineer_province AS engineerProvince,
+        osd.engineer_city AS engineerCity,
+        osd.engineer_region AS engineerRegion,
+        osd.station_name AS engineerStationName,
+        osd.station_company_name as stationCompanyName,
+        CASE os.user_sale_flag
+        WHEN 0 THEN "否"
+        WHEN 1 THEN "是"
+        END AS userSaleFlag,
+        osd.station_id AS stationId,
+        IF(osd.sub_distributor_id is null,"否","是") as hasSubAccount,
+        osd.sub_distributor_id AS subAccountId,
+        osd.sub_distributor_account AS subAccount,
+        osd.recommend_id AS recommendId,
+        osd.recommend_name AS refereeName,
+        osd.recommend_account AS refereeAccount,
+        osd.recommend_province AS refereeProvince,
+        osd.recommend_city AS refereeCity,
+        osd.recommend_region AS refereeRegion,
+        osd.vip_user_id AS saleId,
+        osd.vip_user_phone AS saleMobile,
+        orw.terminal_name AS renewTerminal
+        FROM
+        product_income_record pir
+        INNER JOIN order_sub os ON os.id = pir.order_id
+        INNER JOIN order_renew orw on pir.renew_order_id = orw.id
+        INNER JOIN order_sub_detail osd ON osd.sub_order_id = pir.order_id
+        <trim prefix="where" prefixOverrides="and | or">
+            orw.`status` = 2
+            <if test="productCompanyId!=null">
+                and pir.product_company_id =#{productCompanyId}
+            </if>
+            <if test="userId!=null">
+                and pir.user_id like CONCAT('%',trim(#{userId}),'%')
+            </if>
+            <if test="orderId!=null">
+                and ( pir.main_order_id like CONCAT('%',trim(#{orderId}),'%')
+                or pir.order_id like CONCAT('%',trim(#{orderId}),'%')
+                or pir.renew_order_id like CONCAT('%',trim(#{orderId}),'%'))
+            </if>
+            <if test="productCategoryId!=null">
+                and (osd.product_first_category_id = #{productCategoryId} or osd.product_two_category_id =
+                #{productCategoryId} or osd.product_category_id = #{productCategoryId})
+            </if>
+            <if test="userType!=null">
+                and pir.user_type =#{userType}
+            </if>
+            <if test="distributorProvince!=null and distributorProvince!='' ">
+                and pir.distributor_province = #{distributorProvince}
+            </if>
+            <if test="distributorCity!=null and distributorCity!='' ">
+                and pir.distributor_city = #{distributorCity}
+            </if>
+            <if test="distributorRegion!=null and distributorRegion!='' ">
+                and pir.distributor_region = #{distributorRegion}
+            </if>
+            <if test="settlementTime!=null and settlementTime!='' ">
+                and pir.settlement_month = #{settlementTime}
+            </if>
+            <if test="startTime!=null and startTime!='' ">
+                and pir.order_complete_time &gt;= #{startTime}
+            </if>
+            <if test="endTime!=null and endTime!='' ">
+                and pir.order_complete_time &lt;= #{endTime}
+            </if>
+
+            <if test="payStartTime!=null and payStartTime!='' ">
+                and orw.pay_time &gt;= #{payStartTime}
+            </if>
+            <if test="payEndTime!=null and payEndTime!='' ">
+                and orw.pay_time &lt;= #{payEndTime}
+            </if>
+            <if test="distributorName!=null and distributorName!='' ">
+                and pir.distributor_name like CONCAT('%',trim(#{distributorName}),'%')
+            </if>
+            <if test="distributorAccount!=null and distributorAccount!='' ">
+                and pir.distributor_account like CONCAT('%',trim(#{distributorAccount}),'%')
+            </if>
+            <if test="productMode!=null">
+                and os.product_type = #{productMode}
+            </if>
+            <if test="incomeType!=null">
+                and pir.income_type = #{incomeType}
+            </if>
+            <if test="settlementStatus!=null">
+                and pir.status = #{settlementStatus}
+            </if>
+            <if test="engineerSettlementTime!=null and engineerSettlementTime!='' ">
+                and pir.engineer_settlement_month = #{engineerSettlementTime}
+            </if>
+        </trim>
+        order by orw.create_time desc
+    </select>
+
+    <select id="productRenewIncomeExportCount" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        product_income_record pir
+        INNER JOIN order_sub os ON os.id = pir.order_id
+        INNER JOIN order_renew orw on pir.renew_order_id = orw.id
+        INNER JOIN order_sub_detail osd ON osd.sub_order_id = pir.order_id
+        <trim prefix="where" prefixOverrides="and | or">
+            orw.`status` = 2
+            <if test="productCompanyId!=null">
+                and pir.product_company_id =#{productCompanyId}
+            </if>
+            <if test="userId!=null">
+                and pir.user_id like CONCAT('%',trim(#{userId}),'%')
+            </if>
+            <if test="orderId!=null">
+                and ( pir.main_order_id like CONCAT('%',trim(#{orderId}),'%')
+                or pir.order_id like CONCAT('%',trim(#{orderId}),'%'))
+            </if>
+            <if test="productCategoryId!=null">
+                and (osd.product_first_category_id = #{productCategoryId} or osd.product_two_category_id =
+                #{productCategoryId} or osd.product_category_id = #{productCategoryId})
+            </if>
+            <if test="userType!=null">
+                and pir.user_type =#{userType}
+            </if>
+            <if test="distributorProvince!=null and distributorProvince!='' ">
+                and pir.distributor_province = #{distributorProvince}
+            </if>
+            <if test="distributorCity!=null and distributorCity!='' ">
+                and pir.distributor_city = #{distributorCity}
+            </if>
+            <if test="distributorRegion!=null and distributorRegion!='' ">
+                and pir.distributor_region = #{distributorRegion}
+            </if>
+            <if test="settlementTime!=null and settlementTime!='' ">
+                and pir.settlement_month = #{settlementTime}
+            </if>
+            <if test="startTime!=null and startTime!='' ">
+                and pir.order_complete_time &gt;= #{startTime}
+            </if>
+            <if test="endTime!=null and endTime!='' ">
+                and pir.order_complete_time &lt;= #{endTime}
+            </if>
+            <if test="payStartTime!=null and payStartTime!='' ">
+                and os.pay_time &gt;= #{payStartTime}
+            </if>
+            <if test="payEndTime!=null and payEndTime!='' ">
+                and os.pay_time &lt;= #{payEndTime}
+            </if>
+            <if test="distributorName!=null and distributorName!='' ">
+                and pir.distributor_name like CONCAT('%',trim(#{distributorName}),'%')
+            </if>
+            <if test="distributorAccount!=null and distributorAccount!='' ">
+                and pir.distributor_account like CONCAT('%',trim(#{distributorAccount}),'%')
+            </if>
+            <if test="productMode!=null">
+                and os.product_type = #{productMode}
+            </if>
+            <if test="incomeType!=null">
+                and pir.income_type = #{incomeType}
+            </if>
+            <if test="settlementStatus!=null">
+                and pir.status = #{settlementStatus}
+            </if>
+            <if test="engineerSettlementTime!=null and engineerSettlementTime!='' ">
+                and pir.engineer_settlement_month = #{engineerSettlementTime}
+            </if>
+        </trim>
+    </select>
+
+    <select id="selectProductIncomeByPrimaryKey" resultType="com.yimao.cloud.pojo.dto.order.IncomeRecordResultDTO">
+        SELECT
+            pir.main_order_id as mainOrderId,
+            pir.order_id AS orderId,
+            pir.renew_order_id AS renewOrderId,
+            os.fee AS totalAmount,
+            os.logistics_fee AS logisticsFee,
+            0 as activityFee,
+            case pir.income_type when 1 then os.fee when 2 then orw.amount_fee end as realFee,
+            pir.settlement_fee AS allocationMoney,
+            case pir.income_type when 2 then orw.cost_name else null end as costName,
+            pir.income_type as incomeType
+        FROM
+            product_income_record pir
+        LEFT JOIN order_sub os ON pir.order_id = os.id
+        LEFT JOIN order_renew orw ON pir.renew_order_id = orw.id
+        where
+              pir.id = #{id}
+    </select>
+
+    <select id="productIncomeExport" resultType="com.yimao.cloud.pojo.dto.order.IncomeExportDTO">
+        SELECT
+        pir.id AS id,
+        pir.main_order_id AS mainOrderId,
+        pir.order_id AS orderId,
+        os.refer AS workOrderId,
+        CASE os.terminal
+        WHEN 1 THEN "终端app"
+        WHEN 2 THEN "微信公众号"
+        WHEN 3 THEN "经销商APP"
+        WHEN 4 THEN "小程序"
+        END AS orderSource,
+        DATE_FORMAT(os.create_time,"%Y-%m-%d %H:%i:%s") AS createTime,
+        CASE pir.user_type
+        WHEN 0 THEN "经销商（体验版）"
+        WHEN 1 THEN "经销商（微创版）"
+        WHEN 2 THEN "经销商（个人版）"
+        WHEN 3 THEN "普通用户"
+        WHEN 4 THEN "普通用户"
+        WHEN 5 THEN "企业版经销商（主）"
+        WHEN 6 THEN "企业版经销商（子）"
+        WHEN 7 THEN "会员用户"
+        WHEN 8 THEN "折机版经销商"
+        END AS userType,
+        pir.user_id AS userId,
+        pir.user_name AS userName,
+        osd.product_first_category_name AS firstProductCategory,
+        osd.product_two_category_name AS secondProductCategory,
+        osd.product_category_name AS productCategory,
+        pir.product_company_name AS productCompanyName,
+        osd.cost_name AS costName,
+        os.count AS productCount,
+        pir.order_fee AS orderFee,
+        os.trade_no AS tradeNo,
+        DATE_FORMAT(os.pay_time,"%Y-%m-%d %H:%i:%s") AS payTime,
+        CASE os.pay_type
+        WHEN 1 THEN "微信"
+        WHEN 2 THEN "支付宝"
+        WHEN 3 THEN "POS机"
+        WHEN 4 THEN "转账"
+        END AS payType,
+        pir.settlement_fee AS settlementFee,
+        DATE_FORMAT(pir.order_complete_time,"%Y-%m-%d %H:%i:%s") AS orderCompleteTime,
+        pir.settlement_month as settlementMonth,
+        pir.engineer_settlement_month as engineerSettlementMonth,
+        case pir.status
+        when 0 then "未完成"
+        when 1 then "可结算"
+        when 2 then "已结算"
+        when 3 then "已失效"
+        when 4 then "暂停结算"
+        end as settlementStatus,
+        pir.distributor_type_name AS distributorType,
+        pir.distributor_id AS distributorId,
+        pir.distributor_name AS distributorName,
+        pir.distributor_account AS distributorAccount,
+        pir.distributor_province AS distributorProvince,
+        pir.distributor_city AS distributorCity,
+        pir.distributor_region AS distributorRegion,
+        pir.income_rule_id AS incomeRuleId,
+        osd.engineer_name AS engineerName,
+        osd.engineer_province AS engineerProvince,
+        osd.engineer_city AS engineerCity,
+        osd.engineer_region AS engineerRegion,
+        osd.station_name AS engineerStationName,
+        CASE os.user_sale_flag
+        WHEN 0 THEN "否"
+        WHEN 1 THEN "是"
+        END AS userSaleFlag,
+        osd.station_id AS stationId,
+        osd.sub_distributor_id AS subAccountId,
+        osd.sub_distributor_account AS subAccount,
+        osd.recommend_id AS recommendId,
+        osd.recommend_name AS refereeName,
+        osd.recommend_account AS refereeAccount,
+        osd.recommend_province AS refereeProvince,
+        osd.recommend_city AS refereeCity,
+        osd.recommend_region AS refereeRegion,
+        osd.vip_user_id AS saleId
+        FROM
+        product_income_record pir
+        INNER JOIN order_sub os ON os.id = pir.order_id
+        INNER JOIN order_sub_detail osd ON osd.sub_order_id = pir.order_id
+        <trim prefix="where" prefixOverrides="and | or">
+            os.`status` = 5
+            <if test="productCompanyId!=null">
+                and pir.product_company_id =#{productCompanyId}
+            </if>
+            <if test="userId!=null">
+                and pir.user_id like CONCAT('%',trim(#{userId}),'%')
+            </if>
+            <if test="orderId!=null">
+                and ( pir.main_order_id like CONCAT('%',trim(#{orderId}),'%')
+                or pir.order_id like CONCAT('%',trim(#{orderId}),'%'))
+            </if>
+            <if test="productCategoryId!=null">
+                and (osd.product_first_category_id = #{productCategoryId} or osd.product_two_category_id =
+                #{productCategoryId} or osd.product_category_id = #{productCategoryId})
+            </if>
+            <if test="userType!=null">
+                and pir.user_type =#{userType}
+            </if>
+            <if test="distributorProvince!=null and distributorProvince!='' ">
+                and pir.distributor_province = #{distributorProvince}
+            </if>
+            <if test="distributorCity!=null and distributorCity!='' ">
+                and pir.distributor_city = #{distributorCity}
+            </if>
+            <if test="distributorRegion!=null and distributorRegion!='' ">
+                and pir.distributor_region = #{distributorRegion}
+            </if>
+            <if test="settlementTime!=null and settlementTime!='' ">
+                and pir.settlement_month = #{settlementTime}
+            </if>
+            <if test="startTime!=null and startTime!='' ">
+                and pir.order_complete_time &gt;= #{startTime}
+            </if>
+            <if test="endTime!=null and endTime!='' ">
+                and pir.order_complete_time &lt;= #{endTime}
+            </if>
+            <if test="payStartTime!=null and payStartTime!='' ">
+                and os.pay_time &gt;= #{payStartTime}
+            </if>
+            <if test="payEndTime!=null and payEndTime!='' ">
+                and os.pay_time &lt;= #{payEndTime}
+            </if>
+            <if test="distributorName!=null and distributorName!='' ">
+                and pir.distributor_name like CONCAT('%',trim(#{distributorName}),'%')
+            </if>
+            <if test="distributorAccount!=null and distributorAccount!='' ">
+                and pir.distributor_account like CONCAT('%',trim(#{distributorAccount}),'%')
+            </if>
+            <if test="productMode!=null">
+                and os.product_type = #{productMode}
+            </if>
+            <if test="incomeType!=null">
+                and pir.income_type = #{incomeType}
+            </if>
+            <if test="settlementStatus!=null">
+                and pir.status = #{settlementStatus}
+            </if>
+            <if test="engineerSettlementTime!=null and engineerSettlementTime!='' ">
+                and pir.engineer_settlement_month = #{engineerSettlementTime}
+            </if>
+        </trim>
+        order by os.create_time desc
+    </select>
+
+    <select id="productIncomeExportCount" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        product_income_record pir
+        INNER JOIN order_sub os ON os.id = pir.order_id
+        INNER JOIN order_sub_detail osd ON osd.sub_order_id = pir.order_id
+        <trim prefix="where" prefixOverrides="and | or">
+            os.`status` = 5
+            <if test="productCompanyId!=null">
+                and pir.product_company_id =#{productCompanyId}
+            </if>
+            <if test="userId!=null">
+                and pir.user_id like CONCAT('%',trim(#{userId}),'%')
+            </if>
+            <if test="orderId!=null">
+                and ( pir.main_order_id like CONCAT('%',trim(#{orderId}),'%')
+                or pir.order_id like CONCAT('%',trim(#{orderId}),'%'))
+            </if>
+            <if test="productCategoryId!=null">
+                and (osd.product_first_category_id = #{productCategoryId} or osd.product_two_category_id =
+                #{productCategoryId} or osd.product_category_id = #{productCategoryId})
+            </if>
+            <if test="userType!=null">
+                and pir.user_type =#{userType}
+            </if>
+            <if test="distributorProvince!=null and distributorProvince!='' ">
+                and pir.distributor_province = #{distributorProvince}
+            </if>
+            <if test="distributorCity!=null and distributorCity!='' ">
+                and pir.distributor_city = #{distributorCity}
+            </if>
+            <if test="distributorRegion!=null and distributorRegion!='' ">
+                and pir.distributor_region = #{distributorRegion}
+            </if>
+            <if test="settlementTime!=null and settlementTime!='' ">
+                and pir.settlement_month = #{settlementTime}
+            </if>
+            <if test="startTime!=null and startTime!='' ">
+                and pir.order_complete_time &gt;= #{startTime}
+            </if>
+            <if test="endTime!=null and endTime!='' ">
+                and pir.order_complete_time &lt;= #{endTime}
+            </if>
+            <if test="payStartTime!=null and payStartTime!='' ">
+                and os.pay_time &gt;= #{payStartTime}
+            </if>
+            <if test="payEndTime!=null and payEndTime!='' ">
+                and os.pay_time &lt;= #{payEndTime}
+            </if>
+            <if test="distributorName!=null and distributorName!='' ">
+                and pir.distributor_name like CONCAT('%',trim(#{distributorName}),'%')
+            </if>
+            <if test="distributorAccount!=null and distributorAccount!='' ">
+                and pir.distributor_account like CONCAT('%',trim(#{distributorAccount}),'%')
+            </if>
+            <if test="productMode!=null">
+                and os.product_type = #{productMode}
+            </if>
+            <if test="incomeType!=null">
+                and pir.income_type = #{incomeType}
+            </if>
+            <if test="settlementStatus!=null">
+                and pir.status = #{settlementStatus}
+            </if>
+            <if test="engineerSettlementTime!=null and engineerSettlementTime!='' ">
+                and pir.engineer_settlement_month = #{engineerSettlementTime}
+            </if>
+        </trim>
+    </select>
+
+    <select id="selectForComplete" resultType="com.yimao.cloud.order.po.ProductIncomeRecord">
+        SELECT id, order_id AS orderId, `status`, distributor_id as distributorId
+        FROM product_income_record
+        where order_id = #{orderId}
+        and income_type=#{incomeType}
+    </select>
+
+
+    <!--统计一级类目 总金额 -->
+    <select id="getSaleProductListById" resultType="com.yimao.cloud.pojo.dto.order.SalesProductDTO">
+        SELECT
+        pir.product_one_category_id as productOneCategoryId,
+        pir.product_one_category_name as productOneCategoryName,
+        sum(pir.order_fee) as totalAmount
+        FROM `product_income_record` pir
+        WHERE pir.distributor_id = #{id}
+        group by
+        pir.product_one_category_id,
+        pir.product_one_category_name
+    </select>
+
+    <select id="selectProductIncomeRecordByOrderId" resultType="com.yimao.cloud.order.po.ProductIncomeRecord">
+		select
+		id as id,
+		main_order_id as mainOrderId,
+		order_id as orderId,
+		order_fee as orderFee,
+		user_id as userId,
+		user_type as userType,
+		user_type_name as userTypeName,
+		user_name as userName,
+		user_phone as userPhone,
+		distributor_id as distributorId,
+		distributor_name as distributorName,
+		distributor_type_name as distributorTypeName,
+		distributor_account as distributorAccount,
+		distributor_province as distributorProvince,
+		distributor_city as distributorCity,
+		distributor_region as distributorRegion,
+		product_id as productId,
+		product_name as productName,
+		product_company_id as productCompanyId,
+		product_company_name as productCompanyName,
+		product_category_id as productCategoryId,
+		product_category_name as productCategoryName,
+		product_one_category_id as productOneCategoryId,
+		product_one_category_name as productOneCategoryName,
+		product_two_category_id as productTwoCategoryId,
+		product_two_category_name as productTwoCategoryName,
+		income_rule_id as incomeRuleId,
+		income_type as incomeType,
+		allot_type as allotType,
+		settlement_amount as settlementAmount,
+		settlement_fee as settlementFee,
+		settlement_month as settlementMonth
+		from product_income_record 
+    	where 
+    	order_id=#{subOrderId}
+    	and income_type=#{incomeType}
+    </select>
+
+    <select id="existsWithOrderId" resultType="java.lang.Boolean">
+        SELECT
+            CASE WHEN COUNT(*)  > 0 THEN 1 ELSE 0 END AS result
+        from
+            product_income_record
+        where
+            income_type = #{incomeType}
+            <if test="incomeType == 1">
+                and order_id = #{orderId} and renew_order_id is null
+            </if>
+            <if test="incomeType == 2">
+                and renew_order_id = #{orderId}
+            </if>
+    </select>
+
+</mapper>

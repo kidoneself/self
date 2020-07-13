@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.water.mapper.ManualPadCostMapper">
+
+    <select id="list" resultType="com.yimao.cloud.pojo.vo.water.ManualPadCostVO">
+        select
+        id,
+        sn,
+        balance,
+        discharge,
+        CASE `open` WHEN 1 THEN '开启' ELSE '关闭' END as `open`,
+        CASE sync_status WHEN 0 THEN '未同步' WHEN 1 THEN '同步' WHEN 2 THEN '同步失败' ELSE '' END as syncStatus,
+        sync_fail_reason as syncFailReason,
+        sync_time as syncTime,
+        create_time as createTime
+        from manual_pad_cost
+        where 1=1
+        <if test="sn != null and sn !=''">
+            and sn like CONCAT('%',trim(#{sn}),'%')
+        </if>
+        <if test="open != null">
+            and `open` = #{open}
+        </if>
+        <if test="syncStatus != null">
+            and sync_status = #{syncStatus}
+        </if>
+        order by sync_time desc, create_time desc
+    </select>
+
+    <select id="export" parameterType="com.yimao.cloud.pojo.query.water.ManualPadCostQuery"
+            resultType="com.yimao.cloud.pojo.export.water.ManualPadCostExport">
+        select
+            sn,
+            balance,
+            discharge,
+            CASE `open` WHEN 1 THEN '开启' ELSE '关闭' END as `open`,
+            CASE sync_status WHEN 0 THEN '未同步' WHEN 1 THEN '同步' WHEN 2 THEN '同步失败' ELSE '' END as syncStatus,
+            sync_fail_reason as syncFailReason,
+            DATE_FORMAT(sync_time,'%Y-%m-%d %H:%i:%s') as syncTime,
+            DATE_FORMAT(create_time,'%Y-%m-%d %H:%i:%s') as createTime
+        from
+            manual_pad_cost
+        where 1=1
+        <if test="sn != null and sn !=''">
+            and sn = #{sn}
+        </if>
+        <if test="open != null">
+            and `open` = #{open}
+        </if>
+        <if test="syncStatus != null">
+            and sync_status = #{syncStatus}
+        </if>
+    </select>
+
+</mapper>

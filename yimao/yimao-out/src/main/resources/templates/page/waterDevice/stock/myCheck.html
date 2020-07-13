@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="format-detection" content="telephone=no"/>
+    <title>我的审核</title>
+    <!-- zui -->
+    <link rel="stylesheet" href="/css/zui/zui.min.css">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/stock.css">
+    <link rel="stylesheet" href="/css/icon/iconfont.css">
+    <style type="text/css">
+        .font-blod {
+            font-weight: bold;
+        }
+
+        .container {
+            background-color: #f2f2f2;
+        }
+
+        .switch-panel {
+            height: 4rem;
+            background-color: #edf1f4;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .switch-panel li {
+            width: 50%;
+            height: 100%;
+            border: none;
+        }
+
+        .switch-panel li a {
+            color: #707070 !important;
+            font-size: 1.4rem;
+            text-align: center;
+            height: 100%;
+            border: none !important;
+            border-bottom: 1px solid #ddd !important;
+            line-height: 2.8rem;
+        }
+
+        .switch-panel li a, .switch-panel li a:hover, .switch-panel li a:focus {
+            background-color: rgba(0, 0, 0, 0) !important;
+            border: none;
+        }
+
+        .switch-panel li.active a {
+            border-bottom: 1px solid #009fe8 !important;
+        }
+
+        .nohis-tip-con {
+            text-align: center;
+            margin-top: 3.2rem;
+        }
+
+        .nohis-tip {
+            color: #aaa;
+            font-size: 1.4rem;
+        }
+
+        .check-list {
+            background-color: #f2f2f2;
+            margin-bottom: 2rem;
+            height: 100%;
+        }
+
+        .check-list-item {
+            background-color: #fafafa;
+            display: flex;
+            color: #707070;
+            justify-content: space-around;
+            flex-direction: column;
+            margin-bottom: 1rem;
+            margin-left: 0px;
+            padding-left: 2rem;
+        }
+
+        .check-list-item-time {
+            font-size: 1.4rem;
+            color: #707070;
+            padding-top: 1rem;
+            display: flex;
+            justify-content: space-between;
+            padding-right: 2rem;
+        }
+
+        .stock-list {
+            background-color: #fafafa;
+            margin-bottom: 30px;
+            margin-top: 10px;
+            margin-right: 2rem;
+        }
+
+        .stock-list-item {
+            height: 4.8rem;
+            background-color: #fafafa;
+            display: flex;
+            vertical-align: middle;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+            color: #707070;
+            justify-content: flex-end;
+            padding-right: 2rem;
+        }
+
+        .stock-list-item span:first-child {
+            flex: 1;
+            font-size: 1.6rem;
+        }
+
+        .stock-list-item span:nth-child(2) {
+            font-size: 1.6rem;
+        }
+
+        .stock-list p span {
+            margin-right: 10px;
+            word-wrap: break-word;
+            word-break: break-all;
+        }
+
+        .stock-list p span.apply-num {
+            float: right
+        }
+
+        .stock-list .stock-list-item:last-child {
+            border-bottom: none;
+        }
+
+        #wait .stock-result {
+            height: 4.8rem;
+            background-color: #fafafa;
+            display: flex;
+            vertical-align: middle;
+            align-items: center;
+            color: #707070;
+            justify-content: flex-end;
+            padding-right: 2rem;
+            font-size: 1.4rem;
+        }
+
+        #checked .stock-result {
+            justify-content: flex-start;
+            height: 4.8rem;
+            background-color: #fafafa;
+            display: flex;
+            vertical-align: middle;
+            align-items: center;
+            color: #707070;
+            padding-right: 2rem;
+            font-size: 1.4rem;
+        }
+
+        .badge-green {
+            background-color: #95bd27;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+
+        .badge-red {
+            background-color: #f05a5a;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+
+        .badge-blue {
+            background-color: #3ca4fd;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+
+        .badge-gray {
+            background-color: #999;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+
+        .stock-result .btn {
+            font-size: 1.4rem;
+            text-shadow: none;
+            height: 2.5rem;
+            line-height: 1.25rem;
+            margin-left: 1rem;
+        }
+
+        .btn-blue {
+            background-color: #0074bc;
+            color: #fff;
+        }
+
+        .btn-orange {
+            background-color: #ff9e00;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+<div th:include="header :: header"></div>
+<div class="container pl-0 pr-0">
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs switch-panel">
+        <li class="active"><a href="#wait" data-toggle="tab">待审核</a></li>
+        <li><a href="#checked" data-toggle="tab">已审核</a></li>
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+        <div class="tab-pane active" id="wait">
+            <!-- <c:if test="${empty applyInList}">-->
+            <div class="nohis-tip-con" th:if="${#lists.isEmpty(applyInList)}">
+                <span class="nohis-tip">暂无记录</span>
+            </div>
+            <!--</c:if>-->
+            <div class="check-list">
+                <!--<c:if test="${!empty applyInList}">
+                    <c:forEach items="${applyInList}" var="entry">-->
+                <div th:if="${not #lists.isEmpty(applyInList)}">
+                    <div th:each="entry:${applyInList}">
+                        <div class="check-list-item">
+                            <div class="check-list-item-time">
+                                <span class="font-blod" th:text="'申请时间:'+${entry.applyTime}"></span>
+                                <span th:text="'申请人:'+${entry.allotToName}"></span>
+                            </div>
+                            <!--物料类型 0 设备 1耗材-->
+                            <!--<c:choose>
+                                <c:when test="${entry.materielType == '0'}">-->
+                            <div th:if="${entry.materielType == '0'}">
+                                <div class="stock-list">
+                                    <div class="stock-list-item">
+                                        <!-- <c:forEach var="applyDetail" items="${entry.stockList}">-->
+                                        <div th:each="applyDetail:${entry.stockList}">
+                                            <span th:text="${applyDetail.code}"></span>
+                                            <span th:text="${applyDetail.usableNum}+${applyDetail.unitName}"></span>
+                                        </div>
+                                        <!-- </c:forEach>-->
+                                    </div>
+                                    <div class="stock-result">
+                                        <button class="btn btn-orange check-btn" th:attr="data-serialno=${entry.id}">拒绝</button>
+                                        <button class="btn btn-blue check-btn" th:attr="data-serialno=${entry.id}" data-status="3">同意</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- </c:when>-->
+                            <!-- <c:otherwise>-->
+                            <div th:if="${entry.materielType != '0'}">
+                                <div class="stock-list">
+                                    <!--<c:forEach var="applyDetail" items="${entry.stockList}">-->
+                                    <div th:each="applyDetail:${entry.stockList}">
+                                        <p><span th:text="'耗材分类:'+${applyDetail.materielTypeName}"></span></p>
+                                        <p><span th:text="'耗材名称:'+${applyDetail.name}"></span>
+                                            <span class="apply-num"  th:text="${applyDetail.usableNum}+${applyDetail.unitName}"></span>
+                                        </p>
+                                        <p><span th:text="'适用机型:'+${applyDetail.fitTypeName}"></span></p>
+                                    </div>
+                                    <!--</c:forEach>-->
+                                    <div class="stock-result">
+                                        <button class="btn btn-orange check-btn" th:attr="data-serialno=${entry.id}">
+                                            拒绝
+                                        </button>
+                                        <button class="btn btn-blue check-btn" th:attr="data-serialno=${entry.id}"
+                                                data-status="3">同意
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- </c:otherwise>-->
+                            <!--</c:choose>-->
+
+                        </div>
+                    </div>
+                </div>
+                <!--</c:forEach>
+            </c:if>-->
+            </div>
+        </div>
+        <div class="tab-pane" id="checked">
+            <div class="check-list">
+                <!--<c:if test="${empty applyEdList}">-->
+                <div class="nohis-tip-con" th:if="${#lists.isEmpty(applyEdList)}">
+                    <span class="nohis-tip">暂无记录</span>
+                </div>
+                <!--</c:if>-->
+                <div th:if="${not #lists.isEmpty(applyEdList)}">
+                    <!-- <c:forEach items="${applyEdList}" var="entry">-->
+                    <div th:each="entry:${applyEdList}">
+                        <div class="check-list-item">
+                            <div class="check-list-item-time">
+                                <span class="font-blod" th:text="'申请时间:'+${entry.applyTime}"></span>
+                                <span th:text="'申请人:'+${entry.allotToName}"></span>
+                            </div>
+                            <!--物料类型 0 设备 1耗材-->
+                            <!--<c:choose>-->
+                            <!--<c:when test="${entry.materielType == '0'}">-->
+                            <div th:if="${entry.materielType == '0'}">
+                                <div class="stock-list">
+                                    <div class="stock-list-item">
+                                        <!-- <c:forEach var="applyDetail" items="${entry.stockList}">-->
+                                        <span th:each="applyDetail:${entry.stockList}">
+                                            <span th:text="${applyDetail.code}"></span>
+                                            <span th:text="${applyDetail.usableNum}+${applyDetail.unitName}"></span>
+                                        </span>
+                                        <!-- </c:forEach>-->
+                                    </div>
+                                    <div class="stock-result">
+                                            <span>审核结果:
+                                                <!-- 申请/审核 状态  ( 1待审核 2拒绝 3同意 4已入库 5 审核失败)-->
+                                                <span th:switch="${entry.applyStatus}" >
+                                                        <span th:case="2">
+                                                            <span class="badge badge-red check-btn" th:text="${entry.applyStatusName}"></span>
+                                                        </span>
+                                                        <span th:case="1">
+                                                             <span class="badge badge-red check-btn" th:text="${entry.applyStatusName}"></span>
+                                                        </span>
+                                                        <span th:case="3">
+                                                           <span class="badge badge-green check-btn" th:text="${entry.applyStatusName}"></span>
+                                                        </span>
+                                                        <span th:case="4">
+                                                           <span class="badge badge-green check-btn" th:text="${entry.applyStatusName}"></span>
+                                                        </span>
+                                                         <span th:case="5" >
+                                                            <span th:text="${entry.applyStatusName}"></span>
+                                                        </span>
+                                                        </span>
+                                                    </span>
+                                                <!--<c:out value="${entry.applyStatusName}" />-->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!--</c:when>-->
+                            <!--<c:otherwise>-->
+                            <div th:if="${not entry.materielType == '0'}">
+                                <div class="stock-list">
+                                    <!--<c:forEach var="applyDetail" items="${entry.stockList}">-->
+                                    <span th:each="applyDetail:${entry.stockList}">
+                                        <p><span th:text="'耗材分类:'+${applyDetail.materielTypeName}"></span></p>
+                                        <p><span th:text="'耗材名称:'+${applyDetail.name}"></span>
+                                            <span class="apply-num" th:text="${applyDetail.usableNum}+${applyDetail.unitName}"></span>
+                                        </p>
+                                        <p><span th:text="'适用机型:'+${applyDetail.fitTypeName}"></span></p>
+                                    </span>
+                                    <!--</c:forEach>-->
+                                    <div class="stock-result">
+                                            <span>审核结果:
+                                                <!-- 申请/审核 状态  ( 1待审核 2拒绝 3同意 4已入库 5 审核失败)-->
+                                                   <span th:switch="${entry.applyStatus}" >
+                                                        <span th:case="2">
+                                                            <span class="badge badge-red check-btn" th:text="${entry.applyStatusName}"></span>
+                                                        </span>
+                                                        <span th:case="1">
+                                                             <span class="badge badge-red check-btn" th:text="${entry.applyStatusName}"></span>
+                                                        </span>
+                                                        <span th:case="3">
+                                                           <span class="badge badge-green check-btn" th:text="${entry.applyStatusName}"></span>
+                                                        </span>
+                                                        <span th:case="4">
+                                                           <span class="badge badge-green check-btn" th:text="${entry.applyStatusName}"></span>
+                                                        </span>
+                                                        <span th:case="5" >
+                                                            <span th:text="${entry.applyStatusName}"></span>
+                                                        </span>
+                                                    </span>
+                                                </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--</c:otherwise>-->
+                            <!--</c:choose>-->
+                        </div>
+                    </div>
+                    <!--</c:forEach>-->
+                </div>
+                <!--<c:if test="${!empty applyEdList}">
+
+                </c:if>-->
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+<script type="text/javascript">
+    $(function () {
+        var token=[[${token}]];
+        updateTitle($('head title').text());
+        var haschecked = $.getUrlParam('haschecked');
+        if (haschecked == '1') {
+            $($('li')[0]).removeClass('active')
+            $($('li')[1]).addClass('active')
+            $($('.tab-pane')[0]).removeClass('active')
+            $($('.tab-pane')[1]).addClass('active')
+        }
+        $('.check-btn').click(function () {
+            var serialNo = $(this).data("serialno");
+            var data = {serialNo: serialNo,token:token};
+            if ($(this).data("status") == "3") {
+                data = {serialNo: serialNo, Status: 3};
+            }
+            $.ajax({
+                url: "./engineerApplyOperate",
+                method: "post",
+                data: data,
+                success: function (response) {
+                    console.log(response);
+
+                    if (response.code + '' == '00000000') {
+                        window.location.href = "./myCheck?haschecked=1&" + Date.parse(new Date())+"&token="+token;
+                    } else {
+                        alert(response.msg);
+                    }
+                },
+                error: function () {
+
+                }
+            })
+
+        })
+    })
+</script>
+</html>

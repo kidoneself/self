@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.cms.mapper.VideoMapper">
+
+    <select id="listVideo" resultType="com.yimao.cloud.pojo.dto.cms.VideoDTO">
+        select
+        tl.live_id as liveId,
+        tl.name,
+        tl.live_status as liveStatus,
+        tl.recommend,
+        tl.live_type_id as liveTypeId,
+        tl.live_type_sub_id as liveTypeSubId,
+        tl.create_time as createTime,
+        tl.delete_flag as deleteFlag,
+        tl.watch_times as watchTimes,
+        tl.like_num as likeNum,
+        tl.share_num as shareNum,
+        tl.share_content as shareContent,
+        tl.detail_img as detailImg,
+        tl.cover_image as coverImage,
+        tl.mobile_url as mobileUrl,
+        tl.sorts,
+        tl.release_time as releaseTime,
+        tvt.platform
+        from t_video tl
+        left join t_video_type tvt on tvt.id = tl.live_type_id
+        WHERE 1 = 1
+        <if test="liveId != null">
+            and tl.live_id like CONCAT('%', #{liveId}, '%')
+        </if>
+        <if test="liveTypeId != null">
+            and tl.live_type_id = #{liveTypeId}
+        </if>
+        <if test="liveTypeSubId != null">
+            and tl.live_type_sub_id = #{liveTypeSubId}
+        </if>
+        <if test="name != null and name.trim() != ''">
+            and tl.name like CONCAT('%', #{name}, '%')
+        </if>
+        <if test="liveStatus != null">
+            and tl.live_status = #{liveStatus}
+        </if>
+        <if test="recommend != null">
+            and tl.recommend = #{recommend}
+        </if>
+        <if test="deleteFlag != null">
+            and tl.delete_flag = #{deleteFlag}
+        </if>
+        <if test="platform != null">
+            and tvt.platform = #{platform}
+        </if>
+        <if test="status != null">
+            and tl.status = #{status}
+        </if>
+        <if test="startReleaseTime!=null">
+            AND tl.release_time &gt;= #{startReleaseTime}
+        </if>
+        <if test="endReleaseTime!=null">
+            AND tl.release_time &lt;= #{endReleaseTime}
+        </if>
+        <choose>
+            <when test="sort != null and sort == 2">
+                order by tl.recommend desc ,tl.release_time desc
+            </when>
+            <when test="sort != null and sort == 1">
+                order by tl.release_time desc
+            </when>
+            <otherwise>
+                order by tl.sorts desc
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getVideoByRecommend" resultType="com.yimao.cloud.pojo.dto.cms.VideoDTO">
+              SELECT DISTINCT
+            tl.live_id AS liveId,
+            tl.`name`,
+            tl.live_status AS liveStatus,
+            tl.recommend,
+            tl.live_type_id AS liveTypeId,
+            tl.live_type_sub_id AS liveTypeSubId,
+            tl.create_time AS createTime,
+            tl.delete_flag AS deleteFlag,
+            tl.watch_times AS watchTimes,
+            tl.like_num AS likeNum,
+            tl.share_num AS shareNum,
+            tl.share_content AS shareContent,
+            tl.detail_img AS detailImg,
+            tl.cover_image AS coverImage,
+            tl.mobile_url AS mobileUrl,
+            tl.sorts,
+            tl.release_time AS releaseTime,
+            tvt.platform
+        FROM
+            t_video tl
+        LEFT JOIN t_video_type tvt ON tvt.id = tl.live_type_id
+        WHERE
+            tl.delete_flag = 0
+        AND tvt.platform = 5
+        ORDER BY
+            tl.recommend DESC,
+            tl.release_time DESC
+        LIMIT 3
+    </select>
+
+</mapper>

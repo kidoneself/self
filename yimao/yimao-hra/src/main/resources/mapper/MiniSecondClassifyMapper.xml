@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.yimao.cloud.hra.mapper.MiniSecondClassifyMapper">
+
+    <!-- 查询所有症状自查分类 -->
+    <select id="findAllSecond" resultType="com.yimao.cloud.hra.po.MiniSecondClassify">
+        SELECT
+        hsc.id as id,
+        hsc.pid as pid,
+        hsc.classify_id as classifyId,
+        hsc.second_name as secondName,
+        hsc.create_time as createTime
+        FROM healthy_second_classify hsc
+        WHERE hsc.classify_id = 2
+    </select>
+
+
+    <!-- 查询所有健康分类 -->
+    <select id="findAllHealthSecond" resultType="com.yimao.cloud.hra.po.MiniSecondClassify">
+        SELECT
+        hsc.id as id,
+        hsc.pid as pid,
+        hsc.classify_id as classifyId,
+        hsc.second_name as secondName,
+        hsc.create_time as createTime
+        FROM healthy_second_classify hsc
+        WHERE hsc.classify_id = 1
+    </select>
+
+    <select id="selectByPid" parameterType="java.lang.Integer" resultType="com.yimao.cloud.hra.po.MiniSecondClassify">
+        SELECT
+        hsc.id as id,
+        hsc.pid as pid,
+        hsc.classify_id as classifyId,
+        hsc.second_name as secondName,
+        hsc.create_time as createTime
+        FROM healthy_second_classify hsc
+        WHERE hsc.classify_id = 2
+        AND hsc.pid = #{pid}
+    </select>
+
+    <select id="selectHealthByPid" parameterType="java.lang.Integer" resultType="com.yimao.cloud.hra.po.MiniSecondClassify">
+        SELECT
+        hsc.id as id,
+        hsc.pid as pid,
+        hsc.classify_id as classifyId,
+        hsc.second_name as secondName,
+        hsc.create_time as createTime
+        FROM healthy_second_classify hsc
+        WHERE hsc.classify_id = 1
+        AND hsc.pid = #{pid}
+    </select>
+
+
+    <select id="selectClassifyByMap" parameterType="Map" resultType="com.yimao.cloud.hra.po.MiniSecondClassify">
+        SELECT
+            hsc.`id` as id,
+            hsc.`pid` as pid,
+            hsc.`classify_id` as classifyId,
+            hsc.`second_name` as secondName,
+            hsc.`create_time` as createTime,
+            hsc.`creator` as creator,
+            hsc.`update_time` as updateTime,
+            hsc.`updater` as updater
+         FROM healthy_second_classify hsc
+         WHERE hsc.`classify_id` = #{classifyId}
+         AND hsc.`pid` != '0'
+    </select>
+
+
+</mapper>

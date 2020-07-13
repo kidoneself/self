@@ -1,0 +1,202 @@
+server:
+  port: 8585
+  tomcat:
+    uri-encoding: utf-8
+    max-connections: 2000
+    max-threads: 500
+management:
+  endpoint:
+    health:
+      show-details: ALWAYS
+    shutdown:
+      enabled: true
+  endpoints:
+    web:
+      base-path: "/monitor"
+      exposure:
+        include: "*"
+#info:
+#  version: @project.version@
+logging:
+  config: classpath:logback-spring.xml
+---
+spring:
+  profiles: local
+  rabbitmq:
+    host: 47.101.44.25
+    port: 10020
+    username: ymtest
+    password: yanfabu@yimaokeji.2019
+    publisher-confirms: true
+    virtual-host: local
+  cloud:
+    config:
+      name: config-server
+      enabled: false
+      server:
+        health:
+          enabled: false
+        svn:
+         # basedir: D:/config-repo
+          basedir: D:/local-config
+
+          #uri: svn://47.100.124.201:10090/server/java/config-repo
+          uri: svn://106.14.155.135:10090/server/java/config-repo
+          username: config-user
+          password: config-password123
+          #          default-label: native
+          default-label: local
+    bus:
+      trace:
+        enabled: true   # 开启cloud bus的跟踪
+eureka:
+  instance:
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    prefer-ip-address: true
+    hostname: localhost
+    lease-renewal-interval-in-seconds: 10   #默认为30秒
+    lease-expiration-duration-in-seconds: 30   #默认为90秒
+    status-page-url-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}/info
+    health-check-url-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}/health
+    #home-page-url-path: ${server.servlet.context-path:}
+    metadata-map:
+      management.context-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}
+      #配置了context-path后消费端无法通过eureka获取配置的解决
+      configPath: ${server.servlet.context-path:}
+  client:
+    registry-fetch-interval-seconds: 10 # 默认30秒
+    instance-info-replication-interval-seconds: 10 # 默认为30秒
+    service-url:
+      defaultZone: http://yimao:123456@localhost:8761/eureka
+---
+spring:
+  profiles: dev
+  rabbitmq:
+    host: 47.101.44.25
+    port: 10020
+    username: ymtest
+    password: yanfabu@yimaokeji.2019
+    publisher-confirms: true
+    virtual-host: dev
+  cloud:
+    config:
+      name: config-server
+      enabled: false
+      server:
+        health:
+          enabled: false
+        #native:
+        #  search-locations: /yimao/configrepo/dev
+        svn:
+          basedir: /yimao/configrepo
+          #uri: svn://47.100.124.201:10090/server/java/config-repo
+          uri: svn://106.14.155.135:10090/server/java/config-repo
+          username: config-user
+          password: config-password123
+          default-label: dev
+    bus:
+      trace:
+        enabled: true   # 开启cloud bus的跟踪
+eureka:
+  instance:
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    prefer-ip-address: true
+    hostname: localhost
+    lease-renewal-interval-in-seconds: 10   #默认为30秒
+    lease-expiration-duration-in-seconds: 30   #默认为90秒
+    status-page-url-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}/info
+    health-check-url-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}/health
+    #home-page-url-path: ${server.servlet.context-path:}
+    metadata-map:
+      management.context-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}
+      #配置了context-path后消费端无法通过eureka获取配置的解决
+      configPath: ${server.servlet.context-path:}
+  client:
+    registry-fetch-interval-seconds: 10 # 默认30秒
+    instance-info-replication-interval-seconds: 10 # 默认为30秒
+    service-url:
+      defaultZone: http://yimao:123456@192.168.10.63:8761/eureka
+---
+spring:
+  profiles: test
+  rabbitmq:
+    host: 172.16.1.66
+    port: 10020
+    username: ymtest
+    password: yanfabu@yimaokeji.2019
+    publisher-confirms: true
+    virtual-host: test
+  cloud:
+    config:
+      name: config-server
+      server:
+        health:
+          enabled: false
+        svn:
+          basedir: /yimao/configrepo
+          #uri: svn://47.100.124.201:10090/server/java/config-repo
+          uri: svn://172.16.2.187:10090/server/java/config-repo
+          username: config-user
+          password: config-password123
+          #search-paths: {application}
+#          default-label: subversion
+          default-label: test
+    bus:
+      trace:
+        enabled: true   # 开启cloud bus的跟踪
+eureka:
+  instance:
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    prefer-ip-address: true
+    hostname: localhost
+    status-page-url-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}/info
+    health-check-url-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}/health
+    #home-page-url-path: ${server.servlet.context-path:}
+    metadata-map:
+      management.context-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}
+      configPath: ${server.servlet.context-path:}
+  client:
+    service-url:
+      defaultZone: http://yimao:123456@172.16.1.66:8761/eureka
+---
+spring:
+  profiles: pro
+  rabbitmq:
+    host: 172.16.2.187
+    port: 10020
+    username: ymyanfabu
+    password: ymyanfabu@yimaokeji.2019
+    publisher-confirms: true
+    virtual-host: pro
+  cloud:
+    config:
+      name: config-server
+      server:
+        health:
+          enabled: false
+        svn:
+          basedir: /data/configrepo
+#          uri: svn://47.100.124.201:10090/server/java/config-repo
+          uri: svn://172.16.2.187:10090/server/java/config-repo
+          username: config-user
+          password: config-password123
+          #search-paths: {application}
+          #          default-label: subversion
+          default-label: pro
+    bus:
+      trace:
+        enabled: true   # 开启cloud bus的跟踪
+eureka:
+  instance:
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    prefer-ip-address: true
+    hostname: localhost
+    status-page-url-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}/info
+    health-check-url-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}/health
+    #home-page-url-path: ${server.servlet.context-path:}
+    metadata-map:
+      management.context-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}
+      configPath: ${server.servlet.context-path:}
+  client:
+    service-url:
+      defaultZone: http://yimao:123456@172.16.2.185:8761/eureka,http://yimao:123456@172.16.2.182:8761/eureka

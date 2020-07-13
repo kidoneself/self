@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.yimao.cloud.hra.mapper.MiniEvaluatingMapper">
+
+    <select id="findEvaluatingList" parameterType="java.lang.Integer" resultType="com.yimao.cloud.hra.po.MiniEvaluating">
+        SELECT
+            he.id AS id,
+            he.second_id AS secondId,
+            he.classify_id AS classifyId,
+            he.sub_img AS subImg,
+            he.start_img AS startImg,
+            he.join_number AS joinNumber,
+            he.evaluating_title AS evaluatingTitle,
+            he.create_time AS createTime
+        FROM
+          healthy_evaluating he
+        WHERE
+          he.second_id = #{secId}
+    </select>
+
+    <!--更新参加人数 -->
+    <update id="updateJoinNumber" parameterType="Map">
+        UPDATE healthy_evaluating he
+        SET he.join_number = #{joinNumber}
+        WHERE he.id = #{evaluateId}
+    </update>
+
+    <select id="findImageById" parameterType="Map" resultType="com.yimao.cloud.pojo.dto.hra.EvaluatingImageDTO">
+        SELECT
+            he.id AS id,
+            he.sub_img AS subImg,
+            he.start_img AS startImg,
+            he.evaluating_title AS evaluatingTitle
+        FROM
+          healthy_evaluating he
+        WHERE
+          he.id = #{evaluateId}
+    </select>
+
+</mapper>

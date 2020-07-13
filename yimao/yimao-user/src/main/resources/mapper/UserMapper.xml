@@ -1,0 +1,1375 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.user.mapper.UserMapper">
+
+    <select id="selectBasicUserById" resultType="com.yimao.cloud.pojo.dto.user.UserDTO">
+        SELECT distinct
+        u.id,
+        u.mid,
+        u.nick_name as nickName,
+        u.user_name as userName,
+        u.real_name as realName,
+        u.password,
+        u.mobile,
+        u.user_type as userType,
+        u.head_img as headImg,
+        u.ambassador_id as ambassadorId,
+        u.distributor_id as distributorId,
+        u.province,
+        u.city,
+        u.region,
+        ua.identifier_unique as openid
+      FROM `user` u
+      left join `user_auths` ua on u.id = ua.user_id and ua.identity_type in (1, 4)
+      WHERE u.id = #{userId}
+    </select>
+
+    <select id="listUserIdByMid" resultType="com.yimao.cloud.pojo.dto.user.UserDTO">
+        SELECT id FROM `user` WHERE mid = #{mid}
+    </select>
+
+    <select id="selectUserIdByPhone" resultType="java.lang.Integer">
+        SELECT u.id FROM `user` u WHERE u.mobile = #{mobile}
+    </select>
+
+    <select id="selectUserIdByAmbassador" resultType="java.lang.Integer">
+        select id from `user` where ambassador_id = #{userId}
+    </select>
+
+    <update id="changeCustomersToShareUser">
+        update `user` set user_type = 3, distributor_id = #{distributorId} where user_type = 4 and id in
+        <foreach collection="ids" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <update id="changeCustomersDistributor">
+        update `user` set distributor_id = #{distributor} where id in
+        <foreach collection="ids" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <!--更新用户手机号-->
+    <update id="updateMobile">
+        update `user`
+        set
+          mobile = #{mobile},
+          update_time = #{currentTime, jdbcType=TIMESTAMP}
+        where id = #{userId}
+    </update>
+
+    <!--更新用户密码-->
+    <update id="updatePwd">
+        update `user` set password = #{password}, update_time = NOW() where id = #{userId}
+    </update>
+
+    <!--管理系统中用户列表查询 -->
+    <!--<select id="pageQueryUser" parameterType="com.yimao.cloud.pojo.dto.user.UserContidionDTO"
+            resultType="com.yimao.cloud.pojo.dto.user.UserDTO">
+        SELECT
+        u.id as id,&lt;!&ndash;e家号&ndash;&gt;
+        u.nick_name as nickName,&lt;!&ndash;用户昵称&ndash;&gt;
+        u.real_name as realName,&lt;!&ndash;用户姓名&ndash;&gt;
+        u.mobile as mobile,&lt;!&ndash;用户手机号&ndash;&gt;
+        u.sex as sex,&lt;!&ndash;性别&ndash;&gt;
+        u.user_type as userType,&lt;!&ndash;用户身份&ndash;&gt;
+        u.id_card as idCard,&lt;!&ndash;身份证号&ndash;&gt;
+        u.province as province,
+        u.origin as origin,&lt;!&ndash;来源方式&ndash;&gt;
+        u.origin_terminal as originTerminal,&lt;!&ndash;来源端&ndash;&gt;
+        u.city as city,
+        u.region as region,
+        u.address as address,
+        u.create_time as createTime,&lt;!&ndash;创建时间&ndash;&gt;
+        u.update_time as updateTime,&lt;!&ndash;修改时间&ndash;&gt;
+        u.ambassador_id as ambassadorId,&lt;!&ndash;健康大使ID&ndash;&gt;
+        u.bind_phone_time as bindPhoneTime, &lt;!&ndash;绑定手机号时间&ndash;&gt;
+        u.bind_ambassador_time as bindAmbassadorTime,&lt;!&ndash;用户绑定上级健康大使的时间&ndash;&gt;
+        u.bind_distributor_time as bindDistributorTime,&lt;!&ndash;用户绑定上级经销商的时间&ndash;&gt;
+        u.be_sharer_time as beSharerTime,&lt;!&ndash;变为分享用户的时间&ndash;&gt;
+        u.be_sharer_time as beSalesTime,&lt;!&ndash;变为分销用户的时间&ndash;&gt;
+        us.mobile as ambassadorPhone ,&lt;!&ndash;健康大使手机号&ndash;&gt;
+        us.id as ambassadorNumber,&lt;!&ndash;健康大使e家号&ndash;&gt;
+        us.nick_name as ambassadorNickName,&lt;!&ndash;健康大使昵称&ndash;&gt;
+        us.real_name as ambassadorName,&lt;!&ndash;健康大使姓名&ndash;&gt;
+        us.user_type as ambassadorUserType,&lt;!&ndash;健康大使身份&ndash;&gt;
+        u.distributor_id as distributorId,&lt;!&ndash;经销商ID&ndash;&gt;
+        ud.user_id as distributorNumber,&lt;!&ndash;经销商e家号&ndash;&gt;
+        ud.user_name as distributorAccount,&lt;!&ndash;经销商账号&ndash;&gt;
+        ud.real_name as distributorName,&lt;!&ndash;经销商姓名&ndash;&gt;
+        ud.role_level as distributorType,   &lt;!&ndash;经销商身份&ndash;&gt;
+        ud.role_name as distributorTypeName,   &lt;!&ndash;经销商类型&ndash;&gt;
+        ud.phone as distributorPhone,   &lt;!&ndash;经销商手机号&ndash;&gt;
+        ud.id_card as distributorIdCard,   &lt;!&ndash;经销商身份证&ndash;&gt;
+        ud.province as distProvince,&lt;!&ndash;省&ndash;&gt;
+        ud.region as distRegion,&lt;!&ndash;市&ndash;&gt;
+        ud.city as distCity, &lt;!&ndash;区&ndash;&gt;
+        udi.user_id as udiNumber,
+        udi.user_name as udiAccount,
+        udi.real_name as udiName,
+        udi.role_level as udiType,
+        udi.role_name as udiTypeName,
+        udi.phone as udiPhone,
+        udi.id_card as udiIdCard,
+        udi.province as udiProvince,
+        udi.region as udiRegion,
+        udi.city as udiCity
+        FROM
+        `user` u
+        LEFT JOIN user_distributor ud ON u.mid = ud.id
+        LEFT JOIN user_distributor udi ON u.distributor_id = udi.id
+        LEFT JOIN `user` us ON u.ambassador_id = us.id
+        <trim prefix="WHERE" prefixOverrides="AND | OR">
+            <if test="id != null and id != ''">
+                and u.id like CONCAT(#{id},'%')
+            </if>
+            <if test="name != null and name != ''">
+                and u.real_name like CONCAT(#{name},'%')
+            </if>
+            <if test="phone != null and phone != ''">
+                and u.mobile like CONCAT(#{phone},'%')
+            </if>
+            <if test="userType != null">
+                and u.user_type = #{userType}
+            </if>
+            <if test="origin != null and origin != ''">
+                and u.origin = #{origin}
+            </if>
+            <if test="originTerminal != null and originTerminal != ''">
+                and u.origin_terminal = #{originTerminal}
+            </if>
+            <if test="ambassadorId != null">
+                and u.ambassador_id = #{ambassadorId}
+            </if>
+            <if test="distributorId != null">
+                and (ud.user_id = #{distributorId} or udi.user_id = #{distributorId})
+            </if>
+            <if test="ambassador != null and ambassador != ''">
+                and us.user_name = #{ambassador}
+            </if>
+            <if test="distributorAccount != null and distributorAccount != ''">
+                and (ud.user_name like CONCAT(#{distributorAccount},'%') or udi.user_name like CONCAT(#{distributorAccount},'%'))
+            </if>
+            <if test="distributorProvince != null and distributorProvince != ''">
+                and (ud.province = #{distributorProvince} or udi.province = #{distributorProvince})
+            </if>
+            <if test="distributorRegion != null and distributorRegion != ''">
+                and (ud.region = #{distributorRegion} or udi.region = #{distributorRegion})
+            </if>
+            <if test="distributorCity != null and distributorCity != ''">
+                and (ud.city = #{distributorCity} or udi.city = #{distributorCity})
+            </if>
+            <if test="startTime != null and startTime != '' ">
+                and u.create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                and u.create_time &lt;= #{endTime}
+            </if>
+        </trim>
+    </select>-->
+
+    <select id="pageQueryUser" parameterType="com.yimao.cloud.pojo.dto.user.UserContidionDTO"
+            resultType="com.yimao.cloud.pojo.dto.user.UserDTO">
+        SELECT
+        u.id as id,<!--用户ID-->
+        u.nick_name as nickName,<!--用户昵称-->
+        u.user_name as userName,
+        u.real_name as realName,<!--用户姓名-->
+        u.mobile as mobile,<!--用户手机号-->
+        u.user_type as userType,<!--用户身份-->
+        u.create_time as createTime,<!--创建时间-->
+        u.bind_phone_time as bindPhoneTime, <!--绑定手机号时间-->
+        u.ambassador_id as ambassadorId,<!--健康大使ID-->
+        u.distributor_id as distributorId,
+        u.mid,
+        u.origin,
+        u.origin_terminal as originTerminal,
+        u.bind_distributor_time as bindDistributorTime,
+        u.bind_ambassador_time as bindAmbassadorTime,
+        u.be_distributor_time as beDistributorTime,
+        u.be_sales_time as beSalesTime,
+        u.be_sharer_time as beSharerTime,
+        u.customer_type as customerType
+        FROM
+        `user` u
+        <trim prefix="WHERE" prefixOverrides="AND | OR">
+            <if test="id != null">
+                AND u.id = #{id}
+            </if>
+            <if test="phone != null and phone != ''">
+                AND u.mobile like CONCAT(#{phone},'%')
+            </if>
+            <if test="name != null and name != ''">
+                AND u.real_name like CONCAT(#{name},'%')
+            </if>
+            <if test="userType != null">
+                AND u.user_type = #{userType}
+            </if>
+            <if test="origin != null and origin != ''">
+                AND u.origin = #{origin}
+            </if>
+            <if test="originTerminal != null and originTerminal != ''">
+                AND u.origin_terminal = #{originTerminal}
+            </if>
+            <if test="ambassadorNumber != null">
+                AND u.ambassador_id = #{ambassadorNumber}
+            </if>
+            <if test="distributorIds != null">
+                <choose>
+                    <when test="distributorIds.size > 0">
+                        AND (u.mid in
+                        <foreach collection="distributorIds" item="item" index="index" open="(" separator="," close=")">
+                            #{item}
+                        </foreach>
+                        OR u.distributor_id in
+                        <foreach collection="distributorIds" item="items" index="index" open="(" separator=","
+                                 close=")">
+                            #{items}
+                        </foreach>)
+                    </when>
+                    <otherwise>
+                        AND 0 = 1
+                    </otherwise>
+                </choose>
+            </if>
+
+            <if test="startTime != null and startTime != '' ">
+                AND u.create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                AND u.create_time &lt;= #{endTime}
+            </if>
+        </trim>
+        order by u.create_time desc
+    </select>
+
+    <!--查询用户详细信息 -->
+    <select id="getUserInfoById" resultType="com.yimao.cloud.pojo.dto.user.UserDTO">
+      SELECT
+        u.id as id,
+        u.nick_name as nickName,
+        u.user_name as userName,
+        u.sex as sex,
+        u.mobile as mobile,
+        u.id_card as idCard,
+        u.user_type as userType,
+        u.origin as origin,
+        u.create_time as createTime,
+        u.bind_phone_time as bindPhoneTime,
+        u.income_time as incomeTime,
+        u.share_time as shareTime,
+--         u.bind_sharer_time as bindSharerTime,
+        u.customer_type as customerType,
+        u.ambassador_id as ambassadorId,
+        u.distributor_id as distributorId,
+        ud.user_name as distributorAccount,-- 经销商账号
+        ud.province as province,-- 经销商省
+        ud.region as region,-- 经销商市
+        ud.city  as city -- 经销商区
+      FROM `user` u
+      LEFT JOIN user_distributor ud ON u.distributor_id = ud.id
+      WHERE u.id = #{userId}
+    </select>
+
+
+    <select id="getAmbassInfo" resultType="com.yimao.cloud.pojo.dto.user.UserDTO">
+      SELECT
+        u.id as ambassadorId,
+        u.nick_name as ambassadorNickName,
+        u.user_name as ambassadorName,
+        u.user_type as userType,
+        u.mobile as ambassadorMobile,
+        u.id_card as idCard
+      FROM `user` u
+      WHERE u.id = #{ambassadorId}
+    </select>
+
+    <!--今日新增数量-->
+    <select id="getTotalNum" resultType="java.lang.Integer">
+        SELECT
+            count( 1 )
+        FROM
+            `user` u
+        WHERE
+	      TO_DAYS( create_time ) = TO_DAYS( NOW( ) )
+	    AND u.distributor_id = #{distributorId}
+	    OR  u.ambassador_id = #{distributorId}
+    </select>
+
+    <!--本周新增人数-->
+    <select id="getMonthAddNum" resultType="java.lang.Integer">
+        SELECT
+            count( 1 )
+        FROM
+            `user` u
+        WHERE
+            YEARWEEK( create_time ) = YEARWEEK( NOW( ) )
+        AND u.distributor_id = #{distributorId}
+	    OR  u.ambassador_id = #{distributorId}
+    </select>
+
+    <!--本年新增人数-->
+    <select id="getYearAddNum" resultType="java.lang.Integer">
+      SELECT
+        count( 1 )
+      FROM
+        `user` u
+      WHERE
+        YEAR( create_time ) = YEAR( NOW( ) )
+      AND u.distributor_id = #{distributorId}
+	  OR  u.ambassador_id = #{distributorId}
+    </select>
+
+
+    <!--<select id="selectCustomer" resultType="com.yimao.cloud.pojo.dto.user.UserDTO">
+        SELECT
+        u.user_name as userName,
+        u.nick_name as nickName,
+        u.mobile as mobile,
+        u.head_img as headImg,
+        u.sex,
+        u.age,
+        u.origin,
+        u.customer_type as customerType,
+        u.origin,
+        ua.province,
+        ua.city,
+        ua.region
+        FROM `user` u
+        LEFT JOIN `user_address` ua ON ua.user_id = u.id
+        LEFT JOIN `user` us ON u.ambassador_id = us.id
+        <where>
+            <choose>
+                <when test="type != null and type != ''">
+                    u.user_type = #{type}
+                </when>
+                <otherwise>
+                    u.user_type = '2' or u.user_type = '3' or u.user_type = '5' or u.user_type = '7'
+                </otherwise>
+            </choose>
+            <if test="province != null and province != ''">
+                and ua.province = #{province}
+            </if>
+            <if test="region != null and region != ''">
+                and ua.region = #{region}
+            </if>
+            <if test="city != null and city != ''">
+                and ua.city = #{city}
+            </if>
+            <if test="distId != null and distId != ''">
+                and u.distributor_id = #{distId}
+            </if>
+            order by u.create_time desc
+        </where>
+    </select>-->
+
+    <select id="countUserTotal" resultType="java.lang.Integer">
+        SELECT
+        count( 1 )
+        FROM
+        `user` u
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="sign == 1">
+                and create_time > DATE_SUB(CURDATE(), INTERVAL 1 WEEK)
+            </if>
+            <if test="sign == 2">
+                and create_time > DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
+            </if>
+            <if test="sign == 3">
+                and create_time > DATE_SUB(CURDATE(), INTERVAL 3 MONTH)
+            </if>
+            <if test="sign == 4">
+                and create_time > DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+            </if>
+        </trim>
+    </select>
+
+
+    <select id="findCustomers" resultType="com.yimao.cloud.pojo.dto.user.UserDTO">
+        SELECT
+        u.id as id,
+        u.mid as mid,
+        u.nick_name as nickName,
+        u.user_name as userName,
+        u.sex as sex,
+        u.mobile as mobile,
+        u.id_card as idCard,
+        u.user_type as userType,
+        u.origin as origin,
+        u.origin_terminal AS originTerminal,
+        u.create_time as createTime,
+        u.bind_phone_time as bindPhoneTime,
+        u.be_sales_time as incomeTime,
+        u.be_sharer_time as shareTime,
+        -- u.bind_sharer_time as bindSharerTime,
+        u.ambassador_id as ambassadorId,
+        u.distributor_id as distributorId,
+        ua.user_id AS ambassadorId,
+        ua.client_id AS clientId,
+        ua.client_name AS clientName,
+        ua.star_num AS starNum,
+        ua.create_time AS acreate_time,
+        ua.update_time AS aupdate_time,
+        u.head_img as headImg,
+        amd.nick_name as ambassadorNickName,
+        amd.mobile as ambassadorPhone
+        FROM user u
+        LEFT JOIN user_alias ua ON ua.client_id = u.id
+        left join user amd on u.ambassador_id = amd.id
+        <trim prefix="WHERE" prefixOverrides="AND | OR">
+            <if test="id != null">
+                AND u.id != #{id}
+            </if>
+            <if test="mid != null">
+                AND u.distributor_id = #{mid}
+            </if>
+            <if test="mid == null">
+                AND u.ambassador_id = #{id}
+            </if>
+            <if test="key != null and key != ''">
+                and (u.mobile like CONCAT('%',trim(#{key}),'%') or u.nick_name like CONCAT('%',trim(#{key}),'%'))
+            </if>
+        </trim>
+        ORDER BY u.create_time DESC
+    </select>
+
+    <select id="getUserByDistributor" resultType="com.yimao.cloud.pojo.dto.user.UserDTO">
+        SELECT
+        u.id,
+        ud.id AS mid,
+        ud.nick_name AS nickName,
+        ud.user_name AS userName,
+        ud.sex AS sex,
+        ud.phone AS mobile,
+        ud.id_card AS idCard,
+        u.user_type AS userType,
+        u.origin AS origin,
+        u.origin_terminal AS originTerminal,
+        ud.create_time AS createTime,
+        u.bind_phone_time AS bindPhoneTime,
+        u.be_sales_time AS incomeTime,
+        u.be_sharer_time AS shareTime,
+        -- u.bind_sharer_time AS bindSharerTime,
+        u.ambassador_id AS ambassadorId,
+        u.distributor_id AS distributorId,
+        ua.user_id AS ambassadorId,
+        ua.client_id AS clientId,
+        ua.client_name AS clientName,
+        ua.star_num AS starNum,
+        u.head_img AS headImg,
+        amd.nick_name as ambassadorNickName,
+        amd.mobile as ambassadorPhone
+        FROM
+        user_distributor ud
+        LEFT JOIN `user` u ON ud.id = u.mid
+        LEFT JOIN user_alias ua ON ua.client_id = u.id
+        left join user amd on u.ambassador_id = amd.id
+        WHERE ud.pid = #{mid} AND ud.role_level = #{type}
+        <if test="key != null and key != ''">
+            and (ud.phone like CONCAT('%',trim(#{key}),'%') or ud.nick_name like CONCAT('%',trim(#{key}),'%'))
+        </if>
+        ORDER BY u.create_time DESC
+    </select>
+
+
+    <select id="getUserByUserName" resultType="com.yimao.cloud.pojo.dto.user.UserDTO">
+        SELECT
+            u.id,
+            u.mobile as mobile,
+            u.real_name AS realName,
+            u.id_card AS idCard
+        FROM
+            `user` u
+        WHERE
+            u.real_name LIKE CONCAT('%',trim(#{realName}),'%')
+    </select>
+
+    <select id="getDistributorByMid" resultType="com.yimao.cloud.pojo.dto.user.UserDTO">
+        SELECT
+            u.id AS id,
+            u.mid AS mid,
+            u.nick_name AS nickName,
+            u.user_name AS userName,
+            u.sex AS sex,
+            u.mobile AS mobile,
+            u.id_card AS idCard,
+            u.user_type AS userType,
+            u.origin AS origin,
+            u.create_time AS createTime,
+            u.bind_phone_time AS bindPhoneTime,
+            u.be_sales_time AS incomeTime,
+            u.be_sharer_time AS shareTime,
+--             u.bind_sharer_time AS bindSharerTime,
+            u.ambassador_id AS ambassadorId,
+            u.distributor_id AS distributorId
+        FROM
+            user_distributor ud
+            LEFT JOIN `user` u ON ud.id = u.mid
+        WHERE
+            ud.pid = #{mid}
+    </select>
+
+    <!--查询评估卡所有者的信息(包含id和openid(发送模板消息))-->
+    <select id="userByIds" resultType="com.yimao.cloud.pojo.dto.user.UserDTO">
+        SELECT
+        ui.id AS id,
+        ua.identifier_unique AS openid
+        FROM
+        user ui
+        INNER JOIN user_auths ua ON ua.user_id = ui.id
+        WHERE ua.identity_type in (1, 4) and
+        ui.id IN
+        <foreach collection="ids" open="(" close=")" separator="," item="userId">
+            #{userId}
+        </foreach>
+    </select>
+
+    <!--用户列表导出 -->
+    <select id="userExportList" parameterType="com.yimao.cloud.pojo.dto.user.UserContidionDTO"
+            resultType="com.yimao.cloud.pojo.dto.user.UserExportDTO">
+        SELECT
+        u.id AS userId,
+        u.nick_name AS nickName,
+        u.real_name AS realName,
+        CASE u.sex
+        WHEN 1 THEN '男'
+        WHEN 2 THEN '女' END AS sex,
+        u.age as age,
+        u.mobile as mobile,
+        CASE u.user_type
+        WHEN 0 THEN '经销商（体验版）'
+        WHEN 1 THEN '经销商（微创版）'
+        WHEN 2 THEN '经销商（个人版）'
+        WHEN 3 THEN '普通用户（有健康大使）'
+        WHEN 4 THEN '普通用户（无健康大使）'
+        WHEN 5 THEN '企业版经销商（主）'
+        WHEN 6 THEN '6-企业版经销商（子）'
+        WHEN 7 THEN '分销用户'
+        WHEN 8 THEN '折机版经销商'
+        END AS userType,
+        CASE u.origin_terminal
+        WHEN 1 THEN '健康e家公众号'
+        WHEN 2 THEN '经销商APP'
+        WHEN 3 THEN '净水设备'
+        END AS originTerminal,
+        CASE u.origin
+        WHEN 1 THEN '代言卡分享'
+        WHEN 2 THEN '宣传卡分享'
+        WHEN 3 THEN '资讯分享'
+        WHEN 4 THEN '视频分享'
+        WHEN 5 THEN '商品分享'
+        WHEN 6 THEN '自主关注公众号'
+        WHEN 7 THEN '经销商APP添加'
+        WHEN 8 THEN '水机屏推广二维码'
+        END AS origin,
+        DATE_FORMAT(u.create_time,'%Y-%m-%d %H:%i:%s') AS createTime,
+        DATE_FORMAT(u.create_time,'%Y-%m-%d %H:%i:%s') AS generalUserTime,
+        DATE_FORMAT(u.be_sales_time,'%Y-%m-%d %H:%i:%s') AS beSalesTime,
+        u.province AS province,
+        u.city AS city,
+        u.region AS region,
+        u.address AS address,
+        u.company_name AS companyName,
+        u.ambassador_id AS ambassadorId,
+        CASE us.user_type
+        WHEN 0 THEN '经销商（体验版）'
+        WHEN 1 THEN '经销商（微创版）'
+        WHEN 2 THEN '经销商（个人版）'
+        WHEN 3 THEN '分享用户'
+        WHEN 4 THEN '普通用户'
+        WHEN 5 THEN '企业版经销商（主）'
+        WHEN 6 THEN '6-企业版经销商（子）'
+        WHEN 7 THEN '分销用户'
+        WHEN 8 THEN '折机版经销商'
+        END AS ambassadorUserType,
+        us.mobile AS ambassadorPhone,
+        if(udi.pid is not null,udi2.id,udi.id) AS distributorId,
+        if(udi.pid is not null,udi2.user_name,udi.user_name) AS distributorAccount,
+        if(udi.pid is not null,udi2.real_name,udi.real_name) AS distributorName,
+        if(udi.pid is not null,udi2.role_name,udi.role_name) AS distributorType,
+        if(udi.pid is not null,udi2.province,udi.province) AS distProvince,
+        if(udi.pid is not null,udi2.city,udi.city) AS distCity,
+        if(udi.pid is not null,udi2.region,udi.region) AS distRegion,
+        if(udi.pid is not null,'是','否') AS hasSubAccount,
+        if(udi.pid is not null,udi.id,"") AS subAccountId,
+        if(udi.pid is not null,udi.user_name,"") AS subAccountUserName,
+        if(udi.pid is not null,udi.real_name,"") AS subAccountRealName
+        FROM
+        `user` u
+        LEFT JOIN `user` us ON u.ambassador_id = us.id
+        LEFT JOIN user_distributor udi ON udi.id = u.distributor_id
+        LEFT JOIN user_distributor udi2 ON udi2.id = udi.pid
+        LEFT JOIN user_distributor udm ON udm.id = u.mid
+        WHERE u.user_type in (3,4,7)
+        <if test="name != null and name != ''">
+            and u.real_name like CONCAT(#{name},'%')
+        </if>
+        <if test="id != null">
+            and u.id =#{id}
+        </if>
+        <if test="phone != null and phone != ''">
+            and u.mobile like CONCAT(#{phone},'%')
+        </if>
+        <if test="userType != null">
+            and u.user_type = #{userType}
+        </if>
+        <if test="origin != null and origin != ''">
+            and u.origin = #{origin}
+        </if>
+        <if test="originTerminal != null and originTerminal != ''">
+            and u.origin_terminal = #{originTerminal}
+        </if>
+        <if test="ambassadorNumber != null">
+            and u.ambassador_id = #{ambassadorNumber}
+        </if>
+        <if test="distributorId != null">
+            and if(udi.pid is not null,udi2.user_id,udi.user_id) = #{distributorId}
+        </if>
+        <if test="distributorAccount != null and distributorAccount != ''">
+            and if(udi.pid is not null,udi2.user_name,udi.user_name) = #{distributorAccount}
+        </if>
+        <if test="distributorProvince != null and distributorProvince != ''">
+            and if(udi.pid is not null,udi2.province,udi.province) = #{distributorProvince}
+        </if>
+        <if test="distributorCity != null and distributorCity != ''">
+            and if(udi.pid is not null,udi2.city,udi.city) = #{distributorCity}
+        </if>
+        <if test="distributorRegion != null and distributorRegion != ''">
+            and if(udi.pid is not null,udi2.region,udi.region) = #{distributorRegion}
+        </if>
+        <if test="startTime != null and startTime != ''">
+            and u.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            and u.create_time &lt;= #{endTime}
+        </if>
+    </select>
+
+    <!--用户列表导出 -->
+    <select id="userDistributorExportList" parameterType="com.yimao.cloud.pojo.dto.user.UserContidionDTO"
+            resultType="com.yimao.cloud.pojo.dto.user.UserExportDTO">
+        SELECT
+        u.id AS userId,
+        u.nick_name AS nickName,
+        u.real_name AS realName,
+        CASE u.sex
+        WHEN 1 THEN '男'
+        WHEN 2 THEN '女' END AS sex,
+        u.age as age,
+        u.mobile as mobile,
+        CASE u.user_type
+        WHEN 0 THEN '经销商（体验版）'
+        WHEN 1 THEN '经销商（微创版）'
+        WHEN 2 THEN '经销商（个人版）'
+        WHEN 3 THEN '普通用户（有健康大使）'
+        WHEN 4 THEN '普通用户（无健康大使）'
+        WHEN 5 THEN '企业版经销商（主）'
+        WHEN 6 THEN '6-企业版经销商（子）'
+        WHEN 7 THEN '分销用户'
+        WHEN 8 THEN '折机版经销商'
+        END AS userType,
+        CASE u.origin_terminal
+        WHEN 1 THEN '健康e家公众号'
+        WHEN 2 THEN '经销商APP'
+        WHEN 3 THEN '净水设备'
+        END AS originTerminal,
+        CASE u.origin
+        WHEN 1 THEN '代言卡分享'
+        WHEN 2 THEN '宣传卡分享'
+        WHEN 3 THEN '资讯分享'
+        WHEN 4 THEN '视频分享'
+        WHEN 5 THEN '商品分享'
+        WHEN 6 THEN '自主关注公众号'
+        WHEN 7 THEN '经销商APP添加'
+        WHEN 8 THEN '水机屏推广二维码'
+        END AS origin,
+        DATE_FORMAT(u.create_time,'%Y-%m-%d %H:%i:%s') AS createTime,
+        DATE_FORMAT(u.create_time,'%Y-%m-%d %H:%i:%s') AS generalUserTime,
+        DATE_FORMAT(u.be_sales_time,'%Y-%m-%d %H:%i:%s') AS beSalesTime,
+        u.province AS province,
+        u.city AS city,
+        u.region AS region,
+        u.address AS address,
+        u.company_name AS companyName,
+        u.ambassador_id AS ambassadorId,
+        CASE us.user_type
+        WHEN 0 THEN '经销商（体验版）'
+        WHEN 1 THEN '经销商（微创版）'
+        WHEN 2 THEN '经销商（个人版）'
+        WHEN 3 THEN '分享用户'
+        WHEN 4 THEN '普通用户'
+        WHEN 5 THEN '企业版经销商（主）'
+        WHEN 6 THEN '6-企业版经销商（子）'
+        WHEN 7 THEN '分销用户'
+        WHEN 8 THEN '折机版经销商'
+        END AS ambassadorUserType,
+        us.mobile AS ambassadorPhone,
+        udm.id AS distributorId,
+        udm.user_name AS distributorAccount,
+        udm.real_name AS distributorName,
+        udm.role_name AS distributorType,
+        udm.province AS distProvince,
+        udm.city AS distCity,
+        udm.region AS distRegion,
+        '' AS hasSubAccount,
+        '' AS subAccountId,
+        '' AS subAccountUserName,
+        '' AS subAccountRealName
+        FROM
+        `user` u
+        LEFT JOIN `user` us ON u.ambassador_id = us.id
+        LEFT JOIN user_distributor udi ON udi.id = u.distributor_id
+        LEFT JOIN user_distributor udi2 ON udi2.id = udi.pid
+        LEFT JOIN user_distributor udm ON udm.id = u.mid
+        WHERE u.user_type in (1,2,5,6,8)
+        <if test="name != null and name != ''">
+            and u.real_name like CONCAT(#{name},'%')
+        </if>
+        <if test="id != null">
+            and u.id =#{id}
+        </if>
+        <if test="phone != null and phone != ''">
+            and u.mobile like CONCAT(#{phone},'%')
+        </if>
+        <if test="userType != null">
+            and u.user_type = #{userType}
+        </if>
+        <if test="origin != null and origin != ''">
+            and u.origin = #{origin}
+        </if>
+        <if test="originTerminal != null and originTerminal != ''">
+            and u.origin_terminal = #{originTerminal}
+        </if>
+        <if test="ambassadorNumber != null">
+            and u.ambassador_id = #{ambassadorNumber}
+        </if>
+        <if test="distributorId != null">
+            and udm.user_id = #{distributorId}
+        </if>
+        <if test="distributorAccount != null and distributorAccount != ''">
+            and udm.user_name = #{distributorAccount}
+        </if>
+        <if test="distributorProvince != null and distributorProvince != ''">
+            and udm.province = #{distributorProvince}
+        </if>
+        <if test="distributorCity != null and distributorCity != ''">
+            and udm.city = #{distributorCity}
+        </if>
+        <if test="distributorRegion != null and distributorRegion != ''">
+            and udm.region = #{distributorRegion}
+        </if>
+        <if test="startTime != null and startTime != '' ">
+            and u.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            and u.create_time &lt;= #{endTime}
+        </if>
+    </select>
+
+    <select id="selectDistributorByMap" parameterType="java.util.Map" resultType="java.lang.Integer">
+        select id from user_distributor
+        where 1=1
+        <if test="distributorId != null">
+            and user_id = #{distributorId}
+        </if>
+        <if test="distributorAccount != null and distributorAccount != ''">
+            and user_name = #{distributorAccount}
+        </if>
+        <if test="distributorProvince != null and distributorProvince != ''">
+            and province = #{distributorProvince}
+            <if test="distributorCity != null and distributorCity != ''">
+                and city = #{distributorCity}
+                <if test="distributorRegion != null and distributorRegion != ''">
+                    and region = #{distributorRegion}
+                </if>
+            </if>
+        </if>
+    </select>
+
+    <select id="getUserPhoneByOpenid" resultType="com.yimao.cloud.user.po.UserAuths">
+        select u.id, u.mobile, ua.identifier_unique AS identifierUnique
+        from `user` u
+                inner join user_auths ua on (ua.user_id = u.id)
+        where ua.identifier_unique = #{openid}
+    </select>
+
+
+    <!--普通用户数量 -->
+    <select id="getGeneralUserCount" parameterType="java.util.Map" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM `user` u WHERE u.ambassador_id = #{ambassadorId} AND u.user_type = #{userType}
+    </select>
+
+    <!--会员用户数量 -->
+    <select id="getVipUserCount" parameterType="java.util.Map" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM `user` u WHERE u.ambassador_id = #{ambassadorId} AND u.user_type = #{vip}
+    </select>
+
+    <!--昨日新增数量 -->
+    <select id="getYesterdayNum" parameterType="java.util.Map" resultType="java.lang.Integer">
+        SELECT
+          COUNT(1)
+        FROM
+        `user`
+        WHERE TO_DAYS( NOW( ) ) - TO_DAYS( create_time) <![CDATA[<= ]]> 1
+        AND ambassador_id = #{ambassadorId}
+    </select>
+
+    <!--本月新增数量 -->
+    <select id="getCurrentMonthNum" parameterType="java.util.Map" resultType="java.lang.Integer">
+      SELECT
+      COUNT(1)
+    FROM
+    `user`
+    WHERE DATE_FORMAT( create_time, '%Y%m' ) = DATE_FORMAT( CURDATE( ) , '%Y%m' )
+    AND ambassador_id = #{ambassadorId}
+    </select>
+
+    <!--我的客户列表 -->
+    <select id="getCustomerList" resultType="com.yimao.cloud.pojo.dto.user.UserDTO">
+        SELECT
+        u.id as id,
+        u.mobile as mobile,
+        u.nick_name as nickName,
+        u.user_name as userName,
+        u.head_img as headImg,
+        u.create_time as createTime,
+        u.origin,
+        u.origin_terminal as originTerminal
+        FROM `user` u
+        WHERE 1=1
+        AND u.ambassador_id = #{userId}
+        <if test="type != null">
+            <if test="type == 1">
+                AND u.user_type in ('3','4')
+            </if>
+            <if test="type == 7">
+                AND u.user_type = #{type}
+            </if>
+        </if>
+        <if test="key != null and key != ''">
+            AND (u.mobile like CONCAT('%',trim(#{key}),'%') or u.user_name like CONCAT('%',trim(#{key}),'%'))
+        </if>
+        <if test="tag != null">
+            <if test="tag == 1">
+                AND TO_DAYS( NOW( ) ) - TO_DAYS( create_time) <![CDATA[<= ]]> 1
+            </if>
+            <if test="tag == 2">
+                AND DATE_FORMAT( create_time, '%Y%m' ) = DATE_FORMAT( CURDATE( ) , '%Y%m' )
+            </if>
+        </if>
+    </select>
+
+    <select id="getTotalCount" parameterType="java.util.Map" resultType="java.lang.Integer">
+        SELECT
+          COUNT(1)
+        FROM
+        `user`
+        WHERE ambassador_id = #{ambassadorId}
+    </select>
+
+    <update id="updateAmbassadorId" parameterType="java.util.Map">
+        update `user` u
+        <set>
+            <if test="ambassadorId != null">
+                u.ambassador_id = #{ambassadorId},
+            </if>
+            <if test="distributorId != null">
+                u.distributor_id = #{distributorId},
+            </if>
+            <if test="updateTime != null">
+                u.update_time = #{updateTime},
+            </if>
+        </set>
+        WHERE 1=1
+        <if test="list!=null and list.size>0">
+            and u.id in
+            <foreach collection="list" item="item" index="index" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        and u.ambassador_id = #{userId}
+    </update>
+
+    <update id="updateHeadImage">
+        update `user` set head_img = #{headImg}, update_time = NOW() where id = #{userId}
+    </update>
+
+    <select id="selectForUpgradeVip" resultType="com.yimao.cloud.user.po.User">
+        SELECT
+        id,
+        mobile,
+        user_type as userType,
+        nick_name as nickName,
+        income_permission as incomePermission,
+        distributor_id as distributorId
+        FROM `user`
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectByPhoneForAppLogin" resultType="com.yimao.cloud.pojo.dto.user.UserDTO">
+        select distinct
+          u.id,
+          u.mobile,
+          u.user_type as userType,
+          u.user_type_name as userTypeName,
+          u.user_name as userName,
+          u.head_img as headImg,
+          ua.identifier as unionid
+        from
+            `user` u left join user_auths ua on u.id = ua.user_id
+        where
+            u.mobile = #{mobile}
+    </select>
+
+    <select id="selectUserIdByMobile" resultType="java.lang.Integer">
+        select
+          id
+        from
+            `user`
+        where
+            mobile = #{mobile} and id &lt;&gt; #{userId} limit 1
+    </select>
+    <select id="selectUserByUserName" resultType="com.yimao.cloud.user.po.User">
+        select
+          id,nick_name as nickName
+        from
+            `user`
+        where
+            user_name = #{userName} and id &lt;&gt; #{userId} limit 1
+    </select>
+    <select id="selectByIdForFillIntoUser" resultType="com.yimao.cloud.user.po.User">
+        select
+          id,
+          mobile,
+          user_type as userType,
+          user_type_name as userTypeName,
+          user_name as userName,
+          nick_name as nickName,
+          head_img as headImg
+        from
+            `user`
+        where
+            id = #{id}
+    </select>
+    <select id="selectMultiIdentityByUserId" resultType="com.yimao.cloud.pojo.dto.user.UserIdentityDTO">
+        select
+            u.id,
+            u.user_type as userType,
+            u.user_type_name as userTypeName,
+            ud.founder,
+            ud.station_master as stationMaster,
+            ud.agent_level as agentLevel,
+            ud.role_level as roleLevel,
+            ud.province,
+            ud.city,
+            ud.region
+        from
+            `user` u left join `user_distributor` ud on u.id = ud.user_id
+        where
+            u.id = #{userId}
+    </select>
+
+    <!--查询用户是否有客户-->
+    <select id="existsClient" resultType="java.lang.Boolean">
+        SELECT
+            CASE WHEN COUNT(*)  > 0 THEN 1 ELSE 0 END AS result
+        from
+            `user`
+        where
+            ambassador_id = #{userId}
+    </select>
+
+    <select id="selectDistributorIdByMapToStation" resultType="java.lang.Integer">
+        select id from user_distributor
+        where 1=1
+        <if test="distributorId != null">
+            and user_id = #{distributorId}
+        </if>
+        <if test="distributorAccount != null and distributorAccount.trim() != ''">
+            and user_name = #{distributorAccount}
+        </if>
+        <if test="distributorName != null and distributorName.trim() != ''">
+            and real_name = #{distributorName}
+        </if>
+        <if test="areaIds != null and areaIds.size() > 0">
+            and area_id in
+            <foreach collection="areaIds" item="areaId" index="index" separator="," open="(" close=")">
+                #{areaId}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="pageQueryUserToStation" resultType="com.yimao.cloud.pojo.vo.station.UserVO">
+        SELECT
+        u.id as id,<!--用户ID-->
+        u.nick_name as nickName,<!--用户昵称-->
+        u.real_name as realName,<!--用户姓名-->
+        u.mobile as mobile,<!--用户手机号-->
+        u.user_type as userType,<!--用户身份-->
+        u.create_time as createTime,<!--创建时间-->
+        u.bind_phone_time as bindPhoneTime, <!--绑定手机号时间-->
+        u.ambassador_id as ambassadorId,<!--健康大使ID-->
+        u.distributor_id as distributorId,
+        u.mid,
+        u.origin,<!--用户来源方式-->
+        u.origin_terminal as originTerminal,<!--来源端-->
+        u.be_distributor_time as beDistributorTime,
+        u.be_sales_time as beSalesTime,
+        u.be_sharer_time as beSharerTime
+        FROM
+        `user` u
+        <trim prefix="WHERE" prefixOverrides="AND | OR">
+            <if test="id != null">
+                AND u.id = #{id}
+            </if>
+            <if test="realName != null and realName.trim() != ''">
+                AND u.real_name like CONCAT(#{realName},'%')
+            </if>
+            <if test="phone != null and phone.trim() != ''">
+                AND u.mobile like CONCAT(#{phone},'%')
+            </if>
+            <if test="userType != null">
+                AND u.user_type = #{userType}
+            </if>
+            <if test="originTerminal != null">
+                AND u.origin_terminal = #{originTerminal}
+            </if>
+            <if test="origin != null">
+                AND u.origin = #{origin}
+            </if>
+            <if test="startTime != null and startTime != '' ">
+                AND u.create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                AND u.create_time &lt;= #{endTime}
+            </if>
+            <if test="isCommonUser != null and isCommonUser">
+                AND (u.user_type = 3 or u.user_type = 4)
+            </if>
+            <if test="isCommonUserOrVipUser != null and isCommonUserOrVipUser">
+                AND (u.user_type = 3 or u.user_type = 4 or u.user_type = 7)
+            </if>
+            <if test="distributorIds != null">
+                <choose>
+                    <when test="distributorIds.size > 0">
+                        AND (u.mid in
+                        <foreach collection="distributorIds" item="item" index="index" open="(" separator="," close=")">
+                            #{item}
+                        </foreach>
+                        OR u.distributor_id in
+                        <foreach collection="distributorIds" item="items" index="index" open="(" separator=","
+                                 close=")">
+                            #{items}
+                        </foreach>)
+                    </when>
+                    <otherwise>
+                        AND 0 = 1
+                    </otherwise>
+                </choose>
+            </if>
+        </trim>
+        order by u.create_time desc
+    </select>
+
+    <select id="getUserSaleData" resultType="com.yimao.cloud.pojo.dto.station.UserStatisticsDTO">
+        SELECT
+        ifnull(count(case when u.user_type = 3 or u.user_type=4 then u.id end),0) as generalUserNum,
+        ifnull(count(case when u.user_type=7 then u.id end),0) as vipUserNum
+        FROM `user` u
+        WHERE 1 = 1
+        <if test="startTime != null">
+            and u.create_time <![CDATA[>=]]> #{startTime}
+        </if>
+        <if test="endTime !=null">
+            and u.create_time <![CDATA[<=]]> #{endTime}
+        </if>
+        <choose>
+            <when test="distributorIds !=null and distributorIds.size > 0">
+                AND (u.mid in
+                <foreach collection="distributorIds" item="item" index="index" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+                OR u.distributor_id in
+                <foreach collection="distributorIds" item="items" index="index" open="(" separator=","
+                         close=")">
+                    #{items}
+                </foreach>)
+            </when>
+            <otherwise>
+                AND 0 = 1
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getUserSalePicData" resultType="com.yimao.cloud.pojo.dto.station.UserStatisticsDTO">
+        SELECT
+        a.createTime,
+        ifnull(
+        count(
+        CASE
+        WHEN a.userType = 3 or a.userType = 4 THEN
+        a.id
+        END
+        ),
+        0
+        ) AS generalUserNum,
+        ifnull(
+        count(
+        CASE
+        WHEN a.userType = 7 THEN
+        a.id
+        END
+        ),
+        0
+        ) AS vipUserNum
+        FROM
+        (
+        SELECT
+        date_format(u.create_time, '%Y%m%d') AS createTime,
+        u.user_type AS userType,
+        u.id
+        FROM
+        `user` u
+        WHERE
+        1 = 1
+        <if test="startTime != null">
+            and u.create_time <![CDATA[>=]]> #{startTime}
+        </if>
+        <if test="endTime !=null">
+            and u.create_time <![CDATA[<=]]> #{endTime}
+        </if>
+        <choose>
+            <when test="distributorIds !=null and distributorIds.size > 0">
+                AND (u.mid in
+                <foreach collection="distributorIds" item="item" index="index" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+                OR u.distributor_id in
+                <foreach collection="distributorIds" item="items" index="index" open="(" separator=","
+                         close=")">
+                    #{items}
+                </foreach>)
+            </when>
+            <otherwise>
+                AND 0 = 1
+            </otherwise>
+        </choose>
+        ) a
+        GROUP BY
+        a.createTime
+        ORDER BY
+        a.createTime ASC
+    </select>
+
+    <select id="getStationGeneralUserNumAndVipUserNum"
+            resultType="com.yimao.cloud.pojo.dto.station.StationScheduleDTO">
+        SELECT
+        ifnull(count(case when u.user_type = 3 or u.user_type=4 then u.id end),0) as commonUserNum,
+        ifnull(count(case when u.user_type=7 then u.id end),0) as vipUserNum
+        FROM `user` u
+        where 1 = 1
+        <choose>
+            <when test="distributorIds !=null and distributorIds.size > 0">
+                AND (u.mid in
+                <foreach collection="distributorIds" item="item" index="index" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+                OR u.distributor_id in
+                <foreach collection="distributorIds" item="items" index="index" open="(" separator=","
+                         close=")">
+                    #{items}
+                </foreach>)
+            </when>
+            <otherwise>
+                AND 0 = 1
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getGeneralUserNumAndVipUserNumByAreaIds"
+            resultType="com.yimao.cloud.pojo.vo.station.UserGeneralSituationVO">
+        SELECT
+        ifnull(count(case when u.user_type = 3 or u.user_type=4 then u.id end),0) as generalUserNum,
+        ifnull(count(case when u.user_type=7 then u.id end),0) as vipUserNum
+        FROM `user` u
+        where 1 = 1
+        <choose>
+            <when test="distributorIds !=null and distributorIds.size > 0">
+                AND (u.mid in
+                <foreach collection="distributorIds" item="item" index="index" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+                OR u.distributor_id in
+                <foreach collection="distributorIds" item="items" index="index" open="(" separator=","
+                         close=")">
+                    #{items}
+                </foreach>)
+            </when>
+            <otherwise>
+                AND 0 = 1
+            </otherwise>
+        </choose>
+    </select>
+
+    <!--根据手机号查询公众号/H5的openid-->
+    <select id="getOpenidByMobile" resultType="java.lang.String">
+        select
+          ua.identifier_unique as openid
+        from
+            `user` u left join user_auths ua on u.id = ua.user_id
+        where
+            u.mobile = #{mobile}
+            and ua.identity_type  in (1,4)
+            limit 1
+    </select>
+
+    <update id="updateUserByMid" parameterType="com.yimao.cloud.user.po.User">
+        update user
+        <set>
+            <if test="mobile != null">
+                mobile = #{mobile,jdbcType=VARCHAR},
+            </if>
+            <if test="userName != null">
+                user_name = #{userName,jdbcType=VARCHAR},
+            </if>
+            <if test="password != null">
+                password = #{password,jdbcType=VARCHAR},
+            </if>
+            <if test="nickName != null">
+                nick_name = #{nickName,jdbcType=VARCHAR},
+            </if>
+            <if test="realName != null">
+                real_name = #{realName,jdbcType=VARCHAR},
+            </if>
+            <if test="userType != null">
+                user_type = #{userType,jdbcType=TINYINT},
+            </if>
+            <if test="userTypeName != null">
+                user_type_name = #{userTypeName,jdbcType=VARCHAR},
+            </if>
+            <if test="distributorId != null">
+                distributor_id = #{distributorId,jdbcType=INTEGER},
+            </if>
+            <if test="sex != null">
+                sex = #{sex,jdbcType=INTEGER},
+            </if>
+            <if test="idCard != null">
+                id_card = #{idCard,jdbcType=VARCHAR},
+            </if>
+            <if test="province != null">
+                province = #{province,jdbcType=VARCHAR},
+            </if>
+            <if test="city != null">
+                city = #{city,jdbcType=VARCHAR},
+            </if>
+            <if test="region != null">
+                region = #{region,jdbcType=VARCHAR},
+            </if>
+            <if test="address != null">
+                address = #{address,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="companyName != null">
+                company_name = #{companyName,jdbcType=VARCHAR},
+            </if>
+
+        </set>
+        where mid = #{mid,jdbcType=INTEGER}
+    </update>
+
+    <update id="updateUserByIdForTransfer" parameterType="com.yimao.cloud.user.po.User">
+        update user
+        <set>
+            <if test="mid != null">
+                mid = #{mid,jdbcType=INTEGER},
+            </if>
+            <if test="userName != null">
+                user_name = #{userName,jdbcType=VARCHAR},
+            </if>
+            <if test="password != null">
+                password = #{password,jdbcType=VARCHAR},
+            </if>
+            <if test="userType != null">
+                user_type = #{userType,jdbcType=TINYINT},
+            </if>
+            <if test="userTypeName != null">
+                user_type_name = #{userTypeName,jdbcType=VARCHAR},
+            </if>
+            <if test="distributorId != null">
+                distributor_id = #{distributorId,jdbcType=INTEGER},
+            </if>
+            <if test="oldDistributorId != null">
+                old_distributor_id = #{oldDistributorId,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where mid = #{mid,jdbcType=INTEGER}
+    </update>
+
+
+    <!--批量更新用户下所有客户的经销商 -->
+    <update id="batchUpdateUserDistributor" parameterType="java.util.Map">
+        update `user` set distributor_id = #{distributorId}
+        where 1=1
+        <if test="list != null and list.size>0">
+            and id in
+            <foreach collection="list" separator="," item="item" index="index" open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+    </update>
+
+    <update id="disuse">
+        update `user` set mobile = null, auth_id = #{userAuthsId} where id = #{userId}
+    </update>
+
+    <update id="updateNullFieldByMidId" parameterType="com.yimao.cloud.user.po.User">
+     update user set distributor_id=#{distributorId} where mid =#{mid}
+    
+    </update>
+
+    <update id="updateUserInfoById" parameterType="com.yimao.cloud.user.po.User">
+        update `user` set ambassador_id = #{ambassadorId},distributor_id = #{distributorId},update_time = NOW() where id = #{id}
+    </update>
+	
+	 <!-- 获取当前经销商发展的所有经销商id集合(排除折机版) -->
+    <select id="getDistributorByDistributId" resultType="java.lang.Integer">
+    	SELECT
+			mid
+		FROM
+			USER
+		WHERE
+			distributor_id = #{distributorId} and mid is not null
+    </select>
+    
+    <!-- 获取用户经销商信息包含经销商区代信息 -->
+    <select id="getUserDistributorInfoById" resultType="com.yimao.cloud.pojo.dto.user.UserDTO">
+    	SELECT
+			u.id,
+			u.mid,
+			u.nick_name AS nickName,
+			u.user_name AS userName,
+			u.real_name AS realName,
+			u. PASSWORD,
+			u.mobile,
+			u.user_type AS userType,
+			u.head_img AS headImg,
+			u.ambassador_id AS ambassadorId,
+			u.distributor_id AS distributorId,
+			ud.province,
+			ud.city,
+			ud.region,
+			ud.agent_level as agentLevel
+		FROM
+			`user` u
+		LEFT JOIN user_distributor ud ON u.mid=ud.id
+		WHERE
+			u.id =#{userId}
+    </select>
+</mapper>

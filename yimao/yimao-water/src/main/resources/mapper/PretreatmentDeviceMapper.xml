@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.yimao.cloud.water.mapper.PretreatmentDeviceMapper">
+
+    <select id="selectBySn" resultType="com.yimao.cloud.water.po.PretreatmentDevice">
+        SELECT
+            id,
+            sn,
+            create_time as createTime
+        FROM
+            pretreatment_device
+        WHERE
+            sn = #{sn}
+    </select>
+
+</mapper>

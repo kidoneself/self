@@ -1,0 +1,756 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.user.mapper.DistributorOrderMapper">
+
+    <select id="pageQueryDistributorOrder" parameterType="com.yimao.cloud.pojo.query.user.DistributorOrderQueryDTO"
+            resultType="com.yimao.cloud.pojo.dto.user.DistributorOrderDTO">
+        SELECT
+        d.id AS id,
+        d.distributor_account AS distributorAccount,
+        CASE
+        d.role_level
+        WHEN -50 THEN
+        '折机版经销商'
+        WHEN 50 THEN
+        '体验版经销商'
+        WHEN 350 THEN
+        '微创版经销商'
+        WHEN 650 THEN
+        '个人版经销商'
+        WHEN 950 THEN
+        '企业版经销商'
+        END AS roleName,
+        CASE
+        d.dest_role_level
+        WHEN 350 THEN
+        '微创版经销商'
+        WHEN 650 THEN
+        '个人版经销商'
+        WHEN 950 THEN
+        '企业版经销商'
+        END AS destRoleName,
+        ud.user_name AS referee,
+        d.order_souce AS orderSouce,
+        d.order_type AS orderType,
+        d.pay_state AS payState,
+        d.pay_type AS payType,
+        d.pay_time AS payTime,
+        d.completion_time AS completionTime,
+        d.order_state AS orderState,
+        d.period_validity AS periodValidity,
+        d.enterprise_state AS enterpriseState,
+        d.financial_state AS financialState,
+        d.completion_time AS completionTime,
+        d.price AS price,
+        u.real_name AS NAME,
+        d.mobile AS mobile,
+        u.province AS province,
+        u.city AS city,
+        u.region AS region
+        FROM
+        distributor_order d
+        LEFT JOIN user_distributor u ON ( d.distributor_id = u.id )
+        LEFT JOIN user_distributor ud ON ( ud.id = u.recommend_id )
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="name!=null and name!=''">
+                AND u.`real_name` = #{name}
+            </if>
+            <if test="distributorAccount!=null and distributorAccount!=''">
+                AND d.`distributor_account` like CONCAT(#{distributorAccount},'%')
+            </if>
+            <if test="mobile!=null and mobile!=''">
+                AND d.mobile like CONCAT(#{mobile},'%')
+            </if>
+            <if test="province!=null and province!=''">
+                AND u.province = #{province}
+            </if>
+            <if test="city!=null and city!=''">
+                AND u.city = #{city}
+            </if>
+            <if test="region!=null and region!=''">
+                AND u.region = #{region}
+            </if>
+            <if test="id!=null">
+                AND d.id like CONCAT(#{id},'%')
+            </if>
+            <if test="orderSouce!=null">
+                AND d.order_souce = #{orderSouce}
+            </if>
+            <if test="orderType!=null">
+                AND d.order_type = #{orderType}
+            </if>
+            <if test="roleLevel!=null">
+                AND d.role_level = #{roleLevel}
+            </if>
+            <if test="destRoleLevel!=null">
+                AND d.dest_role_level = #{destRoleLevel}
+            </if>
+            <if test="payState!=null">
+                AND d.pay_state = #{payState}
+            </if>
+            <if test="payType!=null">
+                AND d.pay_type = #{payType}
+            </if>
+            <if test="payStartTime!=null">
+                AND d.pay_time &gt;= #{payStartTime}
+            </if>
+            <if test="payEndTime!=null">
+                AND d.pay_time &lt;= #{payEndTime}
+            </if>
+            <if test="orderState!=null">
+                AND d.order_state = #{orderState}
+            </if>
+            <if test="periodValidity!=null">
+                AND d.period_validity = #{periodValidity}
+            </if>
+            <if test="financialState!=null">
+                AND d.financial_state = #{financialState}
+            </if>
+            <if test="enterpriseState!=null">
+                AND d.enterprise_state = #{enterpriseState}
+            </if>
+            <if test="completionStartTime!=null">
+                AND d.completion_time &gt;= #{completionStartTime}
+            </if>
+            <if test="completionEndTime!=null">
+                AND d.completion_time &lt;= #{completionEndTime}
+            </if>
+        </trim>
+        ORDER BY
+        id DESC
+    </select>
+
+    <select id="listDistributorOrder" resultType="com.yimao.cloud.user.po.DistributorOrder">
+        SELECT
+        *
+        FROM
+        distributor_order
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="distributorId!=null">
+                AND distributor_id = #{distributorId}
+            </if>
+            <if test="orderType!=null">
+                AND order_type = #{orderType}
+            </if>
+            <if test="roleLevel!=null">
+                AND role_level = #{roleLevel}
+            </if>
+            AND order_state = 1
+        </trim>
+    </select>
+
+    <select id="listOrderExport" parameterType="com.yimao.cloud.pojo.query.user.DistributorOrderQueryDTO"
+            resultType="com.yimao.cloud.pojo.dto.user.DistributorOrderExportDTO">
+        SELECT
+        d.id AS id,
+        CONCAT_WS("/",u.province,u.city,u.region) AS area,
+        d.order_type AS orderType,
+        d.distributor_account AS distributorAccount,
+        u.real_name AS NAME,
+        d.role_level AS roleLevel,
+        d.dest_role_level AS destRoleLevel,
+        u.sex AS sex,
+        u.id_card AS idCard,
+        d.mobile AS phone,
+        ud.real_name AS recommendName,
+        CONCAT_WS("/",ud.province,ud.city,ud.region) AS recommendArea,
+        d.pay_type AS payType,
+        d.pay_state AS payState,
+        DATE_FORMAT( d.pay_time, "%Y-%m-%d %H:%i:%s" ) AS payTime,
+        d.price AS price,
+        d.order_state AS orderState,
+        dp.user_sign_state AS userSignState,
+        dp.station_sign_state AS stationSignState,
+        dp.ym_sign_state AS ymSignState,
+        d.financial_state AS financialState,
+        d.financial_auditor AS financialName,
+        DATE_FORMAT( d.financial_audit_time, "%Y-%m-%d %H:%i:%s" ) AS financialTime,
+        d.trade_no AS tradeNo,
+        DATE_FORMAT( d.create_time, "%Y-%m-%d %H:%i:%s" ) AS createTime,
+        IF
+        ( dp.create_time IS NOT NULL, "是", "否" ) AS isCreateProtocol,
+        d.order_souce AS orderSouce,
+        d.enterprise_state AS enterpriseState,
+        d.enterprise_auditor AS enterpriseUser,
+        DATE_FORMAT( d.enterprise_audit_time, "%Y-%m-%d %H:%i:%s" ) AS enterpriseTime,
+        u.company_name AS enterpriseName,
+        DATE_FORMAT( d.completion_time, "%Y-%m-%d %H:%i:%s" ) AS completionTime,
+        d.station_company_name AS stationCompanyName,
+        ud.id_card as recommendIdCard
+        FROM
+        distributor_order d
+        LEFT JOIN user_distributor u ON ( d.distributor_id = u.id )
+        LEFT JOIN user_distributor ud ON ( ud.id = u.recommend_id )
+        LEFT JOIN distributor_protocol dp ON ( d.id = dp.order_id )
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="name!=null and name!=''">
+                AND u.real_name = #{name}
+            </if>
+            <if test="distributorAccount!=null and distributorAccount!=''">
+                AND d.`distributor_account` like CONCAT(#{distributorAccount},'%')
+            </if>
+            <if test="mobile!=null and mobile!=''">
+                AND d.mobile like CONCAT(#{mobile},'%')
+            </if>
+            <if test="province!=null and province!=''">
+                AND u.province = #{province}
+            </if>
+            <if test="city!=null and city!=''">
+                AND u.city = #{city}
+            </if>
+            <if test="region!=null and region!=''">
+                AND u.region = #{region}
+            </if>
+            <if test="id!=null">
+                AND d.id like CONCAT(#{id},'%')
+            </if>
+            <if test="orderSouce!=null">
+                AND d.order_souce = #{orderSouce}
+            </if>
+            <if test="orderType!=null">
+                AND d.order_type = #{orderType}
+            </if>
+            <if test="roleLevel!=null">
+                AND d.role_level = #{roleLevel}
+            </if>
+            <if test="destRoleLevel!=null">
+                AND d.dest_role_level = #{destRoleLevel}
+            </if>
+            <if test="payState!=null">
+                AND d.pay_state = #{payState}
+            </if>
+            <if test="payType!=null">
+                AND d.pay_type = #{payType}
+            </if>
+            <if test="payStartTime!=null">
+                AND d.pay_time &gt;= #{payStartTime}
+            </if>
+            <if test="payEndTime!=null">
+                AND d.pay_time &lt;= #{payEndTime}
+            </if>
+            <if test="orderState!=null">
+                AND d.order_state = #{orderState}
+            </if>
+            <if test="periodValidity!=null">
+                AND d.period_validity = #{periodValidity}
+            </if>
+            <if test="financialState!=null">
+                AND d.financial_state = #{financialState}
+            </if>
+            <if test="enterpriseState!=null">
+                AND d.enterprise_state = #{enterpriseState}
+            </if>
+            <if test="completionStartTime!=null">
+                AND d.completion_time &gt;= #{completionStartTime}
+            </if>
+            <if test="completionEndTime!=null">
+                AND d.completion_time &lt;= #{completionEndTime}
+            </if>
+        </trim>
+        ORDER BY
+        d.id desc
+    </select>
+
+
+    <select id="getDistributorOrderById" resultType="com.yimao.cloud.pojo.dto.user.DistributorOrderAllInfoDTO">
+  	SELECT
+	d.id,
+	d.order_souce AS orderSouce,
+	d.order_type AS orderType,
+	d.distributor_account AS distributorAccount,
+	d.role_level AS roleLevel,
+	d.dest_role_level AS destRoleLevel,
+	d.order_state AS orderState,
+	d.create_time AS createTime,
+	d.completion_time AS completionTime,
+	d.price AS price,
+	d.pay_state AS payState,
+	d.pay_type AS payType,
+	d.pay_time AS payTime,
+	d.pay_record AS payRecord,
+	d.trade_no AS payNumber,
+	d.distributor_id AS distributorId,
+	d.financial_state AS financialState,
+	d.enterprise_state AS enterpriseState,
+	dc1.`name` AS roleName,
+	dc2.`name` AS destRoleName,
+	d.area_id AS areaId
+    FROM
+	distributor_order d
+	LEFT JOIN distributor_role dc1 ON ( d.role_level = dc1.`level` )
+	LEFT JOIN distributor_role dc2 ON ( d.dest_role_level = dc2.`level` )
+    WHERE
+    d.id = #{orderId}
+    </select>
+
+    <select id="selectCount4Status" resultType="java.lang.Integer">
+        select count(1)
+        from distributor_order
+
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="sign == 1">
+                and financial_state = 0
+            </if>
+            <if test="sign == 2">
+                and enterprise_state = 0
+            </if>
+            and order_state NOT IN (3) /*订单状态不为已关闭*/
+        </trim>
+    </select>
+
+    <select id="getDistributorOrderData" parameterType="com.yimao.cloud.pojo.query.station.StatisticsQuery"
+            resultType="com.yimao.cloud.pojo.dto.station.FlowStatisticsDTO">
+        select
+        areaId,
+        registNum,
+        upgradeNum,
+        registFee,
+        upgradeFee,
+        registNum+upgradeNum as distributorTotalSaleNum,
+        registFee+upgradeFee as distributorTotalSaleFee
+        from
+        (select
+        do.area_id as areaId,
+        ifnull(count(case when do.order_type=0 then do.id end),0) as registNum,
+        ifnull(count(case when do.order_type=1 then do.id end),0) as upgradeNum,
+        ifnull(sum(case when do.order_type=0 then do.price end),0) as registFee,
+        ifnull(sum(case when do.order_type=1 then do.price end),0) as upgradeFee
+        from
+        distributor_order do
+        <where>
+            do.order_state = 1
+            <if test="startTime != null">
+                and do.completion_time <![CDATA[>=]]> #{startTime}
+            </if>
+            <if test="endTime !=null">
+                and do.completion_time <![CDATA[<=]]> #{endTime}
+            </if>
+            <if test="areas != null and areas.size >0">
+                and do.area_id in (
+                <foreach collection="areas" item="areaId" index="index"
+                         separator=",">
+                    #{areaId}
+                </foreach>
+                )
+            </if>
+        </where>
+        group by
+        do.area_id
+        ) a
+
+    </select>
+
+    <select id="getDistributorOrderPicData" parameterType="com.yimao.cloud.pojo.query.station.StatisticsQuery"
+            resultType="com.yimao.cloud.pojo.dto.station.FlowStatisticsDTO">
+        select
+        a.completeTime,
+        ifnull(count(case when a.orderType=0 then a.id end),0) as registNum,
+        ifnull(count(case when a.orderType=1 then a.id end),0) as upgradeNum
+        from
+        (select
+        date_format(do.completion_time, '%Y%m%d') as completeTime,
+        do.order_type as orderType,
+        do.id as id
+        from
+        distributor_order do
+        <where>
+            do.order_state = 1
+            and do.completion_time is not null
+            <if test="startTime != null">
+                and do.completion_time <![CDATA[>=]]> #{startTime}
+            </if>
+            <if test="endTime !=null">
+                and do.completion_time <![CDATA[<=]]> #{endTime}
+            </if>
+            <if test="areas != null and areas.size >0">
+                and do.area_id in (
+                <foreach collection="areas" item="areaId" index="index"
+                         separator=",">
+                    #{areaId}
+                </foreach>
+                )
+            </if>
+        </where>
+        ) a
+        group by
+        a.completeTime
+        order by a.completeTime asc
+    </select>
+
+    <select id="getTotalDistributorOrderPicData" parameterType="com.yimao.cloud.pojo.query.station.StatisticsQuery"
+            resultType="com.yimao.cloud.pojo.dto.station.FlowStatisticsDTO">
+        select
+        a.completeTime,
+        ifnull(count(a.id),0) as distributorTotalSaleNum
+        from
+        (select
+        date_format(do.completion_time, '%Y%m%d') as completeTime,
+        do.id as id
+        from
+        distributor_order do
+        <where>
+            do.order_type in (0,1)
+            and do.order_state = 1
+            and do.completion_time is not null
+            <if test="startTime != null">
+                and do.completion_time <![CDATA[>=]]> #{startTime}
+            </if>
+            <if test="endTime !=null">
+                and do.completion_time <![CDATA[<=]]> #{endTime}
+            </if>
+            <if test="areas != null and areas.size >0">
+                and do.area_id in (
+                <foreach collection="areas" item="areaId" index="index"
+                         separator=",">
+                    #{areaId}
+                </foreach>
+                )
+            </if>
+        </where>
+        ) a
+        group by
+        a.completeTime
+        order by a.completeTime asc
+    </select>
+
+    <select id="pageQueryDistributorOrderToStation"
+            resultType="com.yimao.cloud.pojo.vo.station.DistributorOrderVO">
+        SELECT
+        d.id AS id,
+        d.order_souce AS orderSouce,
+        d.order_type AS orderType,
+        u.real_name AS name,
+        CASE
+        d.role_level
+        WHEN -50 THEN
+        '折机版经销商'
+        WHEN 50 THEN
+        '体验版经销商'
+        WHEN 350 THEN
+        '微创版经销商'
+        WHEN 650 THEN
+        '个人版经销商'
+        WHEN 950 THEN
+        '企业版经销商'
+        END AS roleName,
+        CASE
+        d.dest_role_level
+        WHEN 350 THEN
+        '微创版经销商'
+        WHEN 650 THEN
+        '个人版经销商'
+        WHEN 950 THEN
+        '企业版经销商'
+        END AS destRoleName,
+        d.distributor_account AS distributorAccount,
+        d.mobile AS mobile,
+        u.province AS province,
+        u.city AS city,
+        u.region AS region,
+        ud.user_name AS referee,
+        d.price AS price,
+        d.pay_state AS payState,
+        d.pay_type AS payType,
+        d.pay_time AS payTime,
+        d.order_state AS orderState,
+        d.financial_state AS financialState,
+        d.enterprise_state AS enterpriseState,
+        d.completion_time AS completionTime,
+        d.period_validity AS periodValidity
+        FROM
+        distributor_order d
+        LEFT JOIN user_distributor u ON ( d.distributor_id = u.id )
+        LEFT JOIN user_distributor ud ON ( ud.id = u.recommend_id )
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="id!=null">
+                AND d.id like CONCAT(#{id},'%')
+            </if>
+            <if test="orderSouce!=null">
+                AND d.order_souce = #{orderSouce}
+            </if>
+            <if test="orderType!=null">
+                AND d.order_type = #{orderType}
+            </if>
+            <if test="orderState!=null">
+                AND d.order_state = #{orderState}
+            </if>
+            <if test="name!=null and name!=''">
+                AND u.`real_name` = #{name}
+            </if>
+            <if test="mobile!=null and mobile!=''">
+                AND d.mobile like CONCAT(#{mobile},'%')
+            </if>
+            <if test="distributorAccount!=null and distributorAccount!=''">
+                AND d.`distributor_account` like CONCAT(#{distributorAccount},'%')
+            </if>
+            <if test="destRoleLevel!=null">
+                AND d.dest_role_level = #{destRoleLevel}
+            </if>
+            <if test="payState!=null">
+                AND d.pay_state = #{payState}
+            </if>
+            <if test="payType!=null">
+                AND d.pay_type = #{payType}
+            </if>
+            <if test="payStartTime!=null">
+                AND d.pay_time &gt;= #{payStartTime}
+            </if>
+            <if test="payEndTime!=null">
+                AND d.pay_time &lt;= #{payEndTime}
+            </if>
+            <if test="completionStartTime!=null">
+                AND d.completion_time &gt;= #{completionStartTime}
+            </if>
+            <if test="completionEndTime!=null">
+                AND d.completion_time &lt;= #{completionEndTime}
+            </if>
+            <if test="areas != null and areas.size() > 0">
+                AND d.area_id IN
+                <foreach collection="areas" item="areaId" index="index" separator="," open="(" close=")">
+                    #{areaId}
+                </foreach>
+            </if>
+        </trim>
+        ORDER BY
+        id DESC
+    </select>
+	
+	<!-- 根据日期统计招商销售额数据 -->
+	<select  id="getDistributorOrderSalesData"  resultType="com.yimao.cloud.pojo.dto.order.SalesStatsDTO">
+		SELECT
+			<if test="timeType != null and timeType == 1">
+            	DATE_FORMAT(completion_time,'%Y-%m-%d')
+	        </if>
+	        <if test="timeType != null and timeType == 2">
+	            DATE_FORMAT(completion_time,'%Y-%m')
+	        </if>
+	        <if test="timeType != null and timeType == 3">
+	            DATE_FORMAT(completion_time,'%Y')
+	        </if>
+	        as completeTime,
+			ifnull(SUM(price), 0) as saleAmount
+		FROM
+			distributor_order
+		WHERE
+            completion_time IS NOT NULL
+            and order_state=1
+            <if test="ids !=null and ids.size()>0 and type==1">
+                and distributor_id in
+                <foreach collection="ids" item="id" index="index" separator="," open="(" close=")">
+                            #{id}
+                </foreach>
+            </if>
+            <if test="stationCompanyId !=null and type==2">
+                and station_company_id=#{stationCompanyId}
+            </if>
+            <!-- 按日统计取传入日期前7天数据 -->
+            <if test="timeType != null and timeType == 1">
+                and DATE_FORMAT(completion_time,'%Y-%m-%d') BETWEEN DATE_SUB(#{completeTime},INTERVAL #{day} day) and
+                #{completeTime}
+            </if>
+            <!-- 按月统计取传入日期前12个月数据 -->
+            <if test="timeType != null and timeType == 2">
+                and DATE_FORMAT(completion_time,'%Y-%m') BETWEEN DATE_FORMAT(DATE_SUB(CONCAT(#{completeTime},'-01'),
+                interval 11 MONTH),'%Y-%m') and #{completeTime}
+            </if>
+            <!-- 按年统计 -->
+            <if test="timeType != null and timeType == 3">
+                and DATE_FORMAT(completion_time,'%Y') &lt;=#{completeTime}
+            </if>
+		group by
+            <if test="timeType != null and timeType == 1">
+                DATE_FORMAT(completion_time,'%Y-%m-%d')
+            </if>
+            <if test="timeType != null and timeType == 2">
+                DATE_FORMAT(completion_time,'%Y-%m')
+            </if>
+            <if test="timeType != null and timeType == 3">
+                DATE_FORMAT(completion_time,'%Y')
+            </if>
+	</select>
+	
+	<!-- 获取经销商增长个数 -->
+	<select id="getDistributorIncreaseNumData" resultType="com.yimao.cloud.pojo.dto.order.SalesStatsDTO">
+		SELECT
+			<if test="timeType != null and timeType == 1">
+           		DATE_FORMAT(completion_time,'%Y-%m-%d')
+        	</if>
+        	<if test="timeType != null and timeType == 2">
+            	DATE_FORMAT(completion_time,'%Y-%m')
+        	</if>
+        	<if test="timeType != null and timeType == 3">
+            	DATE_FORMAT(completion_time,'%Y')
+        	</if>
+         	as completeTime,
+			role_level as distributorType,
+			CASE
+			WHEN role_level = 50 THEN
+				'体验版'
+			WHEN role_level = 350 THEN
+				'微创版'
+			WHEN role_level = 650 THEN
+				'个人版'
+			WHEN role_level = 950 THEN
+				'企业版'
+			ELSE
+				''
+			END distributorTypeName,
+			COUNT(1) as increaseNum
+		FROM
+			distributor_order
+		WHERE
+		order_type = 0
+		and completion_time IS NOT NULL
+		and order_state=1
+		and role_level !=-50
+		<if test="ids !=null and ids.size()>0 and type==1">
+			and distributor_id in
+			<foreach collection="ids" item="id" index="index" separator="," open="(" close=")">
+	                    #{id}
+	        </foreach>
+        </if>
+        <if test="stationCompanyId !=null and type==2">
+           and station_company_id=#{stationCompanyId}
+        </if>	
+		<!-- 按日统计取传入日期前7天数据 -->
+        <if test="timeType != null and timeType == 1">
+            and DATE_FORMAT(completion_time,'%Y-%m-%d') BETWEEN DATE_SUB(#{completeTime},INTERVAL 6 day) and
+            #{completeTime}
+        </if>
+        <!-- 按月统计取传入日期前6个月数据 -->
+        <if test="timeType != null and timeType == 2">
+            and DATE_FORMAT(completion_time,'%Y-%m') BETWEEN DATE_FORMAT(DATE_SUB(CONCAT(#{completeTime},'-01'),
+            interval 5 MONTH),'%Y-%m') and #{completeTime}
+        </if>
+        <!-- 按年统计 -->
+        <if test="timeType != null and timeType == 3">
+            and DATE_FORMAT(completion_time,'%Y') &lt;=#{completeTime}
+        </if>
+		GROUP BY
+		<if test="timeType != null and timeType == 1">
+            DATE_FORMAT(completion_time,'%Y-%m-%d')
+        </if>
+        <if test="timeType != null and timeType == 2">
+            DATE_FORMAT(completion_time,'%Y-%m')
+        </if>
+        <if test="timeType != null and timeType == 3">
+            DATE_FORMAT(completion_time,'%Y')
+        </if>
+        ,role_level
+	</select>
+	
+	<select id="getDistributorNumProp" resultType="com.yimao.cloud.pojo.dto.order.SalesStatsDTO">
+	  SELECT
+			role_level as distributorType,
+			CASE
+			WHEN role_level = 50 THEN
+				'体验版经销商'
+			WHEN role_level = 350 THEN
+				'微创版经销商'
+			WHEN role_level = 650 THEN
+				'个人版经销商'
+			WHEN role_level = 950 THEN
+				'企业版经销商'
+			ELSE
+				''
+			END distributorTypeName,
+			COUNT(1) as distributorNum
+		FROM
+			distributor_order
+		WHERE
+		order_type = 0
+		and order_state=1
+		<if test="ids !=null and ids.size()>0 and type==1">
+			and distributor_id in
+			<foreach collection="ids" item="id" index="index" separator="," open="(" close=")">
+	                    #{id}
+	        </foreach>
+        </if>
+        <if test="stationCompanyId !=null and type==2">
+           and station_company_id=#{stationCompanyId}
+        </if>		
+		and completion_time IS NOT NULL
+		and role_level !=-50
+		GROUP BY role_level
+	</select>
+	
+	<!-- 招商销售排行榜统计 -->
+	<select id="getDistributorPerformRank" resultType="com.yimao.cloud.pojo.dto.user.SalePerformRankDTO">
+		SELECT
+			dist.station_company_id as stationCompanyId,
+			dist.recommend_id as distributorId,
+			dist.recommend_name distributorName,
+			SUM(dist.price) AS salesAmount,
+			(
+				SELECT
+					COUNT(1)
+				FROM
+					distributor_order
+				WHERE
+					order_type = 0
+				AND order_state = 1
+				AND recommend_id = dist.recommend_id
+			) as num			
+		FROM
+			distributor_order dist
+		INNER JOIN user_distributor ud ON dist.recommend_id = ud.id
+		WHERE
+			ud.agent_level in (4,5,6,7)
+		AND dist.recommend_id IS NOT NULL
+		AND dist.completion_time BETWEEN #{startTime}
+		AND #{endTime}
+		AND dist.order_state = 1
+		AND dist.order_type = 0
+		GROUP BY
+			dist.station_company_id,
+			dist.recommend_id,
+			dist.recommend_name
+	</select>
+
+
+    <!--续费订单类型 -->
+    <select id="getOrderTypeName" resultType="com.yimao.cloud.pojo.dto.order.RenewDTO">
+        SELECT
+        CASE
+
+                WHEN dist.order_type = 0 THEN
+                '注册'
+                WHEN dist.order_type = 1 THEN
+                '升级'
+                WHEN dist.order_type = 2 THEN
+                '续费' ELSE ''
+            END AS categoryName
+
+        FROM
+            distributor_order dist
+        WHERE
+            completion_time IS NOT NULL
+            AND order_state = 1
+        GROUP BY
+            dist.order_type
+    </select>
+
+    <select id="getOrderSalesHomeReport" resultType="com.yimao.cloud.pojo.dto.order.AgentSalesOverviewDTO">
+        SELECT
+        ifnull( sum( CASE WHEN r.order_type = 0 THEN r.price END ), 0 ) AS investmentRegistSaleFee,
+        ifnull( sum( CASE WHEN r.order_type = 1 THEN r.price END ), 0 ) AS investmentUpgradeSaleFee,
+        ifnull( sum( CASE WHEN r.order_type = 2 THEN r.price END ), 0 ) AS investmentRenewSaleFee
+        FROM
+        distributor_order r
+        <trim prefix="where" prefixOverrides="and | or">
+            r.order_state =1
+            <!-- and r.completion_time IS NOT NULL -->
+            <if test="ids!=null and ids.size() &gt; 0 ">
+                and r.distributor_id in
+                <foreach collection="ids" index="index" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="stationCompanyId !=null">
+                and station_company_id=#{stationCompanyId}
+            </if>
+        </trim>
+    </select>
+
+</mapper>

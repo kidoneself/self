@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.cms.mapper.CommentMapper">
+
+    <select id="findPage" resultType="com.yimao.cloud.pojo.dto.cms.CommentDTO">
+        SELECT
+        tc.id,
+        tc.type,
+        tc.ref_id as refId,
+        tc.user_id as userId,
+        tc.nick_name as nickName,
+        tc.comment_text as commentText,
+        tc.comment_time as commentTime,
+        tc.hot,
+        tc.hidden,
+        tc.support_count as supportCount
+        FROM `t_comment` tc where tc.hidden = 0
+    </select>
+</mapper>

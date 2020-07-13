@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.water.mapper.FilterDataMapper">
+
+    <select id="selectOneByDeviceId" resultType="com.yimao.cloud.water.po.FilterData">
+        select
+            id,
+            sn,
+            device_id as deviceId,
+            pp_flow as ppFlow,
+            udf_flow as udfFlow,
+            cto_flow as ctoFlow,
+            three_flow as threeFlow,
+            ro_flow AS roFlow,
+            create_time as createTime
+        from
+            filter_data
+        where
+            device_id = #{deviceId}
+        order by create_time desc
+            limit 1
+    </select>
+
+</mapper>

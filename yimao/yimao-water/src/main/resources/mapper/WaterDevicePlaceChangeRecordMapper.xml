@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.water.mapper.WaterDevicePlaceChangeRecordMapper">
+
+    <select id="selectBySn" resultType="com.yimao.cloud.pojo.dto.water.WaterDevicePlaceChangeRecordDTO">
+        SELECT
+        id,
+        sn,
+        old_place as oldPlace,
+        new_place as newPlace,
+        create_time as createTime,
+        lock_state as lockState,
+        `type`,
+        detail_address as detailAddress
+        from
+        water_device_place_change_record
+        <where>
+            <if test="sn != null and sn != ''">
+                sn = #{sn}
+            </if>
+        </where>
+        order by create_time desc limit 1
+    </select>
+    <select id="selectPage" resultType="com.yimao.cloud.pojo.vo.water.WaterDevicePlaceChangeRecordVO">
+        SELECT
+        id,
+        sn,
+        old_place as oldPlace,
+        new_place as newPlace,
+        DATE_FORMAT(create_time,'%Y-%m-%d %H:%i:%s') as createTime,
+        CASE `type`
+        WHEN 1 THEN '水机设备自动检测'
+        WHEN 2 THEN '移机' ELSE '' END AS typeText,
+        CASE lock_state
+        WHEN 'Y' THEN '锁机'
+        WHEN 'N' THEN '未锁机' ELSE '' END AS lockStateText
+        from
+        water_device_place_change_record
+        <where>
+            <if test="sn != null and sn != ''">
+                sn = #{sn}
+            </if>
+        </where>
+    </select>
+
+</mapper>

@@ -1,0 +1,90 @@
+package com.yimao.cloud.out.enums;
+
+public enum ApiStatusCode {
+    SUCCESS("000", "SUCCESS", "成功"),
+    SER_FORBIDDEN("001", "FORBIDDEN", "拒绝访问"),
+    SER_FAILURE("002", "FAILURE", "失败"),
+    SER_EXECUTE_TIMEOUT("003", "EXECUTE TIMEOUT", "执行超时"),
+    SER_PARAM_ERROR("004", "PARAM LOST", "参数缺失或错误"),
+    SER_BUSY("005", "BUSY", "系统繁忙"),
+    SER_EXCEPTION("006", "EXCEPTION", "系统异常"),
+    SER_DISK_ERROR("007", "DISK ERROR", "系统磁盘异常"),
+    SER_NO_DATA("008", "NO DATA FOF DISPLAY", "没有可供展示的数据"),
+    SER_UNKNOW("009", "UNKNOW", "未知状态"),
+    ACCESS_LIMITED("010", "ACCESS LIMITED", "请求过于频繁"),
+    ACCESSKEY_ERROR("011", "ACCESSKEY ERROR", "accessKey错误或不存在"),
+    TIME_TOO_OLD("013", "TIME TOO OLD", "时间戳跟当前时间差距过大"),
+    TIME_FORMATE_ERROR("014", "TIME FORMATE ERROR", "时间戳格式错误"),
+    SIGN_LOST("015", "SIGN LOST", "缺少签名信息"),
+    TOKEN_ERROR("016", "TOKEN ERROR", "TOKEN非法"),
+    PARAM_NOT_FOUND("017", "PARAM NOT FOUND", "参数不存在"),
+    SIGN_ERROR("018", "SIGN ERROR", "签名错误"),
+    PASSWORD_ERROR("020", "PASSWORD ERROR", "密码错误"),
+    WEBAPI_TOKEN_ERROR("021", "WEBAPI TOKEN ERROR", "TOKEN 错误或已失效"),
+    ACCOUNT_PASSWORD_ERROR("022", "ACCOUNT OR PASSWORD ERROR", "用户名或密码错误"),
+    ALIPAY_SYSTEM_BUSY("023", "ALI SYSTEM BUSY", "支付宝系统繁忙"),
+    ALIPAY_USER_NOT_EXISTS("024", "ALIPAY USER NOT EXISTS", "此账户不存在"),
+    ALIPAY_ACCOUNT_AND_USER_NOT_MATCH("025", "ALIPAY ACCOUNT AND REALNAME NOT MATCH", "支付宝账号和姓名不匹配,请确认姓名是否正确"),
+    BATCHCODE_EXSISTS_ERROR("030", "BATCHCODE EXSISTS ERROR", "batchCode已存在"),
+    SNCODE_EXSISTS_ERROR("031", "SNCODE EXSISTS ERROR", "sncode已存在"),
+    SIMCARD_EXSISTS_ERROR("032", "SIMCARD_EXSISTS ERROR", "simcard已存在"),
+    DEVICE_NOT_FOUND("034", "DEVICE NOT FOUND", "未找到设备数据"),
+    DATA_ERROR("035", "DATA ERROR", "数据异常，禁止操作"),
+    CONTRACT_ERROR("036", "NO CONTRACT DATA", "未找到未签署的合同"),
+    WORKORDER_NOT_EXSISTS("037", "WORKORDER NOT FOUND", "工单不存在"),
+    WORKORDER_NOT_REFUSE("038", "WORKORDER NOT REFUSE", "工单不允许拒单"),
+    WORKORDER_APPLY_REFUSED_RWASON("039", "WORKORDER EXCHANGE DEVICE APPLY IS REFUSE", "换机驳回需要理由"),
+    WORKORDER_SIGN_SUCCESS("040", "WORKORDER IS SIGNED", "工单已经签约"),
+    WORKORDER_NOT_COMPLETE("041", "WORKORDER IS NOT COMPLETE", "工单未完成"),
+    BACKORDER_REMARK("042", "REMARK NOT EMPTY", "请填写退单备注"),
+    WORKORDER_FAILURE_EXCEPTION("043", "NOT ANALYSIS FAILURE DATA", "工单关联数据异常,无法解析该数据"),
+    WORKORDER_IS_STARTSERVER("044", "WORKORDER WAS STARTSERVICED", "工程师已经开始服务,不再支持修改服务"),
+    WORKORDER_TDS_ERROR("045", "TDS ERROR", "请输入正确的tds值"),
+    WORKORDER_HYDRAULIC_ERROR("046", "HYDRAULIC ERROR", "请输入正确的原水水压"),
+    WOKRORDER_NOT_APPRAISE("047", "WORKORDER IS BACK", "工单已退单，无需评价"),
+    WORKORDER_PRODUCT_INFO_ERROR("048", "WORKORDER PRODUCT INFO ERROR", "工单产品信息异常"),
+    WORKORDER_PAID_ERROR("049", "WORKORDER PAID ERROR", "工单已支付,无法删除!"),
+    WORKORDER_DELETED("050", "WORKORDER DELETED", "此工单已被删除"),
+    WORKORDER_NO_AUTH("051", "WORKORDER NO AUTH", "您无权限查看该工单"),
+    DISTRIBUTOR_CHARGE_ROLE_NO_AUTH("101", "DISTRIBUTOR CHARGE ROLE IS NO AUTH", "经销商没有该计费方式权限"),
+    SERVICE_SITE_CHARGE_ROLE_NO_AUTH("102", "SERVICE SITE CHARGE ROLE IS NO AUTH", "服务站没有该计费方式权限"),
+    SERVICE_SITE_DEVICE_NOT_FOUND("103", "SERVICE SITE NOT FOUND", "服务站不存在"),
+    GOODS_SYSTEM_PRODUCT_MODAL_NOT_EXISTS("121", "PRODUCT MODAL NOT EXISTS", "不存在的产品型号"),
+    ENGINEER_NOT_EXISTS("111", " ENGINEER NOT EXISTS", "工程师不存在"),
+    ENGINEER_NOT_DISPATCH("112", " ENGINEER NOT DISPATHC", "工程师未指派"),
+    WATER_DEVICE_NOT_EXISTS("104", "WATER DEVICE NOT FOUND", "该设备不存在"),
+    USER_NOT_EXISTS("121", "USER NOT EXISTS", "用户不存在"),
+    JSON_OPERATION_ANALYSIS_FAILURE("140", "json data analysis failure", "json数据解析失败"),
+    COMMONN_ADDRESS_NOT_EXISTS("141", "ADDRESS NOT EXISTS", "地址不存在"),
+    COMMONN_PROVINCE_CITY_REGION_NOT_EXISTS("142", "PROVINCE AND CITY AND REGION NOT EXISTS", "省市区异常"),
+    COMMON_OTHER_PAY_TYPE_UNKNOW("143", "UNKNOW OTHER PAY TYPE", "未知的其他支付类型"),
+    COMMON_OTHER_PAY_TYPE_NEED_IMG("144", "OTHER PAY TYPE NEED IMG", "请至少上传一张图片"),
+    ORDER_CENTER_RPC_ERROR("181", "ORDER CENTER RPC ERROR", "订单服务繁忙,请稍后再试"),
+    ORDER_CENTER_ORDERID_NOT_EXISTS("182", "ORDER CENTER ORDERID NOT EXISTS", "订单号不存在"),
+    ORDER_CENTER_ORDERID_ALREAD_DISPATCH("183", "ORDER CENTER ORDERID ALREAD DISPATCH", "订单已指派!无需再次指派工程师"),
+    ORDER_CENTER_ORDERID_DISPATCH_ERROR("184", "ORDER CENTER ORDERID DISPATCH ERROR", "订单指派失败!"),
+    ORDER_CENTER_ORDERID_ALREADY_PAY_ERROR("184", "ORDER CENTER ORDERID ALREADY PAY", "订单已支付!"),
+    BAIDE_ERROR("999", "BAIDE ERROR", "售后系统服务操作异常");
+
+    String code;
+    String text;
+    String textZh;
+
+    ApiStatusCode(String code, String text, String textZh) {
+        this.code = code;
+        this.text = text;
+        this.textZh = textZh;
+    }
+
+    public String getCode() {
+        return this.code;
+    }
+
+    public String getText() {
+        return this.text;
+    }
+
+    public String getTextZh() {
+        return this.textZh;
+    }
+}

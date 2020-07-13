@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.yimao.cloud.water.mapper.WaterDeviceConfigMapper">
+
+    <select id="selectByDeviceModel" resultType="com.yimao.cloud.water.po.WaterDeviceConfig">
+        SELECT
+            id,
+            `name`,
+            device_model as deviceModel,
+            ontime,
+            offtime,
+            switch_able as switchAble,
+            flow_threshold as flowThreshold
+        FROM
+            water_device_config
+        WHERE
+            device_model = #{deviceModel}
+    </select>
+
+</mapper>

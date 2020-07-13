@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.station.mapper.StationRolePermissionMapper">
+
+    <resultMap id="BaseResultMap" type="com.yimao.cloud.station.po.StationRolePermission">
+        <result column="role_id" jdbcType="INTEGER" property="roleId"/>
+        <result column="permission_id" jdbcType="INTEGER" property="permissionId"/>
+    </resultMap>
+
+    <insert id="batchInsert">
+        insert into station_role__permission (
+        role_id,
+        permission_id
+        )
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.roleId},
+            #{item.permissionId}
+            )
+        </foreach>
+    </insert>
+
+    <select id="selectPermissionsByRoleId" resultType="com.yimao.cloud.pojo.dto.station.StationPermissionCacheDTO">
+		select 
+		sp.id,
+		sp.method,
+		sp.url,
+		sp.menu_id as menuId,
+		sp.`type`
+		from station_role__permission srp 
+		inner join
+		station_permission sp on srp.permission_id = sp.id
+		where srp.role_id=#{roleId}
+    </select>
+
+    <select id="selectPermissionIdsByRoleId" resultType="java.lang.Integer">
+        select distinct permission_id from station_role__permission where 1 = 1
+        <if test="roleId != null">
+            and role_id = #{roleId}
+        </if>
+    </select>
+
+    <select id="selectRoleIdByPermissionId" resultType="java.lang.Integer">
+        select
+        role_id
+        from station_role__permission where permission_id = #{permissionId}
+    </select>
+</mapper>

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.yimao.cloud.hra.mapper.MiniSymptomMapper">
+
+    <!--查询身体部位下的症状 -->
+    <select id="findBodySymptom" parameterType="Map" resultType="com.yimao.cloud.hra.po.MiniSymptom">
+        SELECT sp.id AS id,
+            sp.second_id AS secondId,
+            sp.symptom_name AS symptomName,
+            sp.symptom_intro AS symptomIntro,
+            sp.symptom_detail AS symptomDetail,
+            sp.zhengzhuang_ids AS zhengzhuangIds,
+            sp.jibing_ids AS jibingIds,
+            sp.create_time AS createTime
+        FROM
+            healthy_symptom sp
+        WHERE
+            sp.second_id = #{secondId}
+        ORDER BY sp.create_time DESC
+    </select>
+
+    <select id="findAllSymptom" resultType="com.yimao.cloud.hra.po.MiniSymptom">
+        /*SELECT sp.id AS id,
+        sp.second_id AS secondId,
+        sp.parent_id AS parentId,
+        sp.symptom_name AS symptomName,
+        sp.symptom_intro AS symptomIntro,
+        sp.symptom_detail AS symptomDetail,
+        sp.create_time AS createTime
+        FROM
+        mini_symptom sp
+        ORDER BY sp.create_time DESC
+        WHERE
+        sp.parent_id = #{parentId}*/
+
+        SELECT
+            sy.`id` AS id,
+            sy.`parent_id` AS parentId,
+            sy.`second_id` AS secondId,
+            sy.`symptom_name` AS symptomName,
+            sy.`symptom_intro` AS symptomIntro,
+            sy.`symptom_detail` AS symptomDetail,
+            sy.`create_time` AS createTime
+        FROM
+            healthy_symptom sy
+        WHERE
+            sy.`parent_id` = 0
+    </select>
+
+
+    <select id="findSymptomByFlag" resultType="com.yimao.cloud.pojo.dto.hra.MiniSymptomDTO">
+        SELECT
+            sy.`id` AS id,
+            sy.`parent_id` AS parentId,
+            sy.`hot_flag` AS hotFlag,
+            sy.`second_id` AS secondId,
+            sy.`symptom_name` AS symptomName,
+            sy.`symptom_intro` AS symptomIntro,
+            sy.`symptom_detail` AS symptomDetail,
+            sy.`create_time` AS createTime
+        FROM
+            healthy_symptom sy
+        WHERE
+            sy.`hot_flag` = #{flag}
+    </select>
+
+    <!--根据症状ID 获取症状名称 -->
+    <select id="findSymptomName" resultType="com.yimao.cloud.hra.po.MiniSymptom">
+        SELECT
+            sy.`id` AS id,
+            sy.`symptom_name` AS symptomName,
+            sy.zhengzhuang_ids AS zhengzhuangIds,
+            sy.jibing_ids AS jibingIds
+        FROM
+            healthy_symptom sy
+        WHERE
+            sy.`id` = #{symptomId}
+    </select>
+
+
+    <!--根据症状ID 获取症状名称 -->
+    <select id="findZhengZhuangName" resultType="com.yimao.cloud.hra.po.MiniSymptom">
+        SELECT
+          sy.`id` AS id,
+          sy.`symptom_name` AS symptomName
+        FROM
+          healthy_symptom sy
+        WHERE
+          sy.`id` = #{symptomId}
+    </select>
+
+    <!--症状详情 -->
+    <select id="findSymptomDetail" resultType="com.yimao.cloud.hra.po.MiniSymptom">
+        SELECT
+            sy.`id` AS id,
+            sy.`symptom_name` AS symptomName,
+            sy.`symptom_intro` AS symptomIntro,
+            sy.`symptom_detail` AS symptomDetail
+        FROM
+            healthy_symptom sy
+        WHERE
+            sy.`id` = #{symptomId}
+    </select>
+
+    <!--查询身体部位下热门症状 -->
+    <select id="findSymptomListBySecondId" parameterType="Map" resultType="com.yimao.cloud.hra.po.MiniSymptom">
+        SELECT
+            sy.`id` AS id,
+            sy.`hot_flag` AS hotFlag,
+            sy.`second_id` AS secondId,
+            sy.`symptom_name` AS symptomName,
+            sy.`sp_icon` AS spIcon,
+            sy.`create_time` AS createTime
+        FROM
+            healthy_symptom sy
+        WHERE
+            sy.`hot_flag` = '1'
+        AND sy.`second_id` = #{classifyId}
+    </select>
+
+</mapper>

@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.product.mapper.ProductActivityMapper">
+
+	<!-- 查询已开启的活动产品信息列表 -->
+	<select id="listProductActivity" resultType="com.yimao.cloud.pojo.vo.product.ProductActivityVO" parameterType="com.yimao.cloud.pojo.query.product.ProductActivityQuery">
+		SELECT
+			act.id,
+			act.name,
+            act.status,
+            act.product_id as productId,
+            act.label,
+            act.activity_stock as activityStock,
+            act.remaining_stock	as remainingStock,
+            act.sold_num as soldNum,
+            act.start_time as startTime,
+            act.end_time as endTime,
+            act.cycle,
+            act.cycle_type as cycleType,
+            act.cycle_time as cycleTime,
+            act.limit_status as limitStatus,
+            act.limit_num as limitNum,
+            act.activity_price as activityPrice,
+			CASE
+			WHEN act.`status` = 2 THEN 1
+			WHEN act.`status` = 1 THEN 2
+			WHEN act.`status` = 3 THEN 3
+			END sort,
+			act.create_time as createTime,
+            prod.cover_img as coverImg,
+            prod.name as productName,
+            prod.price
+		FROM
+			product_activity act
+		INNER JOIN product prod ON act.product_id = prod.id
+		WHERE
+			prod.status = 2
+		AND act.opening = 1
+        AND act.`status` in (1,2,3)
+		AND act.terminal = #{terminal}
+		<if test="activityType != null">
+			AND act.activity_type = #{activityType}
+		</if>
+		order by sort asc
+	</select>
+
+	<!-- 查询单个已开启的活动产品详情信息 -->
+	<select id="getProductActivity" resultType="com.yimao.cloud.pojo.vo.product.ProductActivityVO" parameterType="com.yimao.cloud.pojo.query.product.ProductActivityQuery">
+		SELECT
+			act.id,
+			act.name,
+            act.status,
+			act.product_id as productId,
+            act.label,
+            act.activity_stock AS activityStock,
+            act.remaining_stock	as 	remainingStock,
+            act.sold_num as soldNum,
+            act.start_time as startTime,
+            act.end_time as endTime,
+            act.cycle,
+            act.cycle_type as cycleType,
+            act.cycle_time as cycleTime,
+            act.limit_status as limitStatus,
+            act.limit_num as limitNum,
+            act.activity_price as activityPrice,
+			act.terminal as terminal,
+			prod.price,
+			prod.transport_type as transportType,
+			prod.activity_type as activityType,
+			prod.cover_img as coverImg,
+			prod.name as productName,
+			prod.stock
+		FROM
+			product_activity act
+		INNER JOIN product prod ON act.product_id = prod.id
+		WHERE 1=1
+		<if test="id != null">
+			AND act.id = #{id}
+		</if>
+		<if test="opening != null">
+			AND act.opening = #{opening}
+		</if>
+		<if test="productId != null">
+			AND act.product_id = #{productId}
+		</if>
+		<if test="productStatus != null">
+			AND prod.status = #{productStatus}
+		</if>
+		<if test="activityType != null">
+			AND act.activity_type = #{activityType}
+		</if>
+		<if test="terminal != null">
+			AND act.terminal = #{terminal}
+		</if>
+	</select>
+
+	<!--更新剩余库存（减）-->
+	<update id="subtractStock">
+		UPDATE product_activity SET remaining_stock = remaining_stock - #{count}, sold_num = sold_num + #{count} where id = #{id} and remaining_stock >= #{count}
+	</update>
+
+	<!--更新剩余库存（加）-->
+	<update id="addStock">
+		UPDATE product_activity SET remaining_stock = remaining_stock + #{count}, sold_num = sold_num - #{count} where id = #{id}
+	</update>
+
+    <!--当对活动商品进行下架操作时，同时将该商品对应的活动设置为有【已终止】状态-->
+	<update id="stopProductActivity">
+		UPDATE product_activity SET `status` = 4 where product_id = #{productId} and opening = 1
+	</update>
+
+	<!-- 业务系统查询活动列表 -->
+    <select id="list" resultType="com.yimao.cloud.pojo.vo.product.ProductActivityVO" parameterType="com.yimao.cloud.pojo.dto.product.ProductActivityDTO">
+		SELECT
+			act.id,
+			act.name,
+            act.status,
+            act.opening,
+			act.product_id as productId,
+            act.label,
+            act.activity_stock AS activityStock,
+			act.start_time as startTime,
+			act.end_time as endTime,
+			act.cycle,
+			act.cycle_type as cycleType,
+			act.cycle_time as cycleTime,
+			act.limit_status as limitStatus,
+			act.limit_num as limitNum,
+			act.sold_num*act.activity_price as orderAmountFee,
+			act.sold_num as soldNum,
+			act.terminal,
+			prod.status as productStatus,
+            prod.stock as productStock,
+			prod.activity_type as activityType
+		FROM
+			product_activity act
+		INNER JOIN product prod ON act.product_id = prod.id
+		WHERE 1=1
+		    <if test="terminal != null">
+				AND act.terminal = #{terminal}
+			</if>
+			<if test="name != null and name != ''">
+				AND act.name = #{name}
+			</if>
+			<if test="startTime != null">
+				AND act.start_time &gt;= #{startTime}
+			</if>
+			<if test="endTime != null">
+				AND act.end_time &lt;= #{endTime}
+			</if>
+			<if test="cycle != null">
+				AND act.cycle = #{cycle}
+			</if>
+			<!-- 未激活 -->
+			<if test="status != null and status == -1">
+				AND act.opening = 0
+			</if>
+			<!-- 未开始 -->
+			<if test="status != null and status == 1">
+				AND act.`status` = 1 and act.opening = 1
+			</if>
+			<!-- 进行中 -->
+			<if test="status != null and status == 2">
+                AND act.`status` = 2 and act.opening = 1
+			</if>
+			<!-- 已结束 -->
+			<if test="status != null and status == 3">
+                AND act.`status` = 3 and act.opening = 1
+			</if>
+			<!-- 已终止 -->
+			<if test="status != null and status == 4">
+                AND act.`status` = 4
+			</if>
+	</select>
+
+</mapper>

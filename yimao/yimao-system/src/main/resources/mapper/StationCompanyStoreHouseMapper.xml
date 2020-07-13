@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.system.mapper.StationCompanyStoreHouseMapper">
+    <insert id="addStockCountById">
+        update station_company_store_house
+        set stock_count = stock_count + #{count}
+        where id = #{id}
+    </insert>
+
+    <update id="pruneStockCountById">
+        update station_company_store_house
+        set stock_count = stock_count - #{count}
+        where id = #{id}
+        and stock_count - #{count} &gt;= 0
+    </update>
+
+    <resultMap type="com.yimao.cloud.pojo.dto.system.StationCompanyStoreHouseDTO" id="adaptionModelMap" autoMapping="true">
+        <collection property="materialsAdaptationList"
+                    ofType="com.yimao.cloud.pojo.dto.system.MaterialsAdaptationModelDTO"
+                    select="selectMaterialsAdaptationById" column="{goodsMaterialsId=goodsId}"/>
+    </resultMap>
+
+    <select id="selectMaterialsAdaptationById" resultType="com.yimao.cloud.pojo.dto.system.MaterialsAdaptationModelDTO">
+		select
+		device_model_name as deviceModelName,
+		product_category_id as productCategoryId
+		from materials_adaptation_model
+		where goods_materials_id = #{goodsMaterialsId}
+	</select>
+
+    <select id="pageStationCompanyStoreHouse"
+            resultMap="adaptionModelMap">
+        SELECT
+        scsh.id,
+        scsh.goods_id AS goodsId,
+        sc.`name` AS stationCompanyName,
+        sc.province,
+        sc.city,
+        sc.region,
+        (
+        SELECT
+        COUNT(1)
+        FROM
+        station_company__station
+        WHERE
+        station_company_id = scsh.station_company_id
+        ) AS stationCount,
+        gc1.`name` AS firstCategoryName,
+        gc2.`name` AS twoCategoryName,
+        gm.`name` AS goodsName,
+        group_concat(mam.device_model_name) as adaptationModel,
+        scsh.stock_count AS stockCount
+        FROM
+        station_company_store_house scsh
+        LEFT JOIN goods_materials gm ON scsh.goods_id = gm.id
+        left join materials_adaptation_model mam on gm.id = mam.goods_materials_id
+        LEFT JOIN goods_category gc1 ON gm.goods_category_id = gc1.id
+        LEFT JOIN goods_category gc2 ON gc1.pid = gc2.id
+        LEFT JOIN station_company sc ON scsh.station_company_id = sc.id
+        where 1 = 1
+        <if test="adaptationModel != null and adaptationModel.trim() != ''">
+            and mam.device_model_name like CONCAT('%', #{adaptationModel}, '%')
+        </if>
+        <if test="province != null and province.trim() != ''">
+            and sc.province = #{province}
+        </if>
+        <if test="city != null and city.trim() != ''">
+            and sc.city = #{city}
+        </if>
+        <if test="region != null and region.trim() != ''">
+            and sc.region = #{region}
+        </if>
+        <if test="stationCompanyName != null and stationCompanyName.trim() != ''">
+            and sc.`name` = #{stationCompanyName}
+        </if>
+        <if test="categoryId != null">
+            and (gc1.id = #{categoryId} or gc2.id = #{categoryId})
+        </if>
+        <if test="type != null">
+            and gm.type = #{type}
+        </if>
+        <if test="stationCompanyId != null">
+            and scsh.station_company_id = #{stationCompanyId}
+        </if>
+        group by scsh.id
+        order by scsh.station_company_id , gm.create_time desc
+    </select>
+
+    <select id="save" resultType="java.lang.Integer">
+    INSERT INTO station_company_store_house (
+        station_company_id,
+        goods_id,
+        stock_count
+    ) SELECT
+        #{stationCompanyId},#{goodsId},#{count}
+    FROM
+        DUAL
+    WHERE
+        NOT EXISTS (
+            SELECT
+                id
+            FROM
+                station_company_store_house
+            WHERE
+                station_company_id = #{stationCompanyId}
+            AND goods_id = #{goodsId})
+    </select>
+
+    <resultMap type="com.yimao.cloud.pojo.dto.system.StationCompanyStoreHouseExportDTO" id="exportAdaptionModelMap" autoMapping="true">
+        <collection property="materialsAdaptationList"
+                    ofType="com.yimao.cloud.pojo.dto.system.MaterialsAdaptationModelDTO"
+                    select="selectMaterialsAdaptationById" column="{goodsMaterialsId=goodsId}"/>
+    </resultMap>
+
+    <select id="exportStationCompanyStoreHouse"
+            resultMap="exportAdaptionModelMap">
+        SELECT
+        scsh.id,
+        scsh.goods_id AS goodsId,
+        sc.`name` AS stationCompanyName,
+        CONCAT(sc.province,sc.city,sc.region) AS address,
+        (
+        SELECT
+        COUNT(1)
+        FROM
+        station_company__station
+        WHERE
+        station_company_id = scsh.station_company_id
+        ) AS stationCount,
+        gc1.`name` AS firstCategoryName,
+        gc2.`name` AS twoCategoryName,
+        gm.`name` AS goodsName,
+        group_concat(mam.device_model_name) as adaptationModel,
+        scsh.stock_count AS stockCount
+        FROM
+        station_company_store_house scsh
+        LEFT JOIN goods_materials gm ON scsh.goods_id = gm.id
+        left join materials_adaptation_model mam on gm.id = mam.goods_materials_id
+        LEFT JOIN goods_category gc1 ON gm.goods_category_id = gc1.id
+        LEFT JOIN goods_category gc2 ON gc1.pid = gc2.id
+        LEFT JOIN station_company sc ON scsh.station_company_id = sc.id
+        where 1 = 1
+        <if test="adaptationModel != null and adaptationModel.trim() != ''">
+            and mam.device_model_name like CONCAT('%', #{adaptationModel}, '%')
+        </if>
+        <if test="province != null and province.trim() != ''">
+            and sc.province = #{province}
+        </if>
+        <if test="city != null and city.trim() != ''">
+            and sc.city = #{city}
+        </if>
+        <if test="region != null and region.trim() != ''">
+            and sc.region = #{region}
+        </if>
+        <if test="stationCompanyName != null and stationCompanyName.trim() != ''">
+            and sc.`name` = #{stationCompanyName}
+        </if>
+        <if test="categoryId != null">
+            and (gc1.id = #{categoryId} or gc2.id = #{categoryId})
+        </if>
+        <if test="type != null">
+            and gm.type = #{type}
+        </if>
+        <if test="stationCompanyId != null">
+            and scsh.station_company_id = #{stationCompanyId}
+        </if>
+        group by scsh.id
+        order by scsh.station_company_id , gm.create_time desc
+    </select>
+</mapper>

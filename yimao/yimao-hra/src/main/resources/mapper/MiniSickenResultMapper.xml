@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.yimao.cloud.hra.mapper.MiniSickenResultMapper">
+
+    <!--根据症状id查询患病结果 -->
+    <select id="findResultList" parameterType="Map" resultType="com.yimao.cloud.hra.po.MiniSickenResult">
+        SELECT
+        result.id AS id,
+        result.symptom_id AS symptomId,
+        result.sicken_name AS sickenName,
+        result.sicken_name_explain AS sickenNameExplain,
+        result.symptom_detail AS symptomDetail,
+        result.pathogeny AS pathogeny,
+        result.prevention AS prevention,
+        result.chinese_treatment AS chineseTreatment,
+        result.nursing AS nursing,
+        result.create_time AS createTime
+        FROM healthy_sicken_result result
+        WHERE
+        result.symptom_id = #{symptomId}
+
+    </select>
+
+    <!--根据 SymptomId查询患病结果列表-->
+    <select id="findListBySymptomId" resultType="com.yimao.cloud.hra.po.MiniSickenResult">
+      SELECT
+        result.id AS id,
+        result.symptom_id AS symptomId,
+        result.sicken_name AS sickenName,
+        result.sicken_name_explain AS sickenNameExplain,
+        result.symptom_detail AS symptomDetail,
+        result.pathogeny AS pathogeny,
+        result.prevention AS prevention,
+        result.chinese_treatment AS chineseTreatment,
+        result.nursing AS nursing,
+        result.create_time AS createTime
+        FROM healthy_sicken_result result
+        WHERE
+        result.symptom_id = #{dtoSymptomId}
+    </select>
+
+</mapper>

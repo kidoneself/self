@@ -1,0 +1,139 @@
+server:
+  port: 8761
+  tomcat:
+    uri-encoding: utf-8
+    max-connections: 2000
+    max-threads: 500
+# 服务认证
+spring:
+  security:
+    user:
+      name: yimao
+      password: 123456
+management:
+  endpoint:
+    health:
+      #health endpoint是否必须显示全部细节。默认情况下, /actuator/health 是公开的，并且不显示细节。
+      show-details: ALWAYS
+    shutdown:
+      enabled: true
+  endpoints:
+    web:
+      base-path: "/monitor"
+      exposure:
+        #选择暴露的端点
+        #include: info,health,env,beans
+        #暴露所有端点
+        include: "*"
+logging:
+  config: classpath:logback-spring.xml
+---
+spring:
+  profiles: local
+eureka:
+  instance:
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    prefer-ip-address: true
+    hostname: localhost
+    status-page-url-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}/info
+    health-check-url-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}/health
+    #home-page-url-path: ${server.servlet.context-path:}
+    metadata-map:
+      management.context-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}
+      user.name: ${spring.security.user.name:}
+      user.password: ${spring.security.user.password:}
+  client:
+    #是否注册到eureka
+    #    register-with-eureka: false
+    #是否从eureka获取注册信息
+    #    fetch-registry: false
+    service-url:
+      defaultZone: http://yimao:123456@${eureka.instance.hostname}:${server.port}/eureka
+    #指定环境
+    #environment: test
+    #指定数据中心 yimao
+    #data-center-info: yimao
+  server:
+    #是否开启自我保护模式，默认为true。
+    #默认情况下，如果Eureka Server在一定时间内没有接收到某个微服务实例的心跳，Eureka Server将会注销该实例（默认90秒）。
+    #但是当网络分区故障发生时，微服务与Eureka Server之间无法正常通信，以上行为可能变得非常危险了——因为微服务本身其实是健康的，此时本不应该注销这个微服务。
+    #Eureka通过“自我保护模式”来解决这个问题——当Eureka Server节点在短时间内丢失过多客户端时（可能发生了网络分区故障），那么这个节点就会进入自我保护模式。
+    #一旦进入该模式，Eureka Server就会保护服务注册表中的信息，不再删除服务注册表中的数据（也就是不会注销任何微服务）。
+    #当网络故障恢复后，该Eureka Server节点会自动退出自我保护模式。
+    #综上，自我保护模式是一种应对网络异常的安全保护措施。它的架构哲学是宁可同时保留所有微服务（健康的微服务和不健康的微服务都会保留），也不盲目注销任何健康的微服务。
+    #使用自我保护模式，可以让Eureka集群更加的健壮、稳定。
+    #enable-self-preservation: false
+    #eureka server清理无效节点的时间间隔，默认60000毫秒，即60秒
+    eviction-interval-timer-in-ms: 5000
+---
+spring:
+  profiles: dev
+eureka:
+  instance:
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    prefer-ip-address: true
+    hostname: localhost
+    status-page-url-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}/info
+    health-check-url-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}/health
+    #home-page-url-path: ${server.servlet.context-path:}
+    metadata-map:
+      management.context-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}
+      user.name: ${spring.security.user.name:}
+      user.password: ${spring.security.user.password:}
+  client:
+    service-url:
+      defaultZone: http://yimao:123456@${eureka.instance.hostname}:${server.port}/eureka
+---
+spring:
+  profiles: test
+eureka:
+  instance:
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    prefer-ip-address: true
+    hostname: localhost
+    status-page-url-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}/info
+    health-check-url-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}/health
+    #home-page-url-path: ${server.servlet.context-path:}
+    metadata-map:
+      management.context-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}
+      user.name: ${spring.security.user.name:}
+      user.password: ${spring.security.user.password:}
+  client:
+    service-url:
+      defaultZone: http://yimao:123456@${eureka.instance.hostname}:${server.port}/eureka
+---
+spring:
+  profiles: pro01
+eureka:
+  instance:
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    prefer-ip-address: true
+    hostname: localhost
+    status-page-url-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}/info
+    health-check-url-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}/health
+    #home-page-url-path: ${server.servlet.context-path:}
+    metadata-map:
+      management.context-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}
+      user.name: ${spring.security.user.name:}
+      user.password: ${spring.security.user.password:}
+  client:
+    service-url:
+      defaultZone: http://yimao:123456@172.16.2.182:8761/eureka
+---
+spring:
+  profiles: pro02
+eureka:
+  instance:
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    prefer-ip-address: true
+    hostname: localhost
+    status-page-url-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}/info
+    health-check-url-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}/health
+    #home-page-url-path: ${server.servlet.context-path:}
+    metadata-map:
+      management.context-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}
+      user.name: ${spring.security.user.name:}
+      user.password: ${spring.security.user.password:}
+  client:
+    service-url:
+      defaultZone: http://yimao:123456@172.16.2.185:8761/eureka

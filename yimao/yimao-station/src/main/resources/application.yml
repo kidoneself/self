@@ -1,0 +1,13 @@
+server:
+  port: 16009
+  tomcat:
+    uri-encoding: utf-8
+    max-connections: 2000
+    max-threads: 500
+    accept-count: 200
+---
+#站务系统菜单过滤
+menu-filter:
+  list: 
+    - /orderRenewDetail
+    - /waterdeviceDetail

@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.user.mapper.DistributorOrderAuditRecordMapper">
+
+    <select id="pageAudit" parameterType="com.yimao.cloud.pojo.dto.user.DistributorOrderAuditRecordDTO"
+            resultType="com.yimao.cloud.pojo.dto.user.DistributorOrderAuditRecordDTO">
+        SELECT
+        d.id,
+        d.distributor_order_id AS distributorOrderId,
+        dd.order_type AS orderType,
+        u.real_name AS name,
+        dd.distributor_account AS distributorAccount,
+        d.role_name AS roleName,
+        d.dest_role_name AS destRoleName,
+        dd.price,
+        dd.pay_type AS payType,
+        dd.pay_time AS payTime,
+        dd.pay_record AS payRecord,
+        d.audit_type AS auditType,
+        d.`status`,
+        d.cause AS cause,
+        d.auditor AS auditor,
+        d.audit_time AS auditTime
+        FROM
+        distributor_order_audit_record d
+        LEFT JOIN ( distributor_order dd ) ON ( d.distributor_order_id = dd.id )
+        LEFT JOIN ( user_distributor u ) ON ( dd.distributor_id = u.id )
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="distributorOrderId!=null">
+                AND d.distributor_order_id like CONCAT(#{distributorOrderId},'%')
+            </if>
+            <if test="orderType!=null">
+                AND dd.order_type = #{orderType}
+            </if>
+            <if test="distributorAccount!=null and distributorAccount!=''">
+                AND dd.distributor_account like CONCAT(#{distributorAccount},'%')
+            </if>
+            <if test="roleId!=null">
+                AND d.role_id = #{roleId}
+            </if>
+            <if test="auditType!=null">
+                AND d.audit_type = #{auditType}
+            </if>
+            <if test="status!=null">
+                AND d.status = #{status}
+            </if>
+        </trim>
+        ORDER BY
+        id DESC
+    </select>
+
+
+    <select id="distributorOrderAuditRecordExport"
+            resultType="com.yimao.cloud.pojo.dto.user.DistributorOrderAuditRecordExportDTO">
+        SELECT
+        d.distributor_order_id AS orderId,
+        CASE
+        dbo.order_type
+        WHEN 0 THEN
+        '注册'
+        WHEN 1 THEN
+        '升级'
+        WHEN 2 THEN
+        '续费' ELSE ''
+        END AS orderType,
+        ud.real_name AS name,
+        dbo.distributor_account AS distributorAccount,
+        d.role_name AS roleName,
+        d.dest_role_name AS destRoleName,
+        dbo.price,
+        CASE
+        dbo.pay_type
+        WHEN 1 THEN
+        '微信'
+        WHEN 2 THEN
+        '支付宝'
+        WHEN 3 THEN
+        'pos机'
+        WHEN 4 THEN
+        '转账' ELSE ''
+        END AS payType,
+        DATE_FORMAT(dbo.pay_time,"%Y-%m-%d %H:%i:%s") AS payTime,
+        CASE
+        d.audit_type
+        WHEN 0 THEN
+        '财务审核'
+        WHEN 1 THEN
+        '企业审核' ELSE ''
+        END AS auditType,
+        CASE
+        d.`status`
+        WHEN 0 THEN
+        '未审核'
+        WHEN 1 THEN
+        '审核通过'
+        WHEN 2 THEN
+        '审核不通过'
+        WHEN 3 THEN
+        '无需审核' ELSE ''
+        END AS status,
+        d.cause AS cause,
+        d.auditor AS auditor,
+        DATE_FORMAT(d.audit_time,"%Y-%m-%d %H:%i:%s") AS auditTime
+        FROM
+        distributor_order_audit_record d
+        LEFT JOIN ( distributor_order dbo ) ON ( d.distributor_order_id = dbo.id )
+        LEFT JOIN ( user_distributor ud ) ON ( dbo.distributor_id = ud.id )
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="distributorOrderId!=null">
+                AND d.distributor_order_id like CONCAT(#{distributorOrderId},'%')
+            </if>
+            <if test="orderType!=null">
+                AND dbo.order_type = #{orderType}
+            </if>
+            <if test="distributorAccount!=null and distributorAccount!=''">
+                AND dbo.distributor_account like CONCAT(#{distributorAccount},'%')
+            </if>
+            <if test="roleId!=null">
+                AND d.role_id = #{roleId}
+            </if>
+            <if test="auditType!=null">
+                AND d.audit_type = #{auditType}
+            </if>
+            <if test="status!=null">
+                AND d.status = #{status}
+            </if>
+        </trim>
+        ORDER BY
+        d.id DESC
+    </select>
+    <select id="getDistributorOrderAuditRecordByOrderId"
+            resultType="com.yimao.cloud.pojo.dto.user.DistributorOrderAuditRecordDTO">
+            SELECT
+	d.`status`,
+	d.auditor,
+	d.audit_time as auditTime,
+	d.cause
+    FROM
+	distributor_order_audit_record d
+    WHERE
+	audit_type = 1
+	AND distributor_order_id = #{orderId}
+    ORDER BY
+	d.audit_time DESC
+    </select>
+    <select id="queryFinancialAuditCount" resultType="java.lang.Integer">
+        SELECT
+        count (1)
+        FROM
+        distributor_order_audit_record
+        WHERE distributor_order_id = #{orderId} AND audit_type = 0
+    </select>
+
+
+</mapper>

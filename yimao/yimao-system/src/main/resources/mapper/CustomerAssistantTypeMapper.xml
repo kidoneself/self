@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.system.mapper.CustomerAssistantTypeMapper">
+
+
+    <select id="listCustomerAssistantType" resultType="com.yimao.cloud.pojo.dto.system.CustomerAssistantTypeDTO">
+        select
+        cat.id as id,
+        cat.type_name as typeName,
+        cat.type_code as typeCode,
+        cat.delete_flag as deleteFlag
+        from
+        t_customer_assistant_type cat
+        where
+        cat.delete_flag = 0
+        <if test="typeName!=null and typeName!='' ">
+            and cat.type_name like CONCAT('%',#{typeName},'%')
+        </if>
+    </select>
+    <select id="getCustomerAssistantTypeByTypeCode" resultType="com.yimao.cloud.system.po.CustomerAssistantType">
+        SELECT
+        id,
+        type_name,
+        type_code,
+        delete_flag,
+        sorts,
+        terminal
+        FROM
+        t_customer_assistant_type
+        WHERE
+        1=1
+        <if test="typeCode!=null">
+            and type_code = #{typeCode}
+        </if>
+        AND delete_flag = 0
+    </select>
+    <select id="getCustomerAssistantTypeBySorts" resultType="com.yimao.cloud.system.po.CustomerAssistantType">
+    SELECT
+	id,
+	type_name,
+	type_code,
+	delete_flag,
+	type_code,
+	terminal
+    FROM
+	t_customer_assistant_type
+    WHERE
+	sorts = #{sorts}
+	AND delete_flag = 0
+    </select>
+    <select id="getClassifyList" resultType="com.yimao.cloud.pojo.dto.system.CustomerAssistantTypeDTO">
+    SELECT
+	id,
+	type_name AS typeName,
+	type_code AS typeCode,
+	delete_flag AS deleteFlag,
+	sorts AS sorts
+    FROM
+	t_customer_assistant_type
+    WHERE
+	terminal = #{terminal}
+	AND delete_flag = 0
+    </select>
+    <select id="page" resultType="com.yimao.cloud.pojo.dto.system.CustomerAssistantTypeDTO">
+        select
+        t.id,
+        t.delete_flag AS deleteFlag,
+        t.type_code AS typeCode,
+        t.sorts,
+        t.type_name AS typeName,
+        t.terminal
+        from t_customer_assistant_type t
+        where t.delete_flag = 0
+        <if test="typeName!=null and typeName!='' ">
+            and t.type_name LIKE CONCAT('%',#{typeName},'%')
+        </if>
+        <if test="terminal!=null">
+            and t.terminal = #{terminal}
+        </if>
+        order by t.sorts desc
+    </select>
+    
+    <select id="getFirstSortStationAssistantType" resultType="com.yimao.cloud.system.po.CustomerAssistantType">
+    	select
+        t.id,
+        t.delete_flag AS deleteFlag,
+        t.type_code AS typeCode,
+        t.sorts,
+        t.type_name AS typeName,
+        t.terminal
+        from t_customer_assistant_type t
+        where t.delete_flag = 0        
+        and t.terminal = 1   
+        order by t.sorts asc
+        limit 1
+    </select>
+</mapper>

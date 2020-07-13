@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/component" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/component/component-base" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/component/component-base/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/component/component-pojo" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/component/component-pojo/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/config-server" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/config-server/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/eureka-server" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/eureka-server/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/framework" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/framework/framework-aop" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/framework/framework-aop/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/framework/framework-config" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/framework/framework-config/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/framework/framework-mysql" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/framework/framework-mysql/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/framework/framework-redis" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/framework/framework-redis/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/gateway" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/gateway-zuul" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/gateway-zuul/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/gateway/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/monitor" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/monitor/monitor-admin" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/monitor/monitor-admin/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/monitor/monitor-dashboard" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/monitor/monitor-dashboard/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/monitor/monitor-turbine" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/monitor/monitor-turbine/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yimao" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yimao/yimao-app" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yimao/yimao-app/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yimao/yimao-cat" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yimao/yimao-cat/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yimao/yimao-cms" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yimao/yimao-cms/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yimao/yimao-engineer" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yimao/yimao-engineer/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yimao/yimao-hra" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yimao/yimao-hra/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yimao/yimao-openapi" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yimao/yimao-openapi/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yimao/yimao-order" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yimao/yimao-order/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yimao/yimao-out" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yimao/yimao-out/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yimao/yimao-product" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yimao/yimao-product/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yimao/yimao-station" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yimao/yimao-station/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yimao/yimao-system" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yimao/yimao-system/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yimao/yimao-task" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yimao/yimao-task/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yimao/yimao-user" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yimao/yimao-user/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yimao/yimao-water" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yimao/yimao-water/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yimao/yimao-wechat" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yimao/yimao-wechat/src/main/java" charset="UTF-8" />
+  </component>
+</project>

@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.order.mapper.WorkOrderBackMapper">
+
+    <update id="updateStationInfoByPCR">
+        update workorder_back
+        set station_id = #{stationId},
+        station_name = #{stationName},
+        update_time = NOW()
+     	where `status` != 4
+		and province = #{province}
+		and city = #{city}
+		and region = #{region}
+    </update>
+
+    <update id="updateEngineerInfoByPCR">
+        update workorder_back
+        set
+        engineer_id = #{engineerId},
+        engineer_name = #{engineerName},
+        engineer_phone = #{engineerPhone},
+        station_id = #{stationId},
+        station_name = #{stationName},
+        update_time = NOW()
+     	where `status` != 4
+		and province = #{province}
+		and city = #{city}
+		and region = #{region}
+    </update>
+
+    <update id="updateEngineerInfo">
+        update workorder_back
+        set
+        engineer_id = #{engineerId},
+        engineer_name = #{engineerName},
+        engineer_phone = #{engineerPhone},
+        update_time = NOW()
+     	where `status` != 4
+		and engineer_id = #{oldEngineerId}
+    </update>
+
+    <select id="getWorkOrderBackList" parameterType="com.yimao.cloud.pojo.query.order.WorkOrderBackQueryDTO"
+            resultType="com.yimao.cloud.pojo.dto.order.WorkOrderBackDTO">
+        select
+        wo.id as id,
+        wo.code as code,
+        wo.status as status,
+        wo.sn as sn,
+        wo.user_name as userName,
+        wo.user_phone as userPhone,
+        wo.product_category_name as productCategoryName,
+        wo.distributor_name as distributorName,
+        wo.distributor_account as distributorAccount,
+        wo.engineer_id as engineerId,
+        wo.engineer_name as engineerName,
+        wo.engineer_phone as engineerPhone,
+        wo.province as province,
+        wo.city as city,
+        wo.region as region,
+        wo.address as address,
+        wo.create_time as createTime,
+        wo.accept_time as acceptTime,
+        wo.complete_time as completeTime,
+        wo.station_name as stationName,
+        ifnull((
+        6378.137 * 2 * ASIN(
+        SQRT(
+        POW( SIN( ( RADIANS( #{latitude} ) - RADIANS( latitude ) ) / 2 ), 2 ) + COS( RADIANS( #{latitude} ) ) *
+        COS( RADIANS( latitude ) ) * POW( SIN( ( RADIANS( #{longitude} ) - RADIANS( longitude ) ) / 2 ), 2 )
+        )
+        )
+        ) ,0) AS distanceNum,
+        wo.latitude as latitude,
+        wo.longitude as longitude
+        from
+        workorder_back wo
+        <where>
+            <if test="code!=null and code!='' ">
+                wo.code like CONCAT('%',trim(#{code}),'%')
+            </if>
+            <if test="userName!=null and userName!='' ">
+                and wo.user_name like CONCAT('%',trim(#{userName}),'%')
+            </if>
+            <if test="userPhone!=null and userPhone!='' ">
+                and wo.user_phone like CONCAT('%',trim(#{userPhone}),'%')
+            </if>
+            <if test="distributorName!=null and distributorName!='' ">
+                and wo.distributor_name like CONCAT('%',trim(#{distributorName}),'%')
+            </if>
+            <if test="sn!=null and sn!='' ">
+                and wo.sn like CONCAT('%',trim(#{sn}),'%')
+            </if>
+            <if test="productCategoryName!=null and productCategoryName!='' ">
+                and wo.product_category_name = #{productCategoryName}
+            </if>
+            <if test="province!=null and province!='' ">
+                and wo.province = #{province}
+            </if>
+            <if test="city!=null and city!=''">
+                and wo.city = #{city}
+            </if>
+            <if test="region!=null and region!=''">
+                and wo.region = #{region}
+            </if>
+            <if test="engineerId!=null">
+                and wo.engineer_id = #{engineerId}
+            </if>
+            <if test="status!=null">
+                and wo.status = #{status}
+            </if>
+            <if test="startTime!=null">
+                and wo.create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime!=null">
+                and wo.create_time &lt;= #{endTime}
+            </if>
+            <if test="search!=null and search!='' ">
+                and (wo.code like CONCAT('%',trim(#{search}),'%') or
+                wo.product_category_name like CONCAT('%',trim(#{search}),'%') or wo.user_name like
+                CONCAT('%',trim(#{search}),'%') or wo.user_phone
+                like CONCAT('%',trim(#{search}),'%') or wo.logistics_code like CONCAT('%',trim(#{search}),'%') or
+                wo.sn like CONCAT('%',trim(#{search}),'%') or wo.iccid like CONCAT('%',trim(#{search}),'%'))
+            </if>
+            <if test="status!=null">
+                and wo.status =#{status}
+            </if>
+            <if test=" engineerIds != null and engineerIds.size > 0">
+                AND wo.engineer_id in
+                <foreach collection="engineerIds" item="item" index="index" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+
+        <if test="sortBy!=null and sortBy==1 and sortType ==1">
+            order by wo.create_time asc
+        </if>
+        <if test="sortBy!=null and sortBy==1 and sortType ==2">
+            order by wo.create_time desc
+        </if>
+        <if test="sortBy!=null and sortBy==2 and sortType ==1">
+            order by distanceNum asc
+        </if>
+        <if test="sortBy!=null and sortBy==2 and sortType ==2">
+            order by distanceNum desc
+        </if>
+        <if test="sortBy!=null and sortBy==3  and sortType ==1">
+            order by wo.complete_time asc
+        </if>
+        <if test="sortBy!=null and sortBy==3  and sortType ==2">
+            order by wo.complete_time desc
+        </if>
+
+    </select>
+
+    <select id="getWorkOrderBackCountByEngineerId" resultType="java.util.Map">
+       SELECT
+            ifnull( count( 1 ), 0 ) AS total,
+            wb.status*1 AS status
+        FROM
+            workorder_back wb
+        where
+        wb.engineer_id = #{engineerId}
+         GROUP BY
+            wb.status
+    </select>
+
+    <select id="queryWorkOrderBackList" resultType="com.yimao.cloud.pojo.dto.order.RenewDTO">
+        SELECT
+        wb.product_category_name,
+        wb.product_two_category_name,
+        count( 1 )
+        FROM
+        `workorder_back` wb
+        WHERE wb.status = 4
+        <if test="engineerId != null">
+            wb.engineer_id = #{engineerId}
+        </if>
+        <if test="timeType != null and timeType == 1">
+            DATE_FORMAT(wb.complete_time,'%Y-%m-%d') = #{completeTime}
+        </if>
+        <if test="timeType != null and timeType == 2">
+            DATE_FORMAT(wb.complete_time,'%Y-%m') = #{completeTime}
+        </if>
+        <if test="timeType != null and timeType == 3">
+            DATE_FORMAT(wb.complete_time,'%Y') = #{completeTime}
+        </if>
+        GROUP BY
+        wb.product_category_name,
+        wb.product_two_category_name
+    </select>
+
+
+    <select id="getWorkOrderBackCount" resultType="java.lang.Integer">
+        select count(1)
+        from `workorder_back` wb
+        where 1=1
+        <if test="engineerId != null">
+            and wb.engineer_id = #{engineerId}
+        </if>
+        <if test="status!=null">
+            and wb.status = #{status}
+        </if>
+    </select>
+
+    <select id="getBackModelTotalCount" resultType="java.lang.Integer">
+        select count(1)
+        from `workorder_back` wb
+        where 1=1 and wb.status in (1,2,3)
+        <if test="engineerId != null">
+            and wb.engineer_id = #{engineerId}
+        </if>
+    </select>
+    <select id="getBackWaterDeviceOrder" resultType="com.yimao.cloud.pojo.dto.order.MapOrderDTO">
+        SELECT
+            wb.`code` AS id,
+            wb.user_name AS userName,
+            wb.user_phone AS userPhone,
+            wb.product_two_category_name AS deviceModel,
+            wb.distributor_name AS distributorName,
+            wb.province,
+            wb.city,
+            wb.region,
+            wb.address,
+            wb.create_time AS createTime,
+            wb.longitude AS addrLongitude,
+            wb.latitude AS addrLatitude,
+            wb.engineer_id AS engineerId
+        FROM
+            workorder_back wb
+        WHERE
+            1 = 1
+        AND wb.engineer_id = #{engineerId}
+    </select>
+</mapper>

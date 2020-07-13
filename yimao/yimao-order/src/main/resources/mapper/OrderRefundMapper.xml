@@ -1,0 +1,492 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.order.mapper.OrderRefundMapper">
+
+    <select id="orderSalesList" parameterType="com.yimao.cloud.pojo.dto.order.OrderConditionDTO" resultType="com.yimao.cloud.pojo.dto.order.OrderSalesInfoDTO">
+        select
+        os.status as orderStatus,<!--状态：0-待付款 1-待审核 2-待发货 3-待出库  4-待收货 5-交易成功 6-售后中 7-交易关闭 8-已取消 -->
+        os.terminal as orderTerminal,<!--加入端 1-终端app，2-微信公众号，3-经销商APP  4-小程序 -->
+        os.count as orderNum,<!--数量 -->
+        os.product_company_id as productCompanyId,
+        os.receive_time as receiveTime,<!--收货时间 -->
+        os.pay_type as orderPayType,<!--支付方式：1-微信；2-支付宝；3-POS机；4-转账； -->
+        aso.id  as id,
+        aso.main_order_id as mainOrderId,<!--主订单 -->
+        aso.order_id as orderId,<!--子订单 -->
+        aso.status as status,<!--状态:1-待审核(物资)   2-待退货入库  3-待退款(财务)  4-售后失败 5-售后成功 -->
+        aso.business_audit_status as businessAuditStatus,<!--业务部门审核状态：1-审核通过；2-审核不通过 -->
+        aso.buy_audit_status as buyAuditStatus,<!--物质确认审核状态：1-审核通过；2-审核不通过（1-收货确认；2-未确认） -->
+        aso.finance_audit_status as financeAuditStatus,<!--财务复核状态：1-审核通过；2-审核不通过 -->
+        aso.customer_service_audit_status as customerServiceAuditStatus,<!--400客服审核状态或提交物流：1-审核通过；2-审核不通过（1-已提交物流，2-未提交） -->
+        aso.sales_type as salesType,<!--售后类型：1.取消订单退款（未收货），2.申请退货退款（已收货） -->
+        aso.product_type as productType,<!--商品类型（大类）:1实物商品，2电子卡券，3租赁商品 对应产品:product: type -->
+        aso.product_id as productId,<!--产品id -->
+        aso.product_name as productName,<!--产品名称 -->
+        aso.product_category_name as productCategoryName,<!--产品类目名称 -->
+        aso.product_company_name as productCompanyName,<!--产品公司名称 -->
+        aso.terminal as terminal,<!--售后发起端 -->
+        aso.num as salesNum,<!--数量 -->
+        aso.user_id as userId,<!--用户id -->
+        aso.user_type as userType,<!--用户身份 -->
+        aso.pay_type as payType,<!--支付类型 -->
+        aso.pay_fee as payFee,<!--支付金额 -->
+        aso.refund_fee as refundFee,<!--退款金额 -->
+        aso.real_refund_fee as realRefundFee,<!--实退金额 -->
+        aso.formalities_fee as formalitiesFee,<!--手续费 -->
+        aso.refund_reason as refundReason,<!--退款原因 -->
+        aso.refund_time as refundTime,<!--退款时间 -->
+        aso.refund_trade_no as refundTradeNo,<!--退款流水号 -->
+        aso.account_time as accountTime,<!--退款到账时间 -->
+        aso.logistics_no as logisticsNo,<!--物流单号 -->
+        aso.logistics_company_no as logisticsCompanyNo,<!--物流公司编号 -->
+        aso.logistics_company_name as logisticsCompanyName,<!--物流公司名称 -->
+        aso.create_time as createTime,<!--申请退单时间 -->
+        aso.business_audit_time as businessAuditTime,<!--业务部门审核时间 -->
+        aso.businessman as businessman,<!--业务部门审核人 -->
+        aso.business_reason as businessReason,<!--业务部门审核原因 -->
+        aso.buy_audit_time as buyAuditTime,<!--物资审核时间 -->
+        aso.buyer as buyer,<!--物资审核人 -->
+        aso.buy_audit_reason as buyAuditReason,<!--物资审核原因 -->
+        aso.finance_time as financeTime,<!--财务审核时间 -->
+        aso.financer as financer,<!--财务审核人 -->
+        aso.finance_reason as financeReason,<!--财务审核原因 -->
+        aso.customer_service_time as customerServiceTime,<!--400客服审核或提交物流时间 -->
+        aso.customer_service as customerService,<!--400客服审核人或提交物流人员 -->
+        aso.customer_service_reason as customerServiceReason,<!--400客服审核或提交物流原因 -->
+        aso.remark as remark<!--备注 -->
+        from after_sales_order aso
+        left join order_sub os on os.id = aso.order_id
+        <trim prefix="where" prefixOverrides="and | or">
+            1=1
+            <if test="userId!=null and userId!='' ">
+                and aso.user_id like CONCAT('%',trim(#{userId}),'%')
+            </if>
+            <if test="idKey!=null and idKey!=''">
+                and ( aso.order_id like CONCAT('%',trim(#{idKey}),'%') or aso.main_order_id like CONCAT('%',trim(#{idKey}),'%'))
+            </if>
+            <if test="id!=null and id!='' ">
+                and aso.id like CONCAT('%',trim(#{id}),'%')
+            </if>
+            <if test="mainOrderId!=null and mainOrderId!='' ">
+                and aso.main_order_id like CONCAT('%',trim(#{mainOrderId}),'%')
+            </if>
+            <if test="orderTerminal!=null and orderTerminal!=''">
+                and os.terminal = #{orderTerminal}
+            </if>
+            <!--<if test="terminal!=null and terminal!=''">-->
+                <!--and aso.terminal = #{terminal}-->
+            <!--</if>&ndash;&gt;-->
+            <if test="status!=null and status!=''">
+                and aso.status = #{status}
+            </if>
+            <if test="businessAuditStatus!=null and businessAuditStatus!=''">
+                and aso.business_audit_status = #{businessAuditStatus}
+            </if>
+            <if test="buyAuditStatus!=null and buyAuditStatus!=''">
+                and aso.buy_audit_status = #{buyAuditStatus}
+            </if>
+            <if test="financeAuditStatus!=null and financeAuditStatus!=''">
+                and aso.finance_audit_status = #{financeAuditStatus}
+            </if>
+            <if test="beginApplyTime!=null">
+                and aso.create_time &gt;= #{beginApplyTime}
+            </if>
+            <if test="endApplyTime!=null">
+                and aso.create_time &lt;= #{endApplyTime}
+            </if>
+            <if test="salesType!=null and salesType!=''">
+                and aso.sales_type = #{salesType}
+            </if>
+            and aso.deleted = 0 and os.deleted = 0 order by aso.create_time desc
+        </trim>
+    </select>
+
+    <select id="financeRefundOnlineList" parameterType="com.yimao.cloud.pojo.dto.order.OrderConditionDTO" resultType="com.yimao.cloud.pojo.dto.order.OrderSalesInfoDTO">
+        select
+        os.status as orderStatus,
+        os.terminal as orderTerminal,
+        os.num as orderNum,
+        os.product_company_id as productCompanyId,
+        os.receive_time as receiveTime,
+        os.pay_type as orderPayType,
+        aso.id  as id,
+        aso.main_order_id as mainOrderId,
+        aso.order_id as orderId,
+        aso.status as status,
+        aso.business_audit_status as businessAuditStatus,
+        aso.buy_audit_status as buyAuditStatus,
+        aso.finance_audit_status as financeAuditStatus,
+        aso.customer_service_audit_status as customerServiceAuditStatus,
+        aso.sales_type as salesType,
+        aso.product_type as productType,
+        aso.product_id as productId,
+        aso.product_name as productName,
+        aso.product_category_name as productCategoryName,
+        aso.product_company_name as productCompanyName,
+        aso.terminal as terminal,
+        aso.num as salesNum,
+        aso.user_id as userId,
+        aso.user_type as userType,
+        aso.pay_type as payType,
+        aso.pay_fee as payFee,
+        aso.refund_fee as refundFee,
+        aso.real_refund_fee as realRefundFee,
+        aso.formalities_fee as formalitiesFee,
+        aso.refund_reason as refundReason,
+        aso.refund_time as refundTime,
+        aso.refund_trade_no as refundTradeNo,
+        aso.account_time as accountTime,
+        aso.logistics_no as logisticsNo,
+        aso.logistics_company_no as logisticsCompanyNo,
+        aso.logistics_company_name as logisticsCompanyName,
+        aso.create_time as createTime,
+        aso.business_audit_time as businessAuditTime,
+        aso.businessman as businessman,
+        aso.business_reason as businessReason,
+        aso.buy_audit_time as buyAuditTime,
+        aso.buyer as buyer,
+        aso.buy_audit_reason as buyAuditReason,
+        aso.finance_time as financeTime,
+        aso.financer as financer,
+        aso.finance_reason as financeReason,
+        aso.customer_service_time as customerServiceTime,
+        aso.customer_service as customerService,
+        aso.customer_service_reason as customerServiceReason,
+        aso.remark as remark
+        from after_sales_order aso
+        left join order_sub os on os.id = aso.order_id
+        <trim prefix="where" prefixOverrides="and | or">
+            1=1
+            <if test="userId!=null and userId!='' ">
+                and aso.user_id like CONCAT('%',trim(#{userId}),'%')
+            </if>
+            <if test="idKey!=null and idKey!=''">
+                and ( aso.order_id like CONCAT('%',trim(#{idKey}),'%') or aso.main_order_id like CONCAT('%',trim(#{idKey}),'%'))
+            </if>
+            <if test="id!=null and id!='' ">
+                and aso.id like CONCAT('%',trim(#{id}),'%')
+            </if>
+            <if test="mainOrderId!=null and mainOrderId!='' ">
+                and aso.main_order_id like CONCAT('%',trim(#{mainOrderId}),'%')
+            </if>
+            <if test="orderTerminal!=null and orderTerminal!=''">
+                and os.terminal = #{orderTerminal}
+            </if>
+            <if test="terminal!=null and terminal!=''">
+                and aso.terminal = #{terminal}
+            </if>
+            <if test="businessAuditStatus!=null and businessAuditStatus!=''">
+                and aso.business_audit_status = #{businessAuditStatus}
+            </if>
+            <if test="buyAuditStatus!=null and buyAuditStatus!=''">
+                and aso.buy_audit_status = #{buyAuditStatus}
+            </if>
+            <if test="financeAuditStatus!=null and financeAuditStatus!=''">
+                and aso.finance_audit_status = #{financeAuditStatus}
+            </if>
+            <if test="beginApplyTime!=null and beginApplyTime!='' ">
+                and aso.create_time &gt;= #{beginApplyTime}
+            </if>
+            <if test="endApplyTime!=null and endApplyTime!='' ">
+                and aso.create_time &lt;= #{endApplyTime}
+            </if>
+            <if test="salesType!=null and salesType!=''">
+                and aso.sales_type = #{salesType}
+            </if>
+            <if test="orderPayType!=null and orderPayType!=''">
+                and os.pay_type = #{orderPayType}
+            </if>
+            and aso.deleted = 0 and os.deleted = 0 and and aso.status = 3 and (os.pay_type = 1 or os.pay_type = 2)  order by aso.create_time desc
+        </trim>
+    </select>
+
+    <select id="orderRefundInfo" parameterType="java.lang.Long" resultType="com.yimao.cloud.pojo.dto.order.OrderSalesInfoDTO">
+        select
+        os.status as orderStatus,
+        os.terminal as orderTerminal,
+        os.num as orderNum,
+        os.product_company_id as productCompanyId,
+        os.receive_time as receiveTime,
+        os.pay_type as orderPayType,
+        aso.id  as id,
+        aso.main_order_id as mainOrderId,
+        aso.order_id as orderId,
+        aso.status as status,
+        aso.business_audit_status as businessAuditStatus,
+        aso.buy_audit_status as buyAuditStatus,
+        aso.finance_audit_status as financeAuditStatus,
+        aso.customer_service_audit_status as customerServiceAuditStatus,
+        aso.sales_type as salesType,
+        aso.product_type as productType,
+        aso.product_id as productId,
+        aso.product_name as productName,
+        aso.product_category_name as productCategoryName,
+        aso.product_company_name as productCompanyName,
+        aso.terminal as terminal,
+        aso.num as salesNum,
+        aso.user_id as userId,
+        aso.user_type as userType,
+        aso.pay_type as payType,
+        aso.pay_fee as payFee,
+        aso.refund_fee as refundFee,
+        aso.real_refund_fee as realRefundFee,
+        aso.formalities_fee as formalitiesFee,
+        aso.refund_reason as refundReason,
+        aso.refund_time as refundTime,
+        aso.refund_trade_no as refundTradeNo,
+        aso.account_time as accountTime,
+        aso.logistics_no as logisticsNo,
+        aso.logistics_company_no as logisticsCompanyNo,
+        aso.logistics_company_name as logisticsCompanyName,
+        aso.create_time as createTime,
+        aso.business_audit_time as businessAuditTime,
+        aso.businessman as businessman,
+        aso.business_reason as businessReason,
+        aso.buy_audit_time as buyAuditTime,
+        aso.buyer as buyer,
+        aso.buy_audit_reason as buyAuditReason,
+        aso.finance_time as financeTime,
+        aso.financer as financer,
+        aso.finance_reason as financeReason,
+        aso.customer_service_time as customerServiceTime,
+        aso.customer_service as customerService,
+        aso.customer_service_reason as customerServiceReason,
+        aso.remark as remark
+        from after_sales_order aso
+        left join order_sub os on os.id = aso.order_id
+        <trim prefix="where" prefixOverrides="and | or">
+            1=1
+            <if test="id!=null and id!='' ">
+                and aso.id = #{id}
+            </if>
+            and aso.deleted = 0 and os.deleted = 0
+        </trim>
+    </select>
+
+
+    <select id="orderRefundAuditList" parameterType="com.yimao.cloud.pojo.dto.order.OrderConditionDTO" resultType="com.yimao.cloud.pojo.dto.order.OrderSalesInfoDTO">
+        select
+        oal.id  as id,
+        oal.sales_id as salesId,
+        oal.order_id as orderId,
+        oal.type as auditType,
+        oal.sub_type  as auditSubType,
+        oal.operation as operation,
+        oal.menu_name as menuName,
+        oal.ip as ip,
+        oal.creator  as creator,
+        oal.create_time as auditCreateTime,
+        oal.audit_reason as auditReason,
+        oal.detail_reason as detailReason,
+        oal.id  as id,
+        oal.main_order_id as mainOrderId,
+        oal.order_id as orderId,
+        oal.status as status,
+        aso.main_order_id as mainOrderId,
+        aso.status as status,
+        aso.business_audit_status as businessAuditStatus,
+        aso.buy_audit_status as buyAuditStatus,
+        aso.finance_audit_status as financeAuditStatus,
+        aso.customer_service_audit_status as customerServiceAuditStatus,
+        aso.sales_type as salesType,
+        aso.product_type as productType,
+        aso.product_id as productId,
+        aso.product_name as productName,
+        aso.product_category_name as productCategoryName,
+        aso.product_company_name as productCompanyName,
+        aso.terminal as terminal,
+        aso.num as salesNum,
+        aso.user_id as userId,
+        aso.user_type as userType,
+        aso.pay_type as payType,
+        aso.pay_fee as payFee,
+        aso.refund_fee as refundFee,
+        aso.real_refund_fee as realRefundFee,
+        aso.formalities_fee as formalitiesFee,
+        aso.refund_reason as refundReason,
+        aso.refund_time as refundTime,
+        aso.refund_trade_no as refundTradeNo,
+        aso.account_time as accountTime,
+        aso.logistics_no as logisticsNo,
+        aso.logistics_company_no as logisticsCompanyNo,
+        aso.logistics_company_name as logisticsCompanyName,
+        aso.create_time as createTime,
+        aso.business_audit_time as businessAuditTime,
+        aso.businessman as businessman,
+        aso.business_reason as businessReason,
+        aso.buy_audit_time as buyAuditTime,
+        aso.buyer as buyer,
+        aso.buy_audit_reason as buyAuditReason,
+        aso.finance_time as financeTime,
+        aso.financer as financer,
+        aso.finance_reason as financeReason,
+        aso.customer_service_time as customerServiceTime,
+        aso.customer_service as customerService,
+        aso.customer_service_reason as customerServiceReason,
+        aso.remark as remark
+        from order_audit_log oal
+        left join after_sales_order aso on aso.id = oal.sales_id
+        <trim prefix="where" prefixOverrides="and | or">
+            1=1
+            <if test="auditType!=null and auditType!='' ">
+                and oal.type = #{auditType}
+            </if>
+            <if test="auditSubType!=null and auditSubType!='' ">
+                and oal.sub_type = #{auditSubType}
+            </if>
+            and aso.deleted = 0 order by oal.create_time
+        </trim>
+    </select>
+
+    <select id="orderRefundAuditInfo" parameterType="java.lang.Long" resultType="com.yimao.cloud.pojo.dto.order.OrderSalesInfoDTO">
+        select
+        oal.id  as id,
+        oal.sales_id as salesId,
+        oal.order_id as orderId,
+        oal.type as auditType,
+        oal.sub_type  as auditSubType,
+        oal.operation as operation,
+        oal.menu_name as menuName,
+        oal.ip as ip,
+        oal.creator  as creator,
+        oal.create_time as auditCreateTime,
+        oal.audit_reason as auditReason,
+        oal.detail_reason as detailReason,
+        oal.id  as id,
+        oal.main_order_id as mainOrderId,
+        oal.order_id as orderId,
+        oal.status as status,
+        aso.main_order_id as mainOrderId,
+        aso.status as status,
+        aso.business_audit_status as businessAuditStatus,
+        aso.buy_audit_status as buyAuditStatus,
+        aso.finance_audit_status as financeAuditStatus,
+        aso.customer_service_audit_status as customerServiceAuditStatus,
+        aso.sales_type as salesType,
+        aso.product_type as productType,
+        aso.product_id as productId,
+        aso.product_name as productName,
+        aso.product_category_name as productCategoryName,
+        aso.product_company_name as productCompanyName,
+        aso.terminal as terminal,
+        aso.num as salesNum,
+        aso.user_id as userId,
+        aso.user_type as userType,
+        aso.pay_type as payType,
+        aso.pay_fee as payFee,
+        aso.refund_fee as refundFee,
+        aso.real_refund_fee as realRefundFee,
+        aso.formalities_fee as formalitiesFee,
+        aso.refund_reason as refundReason,
+        aso.refund_time as refundTime,
+        aso.refund_trade_no as refundTradeNo,
+        aso.account_time as accountTime,
+        aso.logistics_no as logisticsNo,
+        aso.logistics_company_no as logisticsCompanyNo,
+        aso.logistics_company_name as logisticsCompanyName,
+        aso.create_time as createTime,
+        aso.business_audit_time as businessAuditTime,
+        aso.businessman as businessman,
+        aso.business_reason as businessReason,
+        aso.buy_audit_time as buyAuditTime,
+        aso.buyer as buyer,
+        aso.buy_audit_reason as buyAuditReason,
+        aso.finance_time as financeTime,
+        aso.financer as financer,
+        aso.finance_reason as financeReason,
+        aso.customer_service_time as customerServiceTime,
+        aso.customer_service as customerService,
+        aso.customer_service_reason as customerServiceReason,
+        aso.remark as remark
+        from order_audit_log oal
+        left join after_sales_order aso on aso.id = oal.sales_id
+        <trim prefix="where" prefixOverrides="and | or">
+            1=1
+            <if test="id!=null and id!='' ">
+                and oal.id = #{id}
+            </if>
+            and aso.deleted = 0
+        </trim>
+    </select>
+
+
+    <update id="updateOrderSalesById">
+        update after_sales_order
+        set
+        deleted = 1
+        WHERE
+        <if test="id!=null and id!=''" >
+            id = #{id}
+        </if>
+    </update>
+
+
+    <select id="orderLogisticSubmitList" parameterType="java.util.List" resultType="com.yimao.cloud.pojo.dto.order.OrderSalesInfoDTO">
+        select
+        os.status as orderStatus,
+        os.terminal as orderTerminal,
+        os.num as orderNum,
+        os.product_company_id as productCompanyId,
+        os.receive_time as receiveTime,
+        os.pay_type as orderPayType,
+        aso.id  as id,
+        aso.main_order_id as mainOrderId,
+        aso.order_id as orderId,
+        aso.status as status,
+        aso.business_audit_status as businessAuditStatus,
+        aso.buy_audit_status as buyAuditStatus,
+        aso.finance_audit_status as financeAuditStatus,
+        aso.customer_service_audit_status as customerServiceAuditStatus,
+        aso.sales_type as salesType,
+        aso.product_type as productType,
+        aso.product_id as productId,
+        aso.product_name as productName,
+        aso.product_category_name as productCategoryName,
+        aso.product_company_name as productCompanyName,
+        aso.terminal as terminal,
+        aso.num as salesNum,
+        aso.user_id as userId,
+        aso.user_type as userType,
+        aso.pay_type as payType,
+        aso.pay_fee as payFee,
+        aso.refund_fee as refundFee,
+        aso.real_refund_fee as realRefundFee,
+        aso.formalities_fee as formalitiesFee,
+        aso.refund_reason as refundReason,
+        aso.refund_time as refundTime,
+        aso.refund_trade_no as refundTradeNo,
+        aso.account_time as accountTime,
+        aso.logistics_no as logisticsNo,
+        aso.logistics_company_no as logisticsCompanyNo,
+        aso.logistics_company_name as logisticsCompanyName,
+        aso.create_time as createTime,
+        aso.business_audit_time as businessAuditTime,
+        aso.businessman as businessman,
+        aso.business_reason as businessReason,
+        aso.buy_audit_time as buyAuditTime,
+        aso.buyer as buyer,
+        aso.buy_audit_reason as buyAuditReason,
+        aso.finance_time as financeTime,
+        aso.financer as financer,
+        aso.finance_reason as financeReason,
+        aso.customer_service_time as customerServiceTime,
+        aso.customer_service as customerService,
+        aso.customer_service_reason as customerServiceReason,
+        aso.remark as remark
+        from after_sales_order aso
+        left join order_sub os on os.id = aso.order_id
+        <trim prefix="where" prefixOverrides="and | or">
+            1=1
+            <if test="ids!=null and ids.size>0" >
+                and aso.id in
+                <foreach collection="ids" item="item" index="index" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            and aso.deleted = 0 and os.deleted = 0 order by aso.create_time desc
+        </trim>
+    </select>
+
+
+</mapper>

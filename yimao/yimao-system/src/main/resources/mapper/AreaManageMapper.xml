@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.system.mapper.AreaManageMapper">
+
+    <select id="page" resultType="com.yimao.cloud.system.po.AreaManage">
+        select id,
+        name,
+        level,
+        numerous,
+        population,
+        premium,
+        direct_sale as directSale,
+        site_count AS stieCount
+        from t_area_manage
+        where 1=1
+        <if test="level != null">
+            and level = #{level}
+        </if>
+        <if test="id != null">
+            and id = #{id}
+        </if>
+        <if test="pid != null">
+            and pid = #{pid}
+        </if>
+
+
+    </select>
+    <select id="getAreaManagerList" resultType="com.yimao.cloud.pojo.dto.system.AreaManageDTO">
+     select
+        id,
+        name,
+        level,
+        pid
+        from t_area_manage        
+    </select>
+</mapper>

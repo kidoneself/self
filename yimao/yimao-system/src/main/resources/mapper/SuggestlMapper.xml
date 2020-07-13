@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.system.mapper.SuggestMapper">
+
+
+    <select id="pageSuggest" resultType="com.yimao.cloud.pojo.dto.system.SuggestDTO">
+        select distinct
+        a.id,
+        b.province,
+        b.city,
+        b.region,
+        a.terminal,
+        b.name as stationName,
+        a.name,
+        a.role_name as roleName,
+        st.name as suggestTypeName,
+        trim(a.accessory) as accessory,
+        a.content,
+        if(a.accessory is null or trim(a.accessory) = '','无','有') as accessoryStatus,
+        a.time,
+        r.replier,
+        r.reply_content as replyContent,
+        r.time as replyTime,
+        r.accessory as replyAccessory
+        from suggest a
+        left join station b on a.station_id = b.id
+        left join suggest_type st on a.suggest_type = st.id
+        left join reply r on a.id = r.suggest_id
+        where 1 = 1
+        <if test="province != null and province.trim() != ''">
+            and b.province = #{province}
+        </if>
+        <if test="city != null and city.trim() != ''">
+            and b.city = #{city}
+        </if>
+        <if test="region != null and region.trim() != ''">
+            and b.region = #{region}
+        </if>
+        <if test="name != null and name.trim() != ''">
+            and a.name = #{name}
+        </if>
+        <if test="replier != null and replier.trim() != ''">
+            and r.replier = #{replier}
+        </if>
+        <if test="terminal != null">
+            and a.terminal = #{terminal}
+        </if>
+        <if test="userId != null">
+            and a.user_id = #{userId}
+        </if>
+        <if test="suggestType != null">
+            and a.suggest_type = #{suggestType}
+        </if>
+        <if test="startTime != null">
+            AND a.time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND a.time &lt;= #{endTime}
+        </if>
+        <if test="startReplyTime != null">
+            AND r.time &gt;= #{startReplyTime}
+        </if>
+        <if test="endReplyTime != null">
+            AND r.time &lt;= #{endReplyTime}
+        </if>
+        <if test="status != null">
+            AND a.status = #{status}
+        </if>
+        <choose>
+            <when test="sort != null and sort">
+                <choose>
+                    <when test="status != null and status == 0">
+                        order by a.time asc
+                    </when>
+                    <when test="status != null and status == 1">
+                        <choose>
+                            <when test="sortType != null and sortType == 1">
+                                order by a.time asc
+                            </when>
+                            <when test="sortType != null and sortType == 2">
+                                order by r.time asc
+                            </when>
+                            <otherwise>
+                                order by r.time asc
+                            </otherwise>
+                        </choose>
+                    </when>
+                </choose>
+            </when>
+            <otherwise>
+                <choose>
+                    <when test="status != null and status == 0">
+                        order by a.time desc
+                    </when>
+                    <when test="status != null and status == 1">
+                        <choose>
+                            <when test="sortType != null and sortType == 1">
+                                order by a.time desc
+                            </when>
+                            <when test="sortType != null and sortType == 2">
+                                order by r.time desc
+                            </when>
+                            <otherwise>
+                                order by r.time desc
+                            </otherwise>
+                        </choose>
+                    </when>
+                </choose>
+            </otherwise>
+        </choose>
+    </select>
+</mapper>

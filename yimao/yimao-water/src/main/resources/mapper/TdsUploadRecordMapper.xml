@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.water.mapper.TdsUploadRecordMapper">
+
+    <select id="selectPage" resultType="com.yimao.cloud.pojo.vo.water.TdsUploadRecordVO">
+        select
+        tur.id,
+        tur.sn,
+        tur.engineer_name as engineerName,
+        tur.k,
+        tur.t,
+        tur.current_k as currentK,
+        tur.current_t as currentT,
+        tur.create_time as createTime,
+        tur.type_name as typeName,
+        case tur.verify_status when 'Y' then '已审核' when 'N' then '未审核' else '' end as verifyStatus
+        from tds_upload_record tur
+        where 1=1
+        <if test="sn != null and sn != ''">
+            and tur.sn like CONCAT('%',trim(#{sn}),'%')
+        </if>
+        <if test="type != null">
+            and tur.type = #{type}
+        </if>
+        <if test="verifyStatus != null and verifyStatus != ''">
+            and tur.verify_status = #{verifyStatus}
+        </if>
+        <if test="startTime != null">
+            and tur.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and tur.create_time &lt;= #{endTime}
+        </if>
+        order by tur.create_time desc
+    </select>
+
+    <select id="getDetailById" resultType="com.yimao.cloud.pojo.vo.water.TdsUploadRecordVO">
+        select
+        wd.province,
+        wd.city,
+        wd.region,
+        wd.iccid,
+        wd.logistics_code as batchCode,
+        tur.sn,
+        tur.engineer_name as engineerName,
+        tur.k,
+        tur.t,
+        tur.current_k as currentK,
+        tur.current_t as currentT,
+        tur.create_time as createTime,
+        tur.type_name as typeName,
+        case tur.verify_status when 'Y' then '已审核' when 'N' then '未审核' else '' end as verifyStatus,
+        case tur.verify_result when 'Y' then '审核通过' when 'N' then '审核不通过' else '' end as verifyResult,
+        tur.verify_reason as verifyReason,
+        tur.verify_user as verifyUser,
+        tur.verify_time as verifyTime
+        from tds_upload_record tur
+        inner join water_device wd on tur.device_id = wd.id
+        where tur.id = #{id}
+    </select>
+
+</mapper>

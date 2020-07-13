@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.order.mapper.ServiceIncomeRecordPartMapper">
+
+    <insert id="batchInsert" parameterType="java.util.List" >
+        INSERT INTO service_income_record_part (
+        record_id,
+        subject_id,
+        subject_code,
+        subject_name,
+        subject_phone,
+        subject_province,
+        subject_city,
+        subject_region,
+        subject_ratio,
+        subject_money,
+        settlement_subject_id,
+        settlement_subject_code,
+        settlement_subject_name,
+        settlement_time,
+        create_time,
+        update_time
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.recordId},
+            #{item.subjectId},
+            #{item.subjectCode},
+            #{item.subjectName},
+            #{item.subjectPhone},
+            #{item.subjectProvince},
+            #{item.subjectCity},
+            #{item.subjectRegion},
+            #{item.subjectRatio},
+            #{item.subjectMoney},
+            #{item.settlementSubjectId},
+            #{item.settlementSubjectCode},
+            #{item.settlementSubjectName},
+            #{item.settlementTime},
+            #{item.createTime},
+            #{item.updateTime}
+            )
+        </foreach>
+    </insert>
+
+    <select id="getPartByServiceIncomeRecordId" resultType="com.yimao.cloud.pojo.dto.order.IncomeRecordPartResultDTO">
+        SELECT
+            id,
+            subject_code AS incomeSubjectCode,
+            subject_id AS subjectId,
+            subject_name AS incomeName,
+            subject_phone AS subjectPhone,
+            subject_ratio AS subjectRatio,
+            subject_money AS subjectMoney,
+            subject_province AS province,
+            subject_city AS city,
+            subject_region AS region,
+            settlement_time AS settlementTime,
+            settlement_subject_name as settlementSubjectName
+           -- user_id AS userId
+        from
+            service_income_record_part
+        where record_id = #{serviceIncomeRecordId}
+    </select>
+</mapper>

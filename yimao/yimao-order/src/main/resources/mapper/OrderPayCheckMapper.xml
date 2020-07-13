@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.order.mapper.OrderPayCheckMapper">
+	<select id="selectPayCheckRecordList" resultType="com.yimao.cloud.pojo.dto.order.OrderPayCheckDTO" parameterType="com.yimao.cloud.pojo.dto.order.OrderPayCheckDTO">
+	select id, order_type as orderType, order_id as orderId, status, status_name as statusName, reason, creator, create_time as createTime
+	from order_pay_check 
+	<where>
+	<trim>
+	<if test="status != null">
+	status=#{status}
+	</if>
+	<if test="orderId != null">
+	and order_id like concat("%",#{orderId},"%")
+	</if>
+	<if test="startCreateTime != null">
+	and create_time <![CDATA[>=]]> #{startCreateTime}
+	</if>
+	<if test="endCreateTime != null">
+	and create_time <![CDATA[<=]]> #{endCreateTime}
+	</if>
+	</trim>
+	</where>
+	order by create_time desc
+	</select>
+
+	<select id="selectPayCheckRecordListExport" resultType="com.yimao.cloud.pojo.dto.order.OrderPayCheckDTO" parameterType="com.yimao.cloud.pojo.dto.order.OrderPayCheckDTO">
+	select id, order_type as orderType, order_id as orderId, status, status_name as payCheckStatusName, reason, creator, create_time as createTime
+	from order_pay_check 
+	<where>
+	<trim>
+	<if test="status != null">
+	status=#{status}
+	</if>
+	<if test="orderId != null">
+	and order_id like concat("%",#{orderId},"%")
+	</if>
+	<if test="startCreateTime != null">
+	and create_time <![CDATA[>=]]> #{startCreateTime}
+	</if>
+	<if test="endCreateTime != null">
+	and create_time <![CDATA[<=]]> #{endCreateTime}
+	</if>
+	</trim>
+	</where>
+	order by create_time desc
+	</select>
+
+	<select id="selectOrderMainPayCheckRecordInfo" resultType="com.yimao.cloud.pojo.dto.order.OrderPayCheckDTO">
+	select  
+	opc.order_type as orderType, 
+	opc.order_id as orderId, 
+	opc.status, 
+	opc.status_name as payCheckStatusName, 
+	opc.reason, 
+	opc.creator, 
+	om.order_amount_fee as payMoney,
+	om.pay as isPay,
+	om.pay_type as payType,
+	om.pay_credential_submit_time as payCredentialSubmitTime,
+	om.pay_credential as payCredential,
+	opc.create_time as createTime
+	from order_pay_check opc inner join order_main om on opc.order_id=om.id
+	where
+	opc.id=#{id}
+	</select>
+	
+	<select id="selectOrderRenewPayCheckRecordInfo" resultType="com.yimao.cloud.pojo.dto.order.OrderPayCheckDTO">
+	select 
+	opc.order_type as orderType, 
+	opc.order_id as orderId, 
+	opc.status, 
+	opc.status_name as payCheckStatusName, 
+	opc.reason, 
+	opc.creator,
+	ore.amount_fee as payMoney, 
+	ore.pay as isPay,
+	ore.pay_type as payType,
+    ore.pay_credential as payCredential,
+    ore.pay_credential_submit_time as payCredentialSubmitTime,
+	opc.create_time as createTime
+	from order_pay_check opc inner join order_renew ore on opc.order_id=ore.id
+	where
+	opc.id=#{id}
+	</select>
+	
+	<select id="selectWorkOrderPayCheckRecordInfo" resultType="com.yimao.cloud.pojo.dto.order.OrderPayCheckDTO">
+	select  
+	opc.order_type as orderType, 
+	opc.order_id as orderId, 
+	opc.status, 
+	opc.status_name as payCheckStatusName, 
+	opc.reason, 
+	opc.creator, 
+	os.pay_credential as payCredential,
+    w.pay_type as paytype,
+    w.fee as payMoney,
+    w.pay as isPay,
+    w.create_time as payCredentialSubmitTime,
+	opc.create_time as createTime
+	from order_pay_check opc inner join workorder w on opc.order_id=w.id
+	inner join order_sub os on w.sub_order_id = os.id
+	where
+	opc.id=#{id}
+	</select>
+ 
+</mapper>

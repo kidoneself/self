@@ -1,0 +1,86 @@
+spring:
+  profiles:
+    active: local
+  application:
+    name: yimao-task
+  cloud:
+    config:
+      profile: ${spring.profiles.active}
+      discovery:
+        enabled: true
+        service-id: config-server
+management:
+  endpoints:
+    web:
+      base-path: "/monitor"
+  endpoint:
+    shutdown:
+      enabled: true
+---
+spring:
+  profiles: local
+eureka:
+  instance:
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    prefer-ip-address: true
+    hostname: localhost
+    lease-renewal-interval-in-seconds: 10 # 默认30秒
+    lease-expiration-duration-in-seconds: 30 # 默认90秒
+    status-page-url-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}/info
+    health-check-url-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}/health
+    #home-page-url-path: ${server.servlet.context-path:}
+    metadata-map:
+      management.context-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}
+  client:
+    registry-fetch-interval-seconds: 10 # 默认30秒
+    instance-info-replication-interval-seconds: 10 # 默认为30秒
+    service-url:
+      defaultZone: http://yimao:123456@localhost:8761/eureka
+---
+spring:
+  profiles: dev
+eureka:
+  instance:
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    prefer-ip-address: true
+    hostname: localhost
+    status-page-url-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}/info
+    health-check-url-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}/health
+    #home-page-url-path: ${server.servlet.context-path:}
+    metadata-map:
+      management.context-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}
+  client:
+    service-url:
+      defaultZone: http://yimao:123456@192.168.10.63:8761/eureka
+---
+spring:
+  profiles: test
+eureka:
+  instance:
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    prefer-ip-address: true
+    hostname: localhost
+    status-page-url-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}/info
+    health-check-url-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}/health
+    #home-page-url-path: ${server.servlet.context-path:}
+    metadata-map:
+      management.context-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}
+  client:
+    service-url:
+      defaultZone: http://yimao:123456@172.16.1.66:8761/eureka
+---
+spring:
+  profiles: pro
+eureka:
+  instance:
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    prefer-ip-address: true
+    hostname: localhost
+    status-page-url-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}/info
+    health-check-url-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}/health
+    #home-page-url-path: ${server.servlet.context-path:}
+    metadata-map:
+      management.context-path: ${server.servlet.context-path:}${management.endpoints.web.base-path}
+  client:
+    service-url:
+      defaultZone: http://yimao:123456@172.16.2.185:8761/eureka,http://yimao:123456@172.16.2.182:8761/eureka

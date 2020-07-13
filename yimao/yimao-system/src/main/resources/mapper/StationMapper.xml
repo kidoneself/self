@@ -1,0 +1,592 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.system.mapper.StationMapper">
+
+    <resultMap id="StationWithServiceArea" type="com.yimao.cloud.pojo.dto.system.StationDTO">
+        <result column="c_id" property="id" jdbcType="INTEGER"/>
+        <collection property="serviceAreas" ofType="com.yimao.cloud.pojo.dto.system.StationServiceAreaDTO"
+                    select="selectServiceArea"
+                    column="c_id">
+            <result column="c_id" property="stationId" jdbcType="INTEGER"/>
+        </collection>
+    </resultMap>
+
+    <!--根据条件查询服务站门店信息-->
+    <select id="listStation" resultMap="StationWithServiceArea">
+        SELECT distinct
+        s.id,
+        s.id as c_id,
+        s.`name`,
+        sc.`name` AS stationCompanyName,
+        s.code,
+        s.`type`,
+        s.province,
+        s.city,
+        s.region,
+        s.address,
+        s.longitude,
+        s.latitude,
+        s.online,
+        s.online_time as onlineTime,
+        s.contact,
+        s.contact_phone as contactPhone,
+        s.master_name as masterName,
+        s.master_phone as masterPhone,
+        s.master_id_card as masterIdCard,
+        s.master_distributor_id as masterDistributorId,
+        s.contract,
+        s.contractor,
+        s.contractor_phone as contractorPhone,
+        s.contractor_id_card as contractorIdCard,
+        s.contract_start_time as contractStartTime,
+        s.contract_end_time as contractEndTime,
+        s.established_time as establishedTime,
+        s.satisfaction,
+        s.employee_num as employeeNum,
+        s.business_hours_start as businessHoursStart,
+        s.business_hours_end as businessHoursEnd,
+        s.recommend,
+        s.imgs,
+        s.cover_image as coverImage,
+        s.station_area as stationArea,
+        s.purpose,
+        s.aptitude,
+        s.introduction,
+        s.creator,
+        s.create_time as createTime,
+        s.updater,
+        s.update_time as updateTime,
+        s.sorts,
+        s.old_id as oldId,
+        s.display
+        FROM
+        station s
+        LEFT JOIN station_service_area ssa ON s.id = ssa.station_id
+        INNER JOIN station_company__station scs ON s.id = scs.station_id
+        INNER JOIN station_company sc ON scs.station_company_id = sc.id
+        WHERE 1 = 1
+        <if test="stationCompanyName != null and stationCompanyName != ''">
+            and sc.name like CONCAT('%', #{stationCompanyName}, '%')
+        </if>
+        <if test="id != null">
+            and s.id = #{id}
+        </if>
+        <if test="stationName != null and stationName != ''">
+            and s.name like CONCAT('%', #{stationName}, '%')
+        </if>
+        <if test="realName != null and realName != ''">
+            and (s.master_name like CONCAT('%', #{realName}, '%') or s.contractor like CONCAT('%', #{realName}, '%'))
+        </if>
+        <if test="contract != null">
+            and s.contract = #{contract}
+        </if>
+        <if test="startTime != null">
+            and s.online_time &gt; #{startTime}
+        </if>
+        <if test="endTime != null">
+            and s.online_time &lt;= #{endTime}
+        </if>
+        <if test="online != null">
+            and s.online = #{online}
+        </if>
+        <if test="recommend != null">
+            and s.recommend = #{recommend}
+        </if>
+        <if test="areaId != null">
+            and ssa.area_id = #{areaId}
+        </if>
+        <if test="province != null and province != ''">
+            and s.province = #{province}
+        </if>
+        <if test="city != null and city != ''">
+            and s.city = #{city}
+        </if>
+        <if test="region != null and region != ''">
+            and s.region = #{region}
+        </if>
+        <if test="serviceProvince != null and serviceProvince != ''">
+            and ssa.province = #{serviceProvince}
+        </if>
+        <if test="serviceCity != null and serviceCity != ''">
+            and ssa.city = #{serviceCity}
+        </if>
+        <if test="serviceRegion != null and serviceRegion != ''">
+            and ssa.region = #{serviceRegion}
+        </if>
+        <if test="ids != null and ids.size >0">
+            and s.id in (
+            <foreach collection="ids" item="stationId" index="index"
+                     separator=",">
+                #{stationId}
+            </foreach>
+            )
+        </if>
+        <if test="serviceType != null">
+            and ssa.service_type = #{serviceType}
+        </if>
+        <if test="display != null">
+            and s.display = #{display}
+        </if>
+    </select>
+
+    <select id="selectServiceArea" parameterType="java.lang.Integer"
+                     resultType="com.yimao.cloud.pojo.dto.system.StationServiceAreaDTO">
+        select distinct
+        id as id,
+        station_id as stationId,
+        area_id as areaId,
+        province,
+        city,
+        region,
+        creator as creator,
+        create_time as createTime,
+        service_type as serviceType,
+        updater as updater,
+        update_time as updateTime
+        from station_service_area
+        where station_id = #{c_id}
+    </select>
+
+    <!--根据省市区获取服务站ID和NAME-->
+    <select id="selectStationByPCR" resultType="com.yimao.cloud.pojo.dto.system.StationDTO">
+        SELECT distinct
+        s.id,
+        s.`name`,
+        s.contact_phone AS contactPhone,
+        s.province,
+        s.city,
+        s.region,
+        s.address,
+        sc.`name` AS companyName,
+        sc.`name` AS stationCompanyName,
+        s.master_distributor_id as masterDistributorId,
+        s.master_name as masterName,
+        s.master_phone as masterPhone,
+        s.contract,
+        s.contractor,
+        s.online,
+        s.contractor_phone as contractorPhone,
+        s.contractor_id_card as contractorIdCard,
+        s.contract_start_time as contractStartTime,
+        s.contract_end_time as contractEndTime,
+        ssa.service_type as serviceType
+        FROM station s
+        LEFT JOIN station_service_area ssa ON s.id = ssa.station_id
+        INNER JOIN station_company__station scs ON s.id = scs.station_id
+        INNER JOIN station_company sc ON scs.station_company_id = sc.id
+        where 1=1
+        <if test="province != null and province != ''">
+            and ssa.province = #{province}
+        </if>
+        <if test="city != null and city != ''">
+            and ssa.city = #{city}
+        </if>
+        <if test="region != null and region != ''">
+            and ssa.region = #{region}
+        </if>
+        <if test="type != null">
+            <if test="type == 1">
+                and ssa.service_type in (0,1)
+            </if>
+
+            <if test="type == 2">
+                and ssa.service_type in (0,2)
+            </if>
+
+            <if test="type == 0">
+                and ssa.service_type = 0
+            </if>
+        </if>
+    </select>
+
+    <select id="getStationCompanyId" resultType="java.lang.Integer">
+        select station_company_id from station_company__station where station_id = #{id}
+    </select>
+
+    <select id="findStationIdsByPCR" resultType="java.lang.Integer">
+        SELECT id FROM station WHERE 1=1
+        <if test="province != null and province != ''">
+            and province = #{province}
+        </if>
+        <if test="city != null and city != ''">
+            and city = #{city}
+        </if>
+        <if test="region != null and region != ''">
+            and region = #{region}
+        </if>
+        <if test="stationName != null and stationName != ''">
+            and `name` like CONCAT('%', #{stationName}, '%')
+        </if>
+    </select>
+
+    <select id="getStationInfoToExport" resultType="com.yimao.cloud.pojo.dto.system.StationExportDTO">
+        SELECT DISTINCT
+        t.*, (
+        SELECT
+        `name`
+        FROM
+        station_company
+        WHERE
+        id = t.station_company_id
+        ) AS stationCompanyName
+        FROM
+        (
+        SELECT DISTINCT
+        s.id,
+        s.`code`,
+        s.`name` AS stationName,
+        CASE s.type
+        WHEN 1 THEN
+        '加盟店'
+        WHEN 2 THEN
+        '连锁店'
+        WHEN 3 THEN
+        '旗舰店'
+        END AS type,
+        s.province,
+        s.city,
+        s.region,
+        s.address,
+        s.display,
+        ssa.area_id AS areaId,
+        ssa.province AS serviceProvince,
+        ssa.city AS serviceCity,
+        ssa.region AS serviceRegion,
+        ssa.service_type AS serviceType,
+        CASE ssa.service_type
+        WHEN 0 THEN
+        '售前+售后'
+        WHEN 1 THEN
+        '售前'
+        WHEN 2 THEN
+        '售后'
+        END AS serviceTypeStr,
+        s.contact,
+        s.contact_phone AS contactPhone,
+        CASE s.contract
+        WHEN 0 THEN
+        '未承包'
+        WHEN 1 THEN
+        '承包中'
+        END AS contract,
+        s.contract AS contractStatus,
+        DATE_FORMAT(
+        s.contract_start_time,
+        "%Y-%m-%d %H:%i:%s"
+        ) AS contractStartTime,
+        DATE_FORMAT(
+        s.contract_end_time,
+        "%Y-%m-%d %H:%i:%s"
+        ) AS contractEndTime,
+        s.contractor,
+        s.contractor_phone AS contractorPhone,
+        s.contractor_id_card AS contractorIdCard,
+        s.master_name AS masterName,
+        s.master_phone AS masterPhone,
+        s.master_id_card AS masterIdCard,
+        DATE_FORMAT(
+        s.create_time,
+        "%Y-%m-%d %H:%i:%s"
+        ) AS createTime,
+        s.business_hours_start AS businessHoursStart,
+        s.business_hours_end AS businessHoursEnd,
+        s.employee_num AS employeeNum,
+        s.station_area AS stationArea,
+        CASE s. ONLINE
+        WHEN 0 THEN
+        '未上线'
+        WHEN 1 THEN
+        '已上线'
+        END AS ONLINE,
+        s. ONLINE AS onlineStatus,
+        DATE_FORMAT(
+        s.online_time,
+        "%Y-%m-%d %H:%i:%s"
+        ) AS onlineTime,
+        s.online_time AS onlineTimeStatus,
+        scs.station_company_id
+        FROM
+        `station` s
+        LEFT JOIN station_service_area ssa ON s.id = ssa.station_id
+        INNER JOIN station_company__station scs ON scs.station_id = s.id
+        ) t
+        INNER JOIN station_company sc ON t.station_company_id = sc.id
+        WHERE
+        1 = 1
+        <if test="stationCompanyName != null and stationCompanyName.trim() != ''">
+            and sc.name like CONCAT('%',#{stationCompanyName}, '%')
+        </if>
+        <if test="stationName != null and stationName.trim() != ''">
+            and t.stationName like CONCAT('%', #{stationName}, '%')
+        </if>
+        <if test="realName != null and realName.trim() != ''">
+            and (t.masterName like CONCAT('%', #{realName}, '%') or t.contractor like CONCAT('%',
+            #{realName}, '%'))
+        </if>
+        <if test="contract != null">
+            and t.contractStatus = #{contract}
+        </if>
+        <if test="startTime != null">
+            and t.onlineTimeStatus &gt; #{startTime}
+        </if>
+        <if test="endTime != null">
+            and t.onlineTimeStatus &lt;= #{endTime}
+        </if>
+        <if test="online != null">
+            and t.onlineStatus = #{online}
+        </if>
+        <if test="recommend != null">
+            and t.recommend = #{recommend}
+        </if>
+        <if test="areaId != null">
+            and t.areaId = #{areaId}
+        </if>
+        <if test="province != null and province.trim() != ''">
+            and t.province = #{province}
+        </if>
+        <if test="city != null and city.trim() != ''">
+            and t.city = #{city}
+        </if>
+        <if test="region != null and region.trim() != ''">
+            and t.region = #{region}
+        </if>
+        <if test="serviceProvince != null and serviceProvince.trim() != ''">
+            and t.serviceProvince = #{serviceProvince}
+        </if>
+        <if test="serviceCity != null and serviceCity.trim() != ''">
+            and t.serviceCity = #{serviceCity}
+        </if>
+        <if test="serviceRegion != null and serviceRegion.trim() != ''">
+            and t.serviceRegion = #{serviceRegion}
+        </if>
+        <if test="serviceType != null">
+            and t.serviceType = #{serviceType}
+        </if>
+        <if test="display != null">
+            and t.display = #{display}
+        </if>
+    </select>
+
+    <!--根据服务站ids查询服务站名称-->
+    <select id="getStationNameByIds" resultType="com.yimao.cloud.pojo.dto.system.StationServiceAreaDTO">
+        select
+        id as stationId,
+        `name` as stationName
+        from station
+        where 1=1 and id in
+        <foreach collection="ids" open="(" close=")" separator="," item="stationId">
+            #{stationId}
+        </foreach>
+    </select>
+    <select id="getStationCompanyNameByStationId" resultType="java.lang.String">
+
+    SELECT
+	`name`
+    FROM
+	station_company sc
+    LEFT JOIN station_company__station scs ON (
+	scs.station_company_id = sc.id
+    )
+    WHERE
+	scs.station_id = #{stationId}
+    </select>
+
+    <!--获取已经同步了的服务站ID（mongodb数据库的ID）-->
+    <select id="listOldId" resultType="java.lang.String">
+        select distinct old_id from station;
+    </select>
+    <select id="getStationIds" resultType="java.lang.Integer">
+        SELECT distinct
+        s.id
+        FROM
+        station s
+        LEFT JOIN station_service_area ssa ON s.id = ssa.station_id
+        LEFT JOIN station_company__station scs ON s.id = scs.station_id
+        LEFT JOIN station_company sc ON scs.station_company_id = sc.id
+    </select>
+    <select id="getFinalStations" resultType="com.yimao.cloud.pojo.dto.system.StationDTO">
+        SELECT distinct
+        s.id,
+        s.`name`,
+        sc.`name` AS stationCompanyName,
+        s.code,
+        s.`type`,
+        s.province,
+        s.city,
+        s.region,
+        s.address,
+        s.longitude,
+        s.latitude,
+        s.online,
+        s.online_time as onlineTime,
+        s.contact,
+        s.contact_phone as contactPhone,
+        s.master_name as masterName,
+        s.master_phone as masterPhone,
+        s.master_id_card as masterIdCard,
+        s.contract,
+        s.contractor,
+        s.contractor_phone as contractorPhone,
+        s.contractor_id_card as contractorIdCard,
+        s.contract_start_time as contractStartTime,
+        s.contract_end_time as contractEndTime,
+        s.established_time as establishedTime,
+        s.satisfaction,
+        s.employee_num as employeeNum,
+        s.business_hours_start as businessHoursStart,
+        s.business_hours_end as businessHoursEnd,
+        s.recommend,
+        s.imgs,
+        s.cover_image as coverImage,
+        s.station_area as stationArea,
+        s.purpose,
+        s.aptitude,
+        s.introduction,
+        s.creator,
+        s.create_time as createTime,
+        s.updater,
+        s.update_time as updateTime,
+        s.sorts
+        FROM
+        station s
+        LEFT JOIN station_service_area ssa ON s.id = ssa.station_id
+        LEFT JOIN station_company__station scs ON s.id = scs.station_id
+        LEFT JOIN station_company sc ON scs.station_company_id = sc.id
+        WHERE 1 = 1
+        <if test="ids != null">
+            AND s.id in
+            <foreach collection="ids" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="province != null and province != ''">
+            and s.province = #{province}
+        </if>
+        <if test="city != null and city != ''">
+            and s.city = #{city}
+        </if>
+        <if test="region != null and region != ''">
+            and s.region = #{region}
+        </if>
+        <if test="display != null">
+            and s.display = #{display}
+        </if>
+    </select>
+
+    <select id="getStationByCompanyId" resultType="com.yimao.cloud.pojo.dto.system.StationDTO">
+       SELECT
+			s.id,
+			s.`name`
+		FROM
+			station s
+		INNER JOIN station_company__station scs ON s.id = scs.station_id
+		WHERE
+			EXISTS (
+				SELECT
+					1
+				FROM
+					station_service_area ssa
+				WHERE
+					s.id = ssa.station_id
+				AND ssa.service_type IN (0, 2)
+			)
+		AND scs.station_company_id = #{stationCompanyId}
+    </select>
+
+    <select id="getStationByStationCompanyId" resultType="com.yimao.cloud.system.po.Station">
+        SELECT
+            s.id,
+            s.`name`,
+            s.master_name AS masterName,
+            s.master_phone AS masterPhone,
+            s.master_id_card AS masterIdCard,
+            s.old_id AS oldId
+        FROM
+            station s
+            LEFT JOIN station_company__station scs ON s.id = scs.station_id
+        WHERE
+            scs.station_company_id = #{stationCompanyId}
+    </select>
+    <select id="getStationStatusByDistributorId" resultType="java.lang.Boolean">
+        select case `contract` when null then 0 else `contract` end from station where master_distributor_id = #{distributorId} limit 1
+    </select>
+
+    <!--根据mongodb数据库的ID删除服务站门店-->
+    <update id="deleteByOldId">
+        update station set deleted = 1 where old_id = #{oldId};
+    </update>
+    <!-- 获取所有服务站及其服务区域 -->
+    <select id="getAllStation" resultMap="StationWithServiceArea">
+	select id as c_id,name from station	
+	</select>
+
+    <select id="getStationListByIds" parameterType="com.yimao.cloud.pojo.query.system.StationQuery"
+            resultType="com.yimao.cloud.pojo.dto.system.StationDTO">
+        select distinct
+        s.id,
+        s.name,
+        s.online,
+        s.contact_phone as contactPhone,
+        s.province,
+        s.city,
+        s.region,
+        s.address,
+        s.master_distributor_id as masterDistributorId,
+        s.master_name as masterName,
+        s.master_phone as masterPhone,
+        s.contract,
+        s.contractor,
+        s.contractor_phone as contractorPhone,
+        s.contractor_id_card as contractorIdCard,
+        s.contract_start_time as contractStartTime,
+        s.contract_end_time as contractEndTime
+        from station s
+        <where>
+
+            <if test="ids != null">
+                and s.id in
+                <foreach collection="ids" item="sid" index="index" open="(" close=")" separator=",">
+                    #{sid}
+                </foreach>
+            </if>
+        </where>
+
+    </select>
+
+    <!-- 站务系统- 根据绑定门店查询绑定区域的售前售后属性 -->
+    <select id="getAreaTypeByStationId" resultType="com.yimao.cloud.pojo.dto.system.StationServiceAreaDTO">
+		select
+        station_id as stationId,
+        area_id as areaId,
+		service_type as serviceType
+        from station_service_area
+        where station_id = #{stationId}
+	</select>
+	
+	<select id="getAfterServiceStationByStationCompanyId" resultType="com.yimao.cloud.pojo.dto.system.StationDTO">
+		SELECT
+		 	DISTINCT
+			s.id,
+			s.`name`
+		FROM
+			station s
+		LEFT JOIN station_company__station scs ON s.id = scs.station_id
+		LEFT JOIN station_service_area ssa ON ssa.station_id = s.id
+        WHERE
+            scs.station_company_id = #{stationCompanyId}
+           <if test="type != null">
+	            <if test="type == 1">
+	                and ssa.service_type in (0,1)
+	            </if>
+	
+	            <if test="type == 2">
+	                and (ssa.service_type in (0,2) or ssa.service_type is null)
+	            </if>
+	
+	            <if test="type == 0">
+	                and ssa.service_type = 0
+	            </if>
+        </if>
+	</select>
+</mapper>

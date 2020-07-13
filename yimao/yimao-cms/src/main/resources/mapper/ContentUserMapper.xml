@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.cms.mapper.ContentUserMapper">
+    <select id="countHasRead" resultType="java.lang.Integer">
+        SELECT
+            count( 0 )
+        FROM
+            t_content_user tcu
+            LEFT JOIN t_content tc ON ( tc.id = tcu.content_id )
+            LEFT JOIN t_content__category tcg ON (tc.id = tcg.content_id)
+            LEFT JOIN t_category tcy ON (tcy.id = tcg.category_id)
+        WHERE
+            tcu.user_id = #{userId}
+            AND tcu.has_read = 1
+            AND tcu.deleted = 0
+            AND tc.`status` = 1
+            AND tcy.`status` = 1
+            AND tcy.platform = 1
+            AND tcy.location = 2
+    </select>
+</mapper>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.hra.mapper.ActivityExchangeMapper">
+    <insert id="insertBatch">
+        insert into hra_exchange (
+        id,
+        exchange_code,
+        batch_number,
+        create_time,
+        creator,
+        num,
+        exchange_status,
+        begin_time,
+        end_time,
+        side,
+        channel
+        )
+        VALUES
+        <foreach collection="exchangeList" item="item" index="index" separator=",">
+            (
+            #{item.id},
+            #{item.exchangeCode},
+            #{item.batchNumber},
+            #{item.createTime},
+            #{item.creator},
+            #{item.num},
+            #{item.exchangeStatus},
+            #{item.beginTime},
+            #{item.endTime},
+            #{item.side},
+            #{item.channel}
+            )
+        </foreach>
+    </insert>
+    <update id="exChangeSet">
+        UPDATE hra_exchange_setting
+        SET terminal = #{terminal} , limit_type = #{limitType} , times = #{times}
+        WHERE channel = 2
+    </update>
+
+    <select id="getActivityExchangePage" resultType="com.yimao.cloud.pojo.dto.hra.ActivityExchangeDTO">
+        select
+        he.id as id,
+        he.exchange_code as exchangeCode,
+        he.batch_number as batchNumber,
+        he.exchange_from as exchangeFrom,
+        he.user_id as userId,
+        he.create_time as createTime,
+        he.creator as creator,
+        he.ticket_no as ticketNo,
+        he.num as num,
+        he.exchange_time as exchangeTime,
+        he.exchange_status as exchangeStatus,
+        he.begin_time as beginTime,
+        he.end_time as endTime,
+        he.side as side,
+        he.channel as channel,
+        ht.ticket_status as ticketStatus
+        from hra_exchange he
+        left join hra_ticket ht on he.ticket_no = ht.ticket_no
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="side!=null">
+                and he.side = #{side}
+            </if>
+            <if test="channel!=null">
+                and he.channel = #{channel}
+            </if>
+            <if test="exchangeCode!=null  and exchangeCode!='' ">
+                and he.exchange_code LIKE CONCAT('%',#{exchangeCode},'%')
+            </if>
+            <if test="batchNumber!=null  and batchNumber!='' ">
+                and he.batch_number LIKE CONCAT('%',#{batchNumber},'%')
+            </if>
+            <if test="exchangeStatus!=null and exchangeStatus!='' ">
+                and he.exchange_status = #{exchangeStatus}
+            </if>
+            <if test="ticketNo!=null and ticketNo!='' ">
+                and he.ticket_no LIKE CONCAT('%',#{ticketNo},'%')
+            </if>
+            <if test="ticketStatus!=null">
+                and ht.ticket_status = #{ticketStatus}
+            </if>
+        </trim>
+        order by IF(he.exchange_time!='',he.exchange_time ,he.create_time ) desc
+    </select>
+</mapper>

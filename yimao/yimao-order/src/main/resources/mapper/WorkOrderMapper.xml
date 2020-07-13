@@ -1,0 +1,1672 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.order.mapper.WorkOrderMapper">
+
+    <select id="getWorkOrderList" parameterType="com.yimao.cloud.pojo.dto.order.WorkOrderQueryDTO"
+            resultType="com.yimao.cloud.pojo.dto.order.WorkOrderDTO">
+        select
+        wo.id as id,
+        wo.main_order_id as mainOrderId,
+        wo.sub_order_id as subOrderId,
+        wo.status as status,
+        wo.user_id as userId,
+        wo.user_name as userName,
+        wo.user_phone as userPhone,
+        wo.user_score as userScore,
+        wo.user_content as userContent,
+        wo.product_id as productId,
+        wo.product_name as productName,
+        wo.device_id as deviceId,
+        wo.sn,
+        wo.device_model as deviceModel,
+        wo.fee as fee,
+        wo.open_account_fee as openAccountFee,
+        wo.distributor_id as distributorId,
+        wo.distributor_type as distributorType,
+        wo.distributor_type_name as distributorTypeName,
+        wo.distributor_id_card as distributorIdCard,
+        wo.distributor_name as distributorName,
+        wo.distributor_account as distributorAccount,
+        wo.distributor_phone as distributorPhone,
+        wo.distributor_province as distributorProvince,
+        wo.distributor_city as distributorCity,
+        wo.distributor_region as distributorRegion,
+        wo.distributor_role_id as distributorRoleId,
+        wo.distributor_role_name as distributorRoleName,
+        wo.distributor_role_level as distributorRoleLevel,
+
+        wo.sub_distributor_id as subDistributorId,
+        wo.sub_distributor_name as subDistributorName,
+        wo.sub_distributor_phone as subDistributorPhone,
+        wo.sub_distributor_account as subDistributorAccount,
+
+        wo.engineer_id as engineerId,
+        wo.engineer_name as engineerName,
+        wo.engineer_phone as engineerPhone,
+
+        wo.province as province,
+        wo.city as city,
+        wo.region as region,
+        wo.address as address,
+        wo.address_detail as addressDetail,
+
+        wo.dispatch_type as dispatchType,
+        wo.dispatch as dispatch,
+        wo.dispatch_time as dispatchTime,
+        wo.remark as remark,
+
+        wo.cost_id as costId,
+        wo.cost_type as costType,
+        wo.cost_name as costName,
+
+        wo.step as step,
+        wo.next_step as nextStep,
+
+        wo.create_time as createTime,
+        wo.service_time as serviceTime,
+        wo.accept_time as acceptTime,
+        wo.pick_time as pickTime,
+        wo.operation_time as operationTime,
+        wo.complete_time as completeTime,
+        wo.cancel_time as cancelTime,
+        wo.cancel_reason as cancelReason,
+
+        wo.terminal as terminal,
+        wo.`count` as `count`,
+        wo.trade_no as tradeNo,
+
+        wo.need_complete_pay as needCompletePay,
+        wo.complete_pay as completePay,
+        wo.complete_pay_fee as completePayFee,
+        wo.complete_pay_time as completePayTime,
+        wo.complete_pay_type as completePayType,
+        wo.complete_out_trade_no as completeOutTradeNo,
+        wo.complete_trade_no as completeTradeNo,
+
+        wo.chargeback as chargeback,
+        wo.chargeback_status as chargebackStatus,
+        wo.chargeback_type as chargebackType,
+        wo.chargeback_num as chargebackNum,
+        wo.chargeback_reason as chargebackReason,
+        wo.chargeback_remark as chargebackRemark,
+        wo.chargeback_sncode as chargebackSncode,
+        wo.chargeback_time as chargebackTime,
+
+        wo.refuse as refuse,
+        wo.refuse_reason as refuseReason,
+        wo.refuse_remark as refuseRemark,
+        wo.refuse_Time as refuseTime,
+        wo.not_refuse as notRefuse,
+
+        wo.protocol as protocol,
+        wo.confirmation as confirmation,
+
+        wo.discontinue,
+        wo.discontinue_num as discontinueNum,
+        wo.discontinue_reason as discontinueReason,
+        wo.discontinue_remark as discontinueRemark,
+
+        wo.pay as pay,
+        wo.pay_type as payType,
+        wo.pay_time as payTime,
+        wo.pay_status as payStatus,
+        wo.pay_terminal as payTerminal,
+        wo.pay_credential as payCredential,
+        wo.pay_credential_submit_time as payCredentialSubmitTime,
+        wo.not_pass_reason as notPassReason,
+
+        wo.user_appraise_status as userAppraiseStatus,
+        wo.user_appraise_content as userAppraiseContent,
+        wo.user_appraise_time as userAppraiseTime,
+        wo.distributor_appraise_status as distributorAppraiseStatus,
+        wo.distributor_appraise_content as distributorAppraiseContent,
+        wo.distributor_appraise_time as distributorAppraiseTime,
+
+        wo.countdown_time as countdownTime,
+        wo.appoint_time as appointTime,
+        wo.appoint_status as appointStatus,
+        wo.appoint_address as appointAddress,
+        wo.appoint_remark as appointRemark,
+
+        wo.sign_status as signStatus,
+        wo.sign_time as signTime,
+        wo.sign_order_id as signOrderId,
+        wo.sign_user_name as signUserName,
+        wo.sign_user_phone as signUserPhone,
+        wo.sign_user_id_card as signUserIdCard,
+        wo.sign_user_email as signUserEmail,
+        wo.sign_user_address as signUserAddress,
+        wo.sign_client as signClient,
+        wo.contract_validity as contractValidity,
+
+        wo.water_status as waterStatus,
+        wo.water_status_text as waterStatusText,
+        wo.municipal as municipal,
+        wo.water_source_description as waterSourceDescription,
+        wo.tds as tds,
+        wo.hydraulic as hydraulic,
+        wo.other_source as otherSource,
+
+        wo.sim_card as simCard,
+        wo.sim_card_time as simCardTime,
+        wo.logistics_code as logisticsCode,
+        wo.materiel_code as materielCode,
+        wo.supplier_name as supplierName,
+
+        wo.water_images as waterImages,
+        wo.upload_img_time as uploadImgTime,
+
+        wo.invoice as invoice,
+        wo.invoice_type as invoiceType,
+        wo.invoice_header_type as invoiceHeaderType,
+        wo.invoice_title as invoiceTitle,
+        wo.invoice_tax_num as invoiceTaxNum,
+        wo.invoice_bank as invoiceBank,
+        wo.invoice_bank_num as invoiceBankNum,
+        wo.invoice_address as invoiceAddress,
+        wo.invoice_phone as invoicePhone,
+        wo.invoice_email as invoiceEmail,
+        wo.invoice_time as invoiceTime,
+
+        wo.old_distributor_id as oldDistributorId,
+        wo.old_engineer_id as oldEngineerId,
+        wo.old_cost_id as oldCostId,
+        wo.complete_type as completeType,
+        wo.`type` as `type`,
+        wo.station_name as stationName
+        from
+        workorder wo
+        <where>
+            <if test="id!=null and id!='' ">
+                wo.id like CONCAT('%',trim(#{id}),'%')
+            </if>
+            <if test="subOrderId!=null">
+                and wo.sub_order_id like CONCAT('%',trim(#{subOrderId}),'%')
+            </if>
+            <if test="userName!=null and userName!='' ">
+                and wo.user_name like CONCAT('%',trim(#{userName}),'%')
+            </if>
+            <if test="userPhone!=null and userPhone!='' ">
+                and wo.user_phone like CONCAT('%',trim(#{userPhone}),'%')
+            </if>
+            <if test="distributorId!=null">
+                and wo.distributor_id = #{distributorId}
+            </if>
+
+            <if test="distributorName!=null and distributorName!='' ">
+                and wo.distributor_name like CONCAT('%',trim(#{distributorName}),'%')
+            </if>
+            <if test="distributorPhone!=null and distributorPhone!='' ">
+                and wo.distributor_phone like CONCAT('%',trim(#{distributorPhone}),'%')
+            </if>
+            <if test="snCode!=null and snCode!='' ">
+                and wo.sn like CONCAT('%',trim(#{snCode}),'%')
+            </if>
+            <if test="simCard!=null and simCard!='' ">
+                and wo.sim_card like CONCAT('%',trim(#{simCard}),'%')
+            </if>
+            <if test="logisticsCode!=null and logisticsCode!='' ">
+                and wo.logistics_code like CONCAT('%',trim(#{logisticsCode}),'%')
+            </if>
+            <if test="province!=null and province!='' ">
+                and wo.province = #{province}
+            </if>
+            <if test="city!=null and city!=''">
+                and wo.city = #{city}
+            </if>
+            <if test="region!=null and region!=''">
+                and wo.region = #{region}
+            </if>
+            <if test="engineerId!=null">
+                and wo.engineer_id = #{engineerId}
+            </if>
+            <if test="engineerName!=null and engineerName!='' ">
+                and wo.engineer_name like CONCAT('%',trim(#{engineerName}),'%')
+            </if>
+            <if test="status!=null">
+                and wo.status = #{status}
+            </if>
+            <if test="stationId!=null">
+                and wo.station_id = #{stationId}
+            </if>
+            <!--<if test="status!=null">-->
+            <!--<if test="status == 1">-->
+            <!--and wo.status = 1-->
+            <!--</if>-->
+            <!--<if test="status == 2">-->
+            <!--and wo.status = 2-->
+            <!--</if>-->
+            <!--<if test="status == 3">-->
+            <!--and wo.status in (-2, -1, 0, 3, 5, 6, 7)-->
+            <!--</if>-->
+            <!--</if>-->
+            <if test="type!=null">
+                and wo.type = #{type}
+            </if>
+            <if test="terminal!=null">
+                and wo.terminal = #{terminal}
+            </if>
+            <if test="distributorRoleLevel!=null">
+                and wo.distributor_role_level = #{distributorRoleLevel}
+            </if>
+            <if test="payType!=null">
+                and wo.pay_type = #{payType}
+            </if>
+            <if test="payTerminal!=null">
+                and wo.pay_terminal = #{payTerminal}
+            </if>
+            <if test="payTime!=null">
+                and wo.pay_time &lt;= #{payTime}
+            </if>
+            <if test="payStatus!=null">
+                and wo.pay_status = #{payStatus}
+            </if>
+            <if test="completeTime!=null">
+                and wo.complete_time &lt;= #{completeTime}
+            </if>
+            <if test="completeType!=null">
+                and wo.complete_type = #{completeType}
+            </if>
+            <if test="startTime!=null">
+                and wo.create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime!=null">
+                and wo.create_time &lt;= #{endTime}
+            </if>
+            <if test="cancelStartTime!=null">
+                and wo.cancel_time &gt;= #{cancelStartTime}
+            </if>
+            <if test="cancelEndTime!=null">
+                and wo.cancel_time &lt;= #{cancelEndTime}
+            </if>
+            <if test="pay!=null">
+                and wo.pay = #{pay}
+            </if>
+            <if test="appointStatus!=null and appointStatus!=''">
+                and wo.appoint_status = #{appointStatus}
+            </if>
+            <if test="accountingStatus!=null and accountingStatus!=''">
+                and wo.accounting_status = #{accountingStatus}
+            </if>
+            <if test="signStatus!=null and signStatus!=''">
+                and wo.sign_status = #{signStatus}
+            </if>
+            <if test="search!=null and search!='' ">
+                and (wo.id like CONCAT('%',trim(#{search}),'%') or wo.address like CONCAT('%',trim(#{search}),'%') or
+                wo.product_model_name like CONCAT('%',trim(#{search}),'%') or wo.materiel_code like
+                CONCAT('%',trim(#{search}),'%') or wo.user_name like CONCAT('%',trim(#{search}),'%') or wo.user_phone
+                like CONCAT('%',trim(#{search}),'%') or wo.logistics_code like CONCAT('%',trim(#{search}),'%') or
+                wo.sn_code like CONCAT('%',trim(#{search}),'%') or wo.sim_card like CONCAT('%',trim(#{search}),'%'))
+            </if>
+            <if test="notRefuse!=null and notRefuse!=''">
+                and wo.not_Refuse = #{notRefuse}
+            </if>
+
+            <if test="state!=null and state==2">
+                and wo.status in (2,3)
+            </if>
+
+            <!-- 逻辑删除状态 -->
+            <if test="delStatus!=null and delStatus!=''">
+                and wo.del_status = #{delStatus}
+            </if>
+        </where>
+        order by wo.create_time asc
+    </select>
+
+    <select id="countWorkOrderByStatus" resultType="com.yimao.cloud.pojo.dto.order.WorkOrderCountDTO">
+        select count(status) as count,status from workorder where del_status='N'  group by status
+    </select>
+
+    <select id="countWorkOrderByCreateTime" parameterType="com.yimao.cloud.pojo.dto.order.WorkOrderQueryDTO"
+            resultType="com.yimao.cloud.pojo.dto.order.WorkOrderCountDTO">
+        select count(id) as count,DATE_FORMAT(create_time, '%Y-%m-%d') as createTime from workorder
+        where del_status='N'
+        <if test="startTime!=null">
+            and create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime!=null">
+            and create_time &lt;= #{endTime}
+        </if>
+        group by createTime
+    </select>
+
+    <select id="getWorkOrderPayList" parameterType="com.yimao.cloud.pojo.dto.order.WorkOrderQueryDTO"
+            resultType="com.yimao.cloud.pojo.dto.order.PayRecordDTO">
+        select
+        fpr.id,
+        fpr.main_order_id as mainOrderId,
+        fpr.order_type as orderType,
+        fpr.user_id as userId,
+        fpr.trade_no as tradeNo,
+        fpr.pay_type as payType,
+        fpr.terminal as terminal,
+        fpr.amount_total as amountTotal,
+        fpr.create_time as createTime,
+        fpr.pay_time as payTime,
+        wo.id as workOrderId
+        from finance_pay_record fpr
+        left join workorder wo on fpr.main_order_id = wo.id
+        where wo.del_status='N'
+        <if test="id!=null and id!=''">
+            and wo.id = #{id}
+        </if>
+        <if test="search!=null and search!=''">
+            and (fpr.order_id like CONCAT(trim(#{search}),'%') or (fpr.trade_no like CONCAT(trim(#{search}),'%'))
+        </if>
+        <if test="payType!=null and payType!=''">
+            and wo.pay_type = #{payType}
+        </if>
+        <if test="startTime!=null">
+            and fpr.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime!=null">
+            and fpr.create_time &lt;= #{endTime}
+        </if>
+        order by fpr.create_time desc
+    </select>
+
+    <select id="getWorkOrderInvoiceList" parameterType="com.yimao.cloud.pojo.dto.order.WorkOrderQueryDTO"
+            resultType="com.yimao.cloud.pojo.dto.order.WorkOrderDTO">
+        select
+        wo.id as id,
+        wo.sub_order_id as subOrderId,
+        wo.province as province,
+        wo.city as city,
+        wo.region as region,
+        wo.user_id as userId,
+        wo.user_name as userName,
+        wo.user_phone as userPhone,
+        wo.engineer_id as engineerId,
+        wo.engineer_name as engineerName,
+        wo.engineer_phone as engineerPhone,
+        wo.cost_id as costId,
+        wo.cost_name as costName,
+        wo.fee as fee,
+        wo.device_id as deviceId,
+        wo.device_model as deviceModel,
+        wo.station_id as stationId,
+        wo.station_name as stationName,
+        wo.count as count,
+        wo.create_time as createTime,
+        wo.pay_time as payTime,
+        oi.id as invoiceId,
+        oi.apply_status as applyStatus,
+        oi.apply_time as applyInvoiceTime,
+        oi.invoice_type as invoiceType,
+        oi.invoice_head as invoiceHead,
+        oi.company_name as companyName,
+        oi.bank_account as bankAccount,
+        oi.bank_name as bankName,
+        oi.duty_no as dutyNo,
+        oi.company_address as companyAddress,
+        oi.company_phone as companyPhone,
+        oi.apply_user as applyUser,
+        oi.apply_email as applyEmail,
+        oi.apply_address as applyAddress,
+        oi.confirm_time as confirmTime
+        from workorder wo
+        left join order_invoice oi on wo.sub_order_id=oi.order_id
+        <trim prefix="where" prefixOverrides="and | or">
+            1=1
+            <if test="id!=null and id!='' ">
+                and wo.id like CONCAT('%',trim(#{id}),'%')
+            </if>
+            <if test="province!=null and province!=''">
+                and wo.province = #{province}
+            </if>
+            <if test="city!=null and city!=''">
+                and wo.city = #{city}
+            </if>
+            <if test="region!=null and region!=''">
+                and wo.region = #{region}
+            </if>
+            <if test="startTime!=null ">
+                and oi.apply_time &gt;= #{startTime}
+            </if>
+            <if test="endTime!=null">
+                and oi.apply_time &lt;= #{endTime}
+            </if>
+            and oi.type = 1 and oi.apply_status = 2
+            order by oi.apply_time desc
+        </trim>
+    </select>
+
+    <select id="exportWorkOrderInvoiceList" resultType="com.yimao.cloud.pojo.dto.order.WorkOrderInvoiceExportDTO">
+        select
+        wo.id as workOrderId,
+        wo.province as province,
+        wo.city as city,
+        wo.region as region,
+        wo.engineer_id as engineerId,
+        wo.engineer_name as engineerName,
+        wo.engineer_phone as engineerPhone,
+        wo.user_name as userRealName,
+        wo.user_phone as userPhone,
+        wo.device_model as deviceModel,
+        wo.cost_name as costName,
+        wo.fee as amountFee,
+        DATE_FORMAT(wo.create_time,'%Y-%m-%d %H:%i:%s') as createTime,
+        DATE_FORMAT(wo.pay_time,'%Y-%m-%d %H:%i:%s') as payTime,
+        DATE_FORMAT(wo.bill_time,'%Y-%m-%d %H:%i:%s') as applyTime,
+        case oi.invoice_type
+        WHEN 1 then "普通"
+        WHEN 2 then "增值" end as invoiceType,
+        case oi.invoice_head
+        WHEN 1 THEN "公司"
+        WHEN 2 THEN "个人" end as invoiceHead,
+        wo.bill_phone as companyPhone,
+        wo.duty_no as dutyNo,
+        oi.company_name as companyName,
+        oi.company_address as companyAddress,
+        oi.bank_account as bankAccount,
+        oi.bank_name as bankName,
+        DATE_FORMAT(oi.confirm_time,'%Y-%m-%d %H:%i:%s') as confirmTime
+        from workorder wo
+        INNER join order_invoice oi on wo.sub_order_id = oi.order_id
+        <trim prefix="where" prefixOverrides="and | or">
+            1=1
+            <if test="id!=null and id!='' ">
+                and wo.id like CONCAT('%',trim(#{id}),'%')
+            </if>
+            <if test="province!=null and province!=''">
+                and wo.province = #{province}
+            </if>
+            <if test="city!=null and city!=''">
+                and wo.city = #{city}
+            </if>
+            <if test="region!=null and region!=''">
+                and wo.region = #{region}
+            </if>
+            <if test="startTime!=null ">
+                and oi.apply_time &gt;= #{startTime}
+            </if>
+            <if test="endTime!=null">
+                and oi.apply_time &lt;= #{endTime}
+            </if>
+            and oi.type = 1 and oi.apply_status = 2
+            order by oi.apply_time desc
+        </trim>
+    </select>
+
+
+    <select id="selectWorkOrderByEngineerId" resultType="com.yimao.cloud.pojo.vo.order.EngineerWorkOrderVO">
+        select
+        w.id,
+        w.province,
+        w.city,
+        w.region,
+        w.create_time as createTime,
+        CASE w.pay_type
+        WHEN 1 THEN '微信'
+        WHEN 2 THEN '支付宝'
+        WHEN 3 THEN 'POS机'
+        WHEN 4 THEN '转账' ELSE '' END as payType,
+        CASE w.`status`
+        WHEN 1 THEN '未受理'
+        WHEN 2 THEN '已受理'
+        WHEN 3 THEN '处理中'
+        WHEN 4 THEN '已完成' ELSE '' END as status
+        from workorder w
+        left join order_sub_detail osd on osd.sub_order_id = w.sub_order_id
+        where w.engineer_id = #{engineerId} and w.del_status = 'N'
+        order by w.create_time desc
+    </select>
+
+    <!--根据用户手机号查询正常完成的工单-->
+    <select id="selectCompletedWorkOrderByUserPhone" resultType="com.yimao.cloud.pojo.dto.order.WorkOrderDTO">
+        select
+            id,
+            distributor_id as distributorId
+        from
+            workorder
+        where
+            user_phone = #{userPhone} and `status` = 4 and complete_type = 1 and del_status = 'N'
+    </select>
+
+    <!--从工单中获取创建续费订单时需要设置一些信息-->
+    <select id="selectWorkOrderByDeviceIdForRenewOrder" resultType="com.yimao.cloud.order.po.WorkOrder">
+        select
+        wo.id,
+        wo.main_order_id as mainOrderId,
+        wo.sub_order_id as subOrderId,
+        wo.province,
+        wo.city,
+        wo.region,
+        wo.distributor_id as distributorId,
+        wo.distributor_type as distributorType,
+        wo.distributor_type_name as distributorTypeName,
+        wo.distributor_name as distributorName,
+        wo.distributor_phone as distributorPhone,
+        wo.distributor_province as distributorProvince,
+        wo.distributor_city as distributorCity,
+        wo.distributor_region as distributorRegion,
+        wo.distributor_id_card as distributorIdCard,
+        wo.user_name as userName,
+        wo.user_phone as userPhone,
+        wo.distributor_account as distributorAccount,
+        wo.engineer_id as engineerId,
+        wo.engineer_name as engineerName,
+        wo.engineer_phone as engineerPhone,
+        wo.operation_time as operationTime,
+        wo.product_id as productId
+        from workorder wo
+        where wo.device_id = #{deviceId}
+    </select>
+
+    <update id="updateLasteFinishTime">
+		UPDATE workorder
+		SET countdown_time = DATE_ADD(
+			create_time,
+			INTERVAL #{hour} HOUR
+		)
+		WHERE
+			appoint_status = 'N'
+		AND complete_status = 'N'
+	</update>
+
+    <!--安装工更换设备-->
+    <update id="updateForChangeDevice" parameterType="com.yimao.cloud.order.po.WorkOrder">
+        UPDATE
+        workorder
+        SET
+        operation_time = #{operationTime},
+        `status` = #{status},
+        `step` = #{step},
+        <if test="invoice != null">
+            invoice = #{invoice},
+        </if>
+        device_id = null,
+        discontinue = 0,
+        discontinue_num = null,
+        discontinue_reason = null,
+        discontinue_remark = null,
+        protocol = null,
+        confirmation = null,
+        logistics_code = null
+        WHERE
+        id = #{id}
+    </update>
+
+    <!--安装工继续服务-->
+    <update id="updateForContinue" parameterType="com.yimao.cloud.order.po.WorkOrder">
+        UPDATE
+            workorder
+		SET
+		    operation_time = #{operationTime},
+		    discontinue = 0,
+		    discontinue_num = null,
+		    discontinue_reason = null,
+		    discontinue_remark = null
+		WHERE
+		    id = #{id}
+    </update>
+
+    <!--安装工退单-->
+    <update id="updateForChargeback" parameterType="com.yimao.cloud.order.po.WorkOrder">
+        UPDATE
+            workorder
+		SET
+		    operation_time = #{operationTime},
+		    `status` = #{status},
+		    chargeback = #{chargeback},
+		    chargeback_type = #{chargebackType},
+		    chargeback_num =  #{chargebackNum},
+		    chargeback_reason =  #{chargebackReason},
+		    chargeback_remark =  #{chargebackRemark},
+		    chargeback_sncode =  #{chargebackSncode},
+		    chargeback_time =  #{chargebackTime},
+		    complete_type = #{completeType},
+		    chargeback_status = #{chargebackStatus},
+		    complete_time = #{completeTime}
+		WHERE
+		    id = #{id}
+    </update>
+
+    <update id="updateWorkOrder" parameterType="com.yimao.cloud.order.po.WorkOrder">
+        UPDATE
+        workorder
+        SET
+        `status` = #{status},
+        step = #{step},
+        next_step = #{nextStep},
+        <if test="chargeback != null">
+            chargeback = #{chargeback},
+        </if>
+        chargeback_type = null,
+        chargeback_num = null,
+        chargeback_reason = null,
+        chargeback_remark = null,
+        chargeback_sncode = null,
+        chargeback_time = null,
+        complete_type = null,
+        chargeback_status = null,
+        complete_time = null,
+        logistics_code = null,
+        operation_time = null
+        WHERE
+        id = #{id}
+    </update>
+
+
+    <select id="selectDeliveryPayCheckList" resultType="com.yimao.cloud.pojo.dto.order.WorkOrderDTO"
+            parameterType="com.yimao.cloud.pojo.dto.order.WorkOrderQueryDTO">
+        select
+        w.id,
+        w.sub_order_id as subOrderId,
+        w.count,
+        w.fee,
+        w.status,
+        w.pay_type as payType,
+        w.create_time as createTime,
+        os.pay_credential as payCredential,
+        os.pay_terminal as payTerminal
+        from
+        workorder w
+        left join order_sub os on w.sub_order_id = os.id
+        where
+        w.pay = 0 and w.pay_status = 2 and os.pay_terminal = 2
+        and w.del_status='N' and w.chargeback=0
+        <if test="id != null">
+            and w.id like concat("%",#{id},"%")
+        </if>
+        <if test="startPayTime != null">
+            and w.create_time &gt;= #{startPayTime}
+        </if>
+        <if test="endPayTime != null">
+            and w.create_time &lt;= #{endPayTime}
+        </if>
+        <if test="payType == null">
+            and w.pay_type in (3, 4)
+        </if>
+        <if test="payType != null">
+            and w.pay_type = #{payType}
+        </if>
+        order by createtime desc
+    </select>
+
+    <select id="selectDeliveryPayCheckCount" resultType="java.lang.Integer">
+    select
+    count(w.id)
+    from
+    workorder w
+    left join order_sub os on w.sub_order_id = os.id
+    where
+    w.pay = 0 and w.pay_status = 2
+    and os.pay_terminal = 2
+    and w.pay_type in (3, 4)
+    and del_status='N' and chargeback=0
+    </select>
+
+    <select id="selectDeliveryPayCheckListExport" resultType="com.yimao.cloud.pojo.dto.order.WorkOrderDTO"
+            parameterType="com.yimao.cloud.pojo.dto.order.WorkOrderQueryDTO">
+        select
+        w.id,
+        w.sub_order_id as subOrderId,
+        w.count,
+        w.fee,
+        w.status,
+        w.pay_type as payType,
+        w.image,
+        w.create_time as createTime,
+        os.pay_terminal as payTerminal
+        from
+        workorder w
+        left join order_sub os on w.sub_order_id = os.id
+        where
+        w.pay = 0 and w.pay_status = 2
+        and os.pay_terminal = 2
+        and del_status='N' and chargeback=0
+        <if test="id != null">
+            and w.id like concat("%",#{id},"%")
+        </if>
+        <if test="startPayTime != null">
+            and w.create_time &gt;= #{startPayTime}
+        </if>
+        <if test="endPayTime != null">
+            and w.create_time &lt;= #{endPayTime}
+        </if>
+        <if test="payType == null">
+            and w.pay_type in (3, 4)
+        </if>
+        <if test="payType != null">
+            and w.pay_type = #{payType}
+        </if>
+        order by createtime desc
+    </select>
+
+
+    <select id="findWorkOrderByOrderId" resultType="com.yimao.cloud.order.po.WorkOrder">
+        select
+        wo.id,
+        wo.main_order_id as mainOrderId,
+        wo.sub_order_id as subOrderId,
+        wo.`status`,
+        wo.accept_status as acceptStatus,
+        wo.product_id as productId,
+        wo.user_id as userId,
+        wo.user_name as userName,
+        wo.user_phone as userPhone,
+        wo.dispatch_type as dispatchType,
+        wo.chargeback,
+        wo.chargeback_reason as chargebackReason,
+        wo.chargeback_remark as chargebackRemark,
+        wo.province,
+        wo.city,
+        wo.region,
+        wo.sn as sn,
+        wo.device_model as deviceModel,
+        wo.engineer_id as engineerId
+        from workorder wo
+        where wo.sub_order_id = #{subOrderId}
+    </select>
+
+    <select id="checkWorkOrder180ComplatePay" resultType="java.lang.Boolean">
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END AS result
+        from workorder
+        where complete_pay = 1
+        <if test="completeOutTradeNo != null and completeOutTradeNo != ''">
+            and complete_out_trade_no = #{completeOutTradeNo}
+        </if>
+    </select>
+
+    <!--只获取工单常用的基本信息-->
+    <select id="selectBasicInfoById" resultType="com.yimao.cloud.order.po.WorkOrder">
+        select
+            id,
+            main_order_id as mainOrderId,
+            sub_order_id as subOrderId,
+            `status`,
+            device_id as deviceId,
+            `sn`,
+            device_model as deviceModel,
+            `fee`,
+            open_account_fee as openAccountFee,
+            distributor_id as distributorId,
+            distributor_name as distributorName,
+            distributor_phone as distributorPhone,
+            `pay`,
+            pay_type as payType,
+            pay_time as payTime,
+            engineer_id as engineerId,
+            engineer_name as engineerName,
+            engineer_phone as engineerPhone,
+            province,
+            city,
+            region,
+            dispatch_type as dispatchType,
+            dispatch_time as dispatchTime,
+            cost_id as costId,
+            create_time as createTime,
+            service_time as serviceTime,
+            `step`,
+            next_step as nextStep,
+            accept_time as acceptTime,
+            complete_time as completeTime,
+            `chargeback`,
+            refuse_reason as refuseReason,
+            refuse_time as refuseTime,
+            user_name as userName,
+            user_phone as userPhone,
+            user_id as userId,
+            product_id as productId,
+            product_name as productName
+        from
+            workorder
+        where
+            id = #{id}
+    </select>
+    <select id="existsWithLogisticsCode" resultType="java.lang.Boolean">
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END AS result
+        from workorder
+        where logistics_code = #{logisticsCode}
+    </select>
+
+    <select id="selectSignInfoBySignOrderId" resultType="com.yimao.cloud.order.po.WorkOrder">
+        select
+            id,
+            sn,
+            sign_status as signStatus,
+            sign_time as signTime,
+            sign_order_id as signOrderId,
+            sign_user_name as signUserName,
+            sign_user_phone as signUserPhone,
+            sign_user_id_card as signUserIdCard,
+            sign_user_email as signUserEmail,
+            sign_user_address as signUserAddress,
+            sign_client as signClient,
+            contract_validity as contractValidity
+        from
+            workorder
+        where
+            sign_order_id = #{signOrderId} limit 1
+    </select>
+
+    <update id="updateCheckWorkOrderStatus" parameterType="com.yimao.cloud.order.po.WorkOrder">
+        update workorder
+        <set>
+            update_user = #{updateUser},
+            update_time= #{updateTime},
+            <if test="step != null">
+                step= #{step},
+            </if>
+            <if test="status != null">
+                status= #{status},
+            </if>
+            <if test="pay != null">
+                pay= #{pay},
+            </if>
+            <if test="payStatus != null">
+                pay_status= #{payStatus},
+            </if>
+            <if test="payTime != null">
+                pay_time= #{payTime},
+            </if>
+        </set>
+        where
+        pay = 0
+        and pay_status = 2
+        and del_status='N' and chargeback=0
+        and sub_order_id =#{subOrderId}
+    </update>
+    <update id="updateOutStockStepToStartStep">
+        update
+            workorder
+        set
+            step = #{newStep}
+        where province = #{province} and city = #{city} and region = #{region} and product_id = #{productId} and step = #{oldStep}
+    </update>
+
+    <!--总部审核：更新部分工单信息-->
+    <update id="updateWorkOrderRefundAudit">
+        UPDATE
+        workorder
+        SET
+        `status` = #{status},
+        <if test="chargeback != null">
+            chargeback = #{chargeback},
+        </if>
+        chargeback_status = #{chargebackStatus},
+        complete_type = #{completeType},
+        chargeback_reason = #{chargebackReason},
+        chargeback_remark = #{chargebackRemark},
+        logistics_code = null,
+        update_time = #{updateTime}
+        WHERE
+        id = #{id}
+    </update>
+
+
+    <select id="getWorkOrderListBypage" parameterType="com.yimao.cloud.pojo.dto.order.WorkOrderQueryDTO"
+            resultType="com.yimao.cloud.pojo.dto.order.WorkOrderResultDTO">
+        select
+        wo.id as id,
+        wo.main_order_id as mainOrderId,
+        wo.sub_order_id as subOrderId,
+        wo.status as status,
+        wo.province as province,
+        wo.city as city,
+        wo.region as region,
+        wo.address as address,
+        wo.address_detail as addressDetail,
+        wo.dispatch as dispatch,
+        wo.create_time as createTime,
+        wo.terminal as terminal,
+        wo.`count` as `count`,
+        wo.pay_type as payType,
+        wo.pay_status as payStatus,
+        wo.pay_terminal as payTerminal,
+        wo.invoice as invoice,
+        wo.station_name as stationName,
+        wo.scan_Code_Type as scanCodeType,
+        osd.user_id as createUserId,
+        osd.addressee_name as addressName,
+        osd.addressee_phone as addressPhone,
+        wo.engineer_id as engineerId,
+        wo.engineer_name as engineerName,
+        CASE sb.sub_status
+        WHEN 0 THEN
+        '经销商审核中'
+        WHEN 1 THEN
+        '总部审核中'
+        WHEN 2 THEN
+        '待退货入库'
+        WHEN 3 THEN
+        '待退款'
+        WHEN 4 THEN
+        '退单失败'
+        WHEN 5 THEN
+        '退单完成'
+        ELSE
+        '未退单'
+        END as chargeBackStatusText
+        from
+        workorder wo
+        inner join order_sub_detail osd on wo.sub_order_id = osd.sub_order_id
+        left join order_sub sb on osd.sub_order_id = sb.id
+        left join product_income_record pir on pir.order_id = wo.sub_order_id and pir.income_type =1
+        where 1=1
+        <if test="id!=null and id!='' ">
+            and wo.id like CONCAT('%',trim(#{id}),'%')
+        </if>
+        <if test="subOrderId!=null">
+            and wo.sub_order_id like CONCAT('%',trim(#{subOrderId}),'%')
+        </if>
+        <if test="status!=null">
+            and wo.status = #{status}
+        </if>
+        <if test="terminal!=null">
+            and wo.terminal = #{terminal}
+        </if>
+        <if test="type!=null">
+            and wo.type = #{type}
+        </if>
+        <if test="payType!=null">
+            and wo.pay_type = #{payType}
+        </if>
+        <if test="payTerminal!=null">
+            and wo.pay_terminal = #{payTerminal}
+        </if>
+        <if test="payStatus!=null">
+            and wo.pay_status = #{payStatus}
+        </if>
+        <if test="startTime!=null">
+            and wo.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime!=null">
+            and wo.create_time &lt;= #{endTime}
+        </if>
+        <if test="province!=null and province!='' ">
+            and wo.province = #{province}
+        </if>
+        <if test="city!=null and city!=''">
+            and wo.city = #{city}
+        </if>
+        <if test="region!=null and region!=''">
+            and wo.region = #{region}
+        </if>
+        <if test="payStartTime!=null">
+            and wo.pay_time &gt;= #{payStartTime}
+        </if>
+        <if test="payEndTime!=null">
+            and wo.pay_time &lt;= #{payEndTime}
+        </if>
+        <if test="finishStartTime!=null">
+            and wo.complete_time &gt;= #{finishStartTime}
+        </if>
+        <if test="finishEndTime!=null">
+            and wo.complete_time &lt;= #{finishEndTime}
+        </if>
+        <if test="finishMoneyStartTime!=null">
+            and wo.pay_complete_time &gt;= #{finishMoneyStartTime}
+        </if>
+        <if test="finishMoneyEndTime!=null">
+            and wo.pay_complete_time &lt;= #{finishMoneyEndTime}
+        </if>
+        <if test="userId!=null">
+            and osd.user_id=#{userId}
+        </if>
+        <if test="accountMonth!=null and accountMonth!='' ">
+            and pir.settlement_month = #{accountMonth}
+        </if>
+        <!-- 逻辑删除状态 -->
+        <if test="delStatus!=null and delStatus!=''">
+            and wo.del_status = #{delStatus}
+        </if>
+
+        <!-- 退单状态 -->
+        <if test="chargeBackStatus!=null and chargeBackStatus==-1">
+            and wo.chargeback_status is null
+        </if>
+        <if test="chargeBackStatus!=null and chargeBackStatus!=-1">
+            and wo.chargeback_status=#{chargeBackStatus}
+        </if>
+        <if test="distributorId!=null">
+            and wo.distributor_id=#{distributorId}
+        </if>
+
+        order by wo.create_time desc
+    </select>
+
+    <!-- 工单导出sql -->
+    <select id="getWorkOrderListExport" parameterType="com.yimao.cloud.pojo.dto.order.WorkOrderQueryDTO"
+            resultType="com.yimao.cloud.pojo.dto.order.WorkOrderExportDTO">
+        select
+        wo.id as id,
+        CASE when ((wo.step >= 2) and ((wo.step &lt;&gt; 6) or
+        (wo.`status` &lt;&gt; 1))) then "已提货"
+        ELSE "未提货" END as isTake,
+        CASE wo.`status`
+        when 1 then "未受理"
+        when 2 then "已受理"
+        when 3 then "处理中"
+        when 4 then "已完成" END as `status`,
+        CASE wo.pay_type
+        when 1 then "微信"
+        when 2 then "支付宝"
+        when 3 then "POS机"
+        when 4 then "转账"
+        END as payType,
+        wo.distributor_name as distributorRealName,
+        wo.distributor_account as distributorName,
+        wo.distributor_id_card as distributorIdCard,
+        wo.distributor_phone as distributorPhone,
+        concat_ws('/', wo.distributor_province, wo.distributor_city, wo.distributor_region) as distributorAddress,
+        CASE
+        when (wo.distributor_type = 2) or (wo.distributor_type = 3) then concat (wo.distributor_region,'翼猫体验服务中心')
+        ELSE "" END as distributorRegion,
+        wo.engineer_name as engineerName,
+        wo.engineer_phone as engineerPhone,
+        wo.station_name as stationName,
+        osd.cost_name as costName,
+        wo.logistics_code as logisticsCode,
+        wo.sn as snCode,
+        wo.active_time as deviceActiveTime,
+        osd.user_name as createUserName,
+        osd.user_phone as createUserPhone,
+        osd.user_id as createUserId,
+        osd.user_type_name as userTypeName,
+        osd.addressee_name as receiveName,
+        osd.addressee_phone as receivePhone,
+        osd.addressee_province as receiveProvice,
+        osd.addressee_city as receiveCity,
+        osd.addressee_region as receiveRegion,
+        osd.addressee_street as receiveAdress,
+        osd.recommend_name as distributorRefereeName,
+        concat_ws('/', osd.recommend_province, osd.recommend_city, osd.recommend_region) as distributorRefereeAddress,
+        IF(osd.recommend_region is null,'', concat (osd.recommend_region ,'翼猫体验服务中心')) as distributorRefereeRegion,
+        wo.distributor_account as distributorAccount,
+        wo.distributor_type_name as distributorTypeName,
+        case wo.dispatch_type
+        when 1 then "手动派单"
+        when 2 then "自动派单" END as dispatchType,
+        case wo.pay_terminal
+        when 1 then "立即支付"
+        when 2 then "货到付款" END as payTerminal,
+        wo.fee-wo.open_account_fee as modelPrice,
+        wo.open_account_fee as openAccountFee,
+        case wo.invoice when 1 then "开票"
+        else "不开票" end as isBilling,
+        case wo.invoice_type when 1 then "普通"
+        when 2 then "增票" else "" end as invoice,
+        case wo.invoice_head when 1 then "公司"
+        when 2 then "个人" else "" end as invoiceHead,
+        wo.fee as billFee,
+        wo.distributor_type_name as distributorRoleName,
+        wo.first_upgrade_time as firstUpgradeTime,
+        wo.sub_distributor_id as subDistributorId,
+        osd.sub_distributor_name as subDistributorRealName,
+        osd.sub_distributor_account as subDistributorName,
+        case wo.terminal
+        when 1 then "终端app"
+        when 2 then "微信公众号"
+        when 3 then "翼猫App"
+        when 4 then "小程序"
+        else "" end as `type`,
+        case
+        when (wo.cost_id = 5) or (wo.cost_id = 6) then 180
+        else 0 end as completeFirstPayMoney,
+        case
+        when ((wo.cost_id = 5) or (wo.cost_id = 6)) and (wo.need_complete_pay=1) and (wo.complete_pay=0) then '未完款'
+        when ((wo.cost_id = 5) or (wo.cost_id = 6)) and (wo.complete_pay=1) and (wo.need_complete_pay=0) then '已完款'
+        else '无需完款' end as completePay,
+        DATE_FORMAT(wo.pay_complete_time,'%Y-%m-%d %H:%i:%s') as payCompleteTime,
+        wo.trade_no as tradeNo,
+        wo.pay_complete_trade_no as payCompleteTradeNo,
+        case wo.complete_pay_type
+        when 1 then "微信"
+        when 2 then "支付宝"
+        when 3 then "POS机"
+        when 4 then "转账"
+        end as payCompletePayType,
+        wo.sub_order_id as subOrderId,
+        osd.engineer_province as province,
+        osd.engineer_city as city,
+        osd.engineer_region as region,
+        wo.`count` as `count`,
+        DATE_FORMAT(wo.create_time,'%Y-%m-%d %H:%i:%s') as createTime,
+        DATE_FORMAT(wo.accept_time,'%Y-%m-%d %H:%i:%s') as acceptTime,
+        DATE_FORMAT(wo.pay_time,'%Y-%m-%d %H:%i:%s') as payTime,
+        DATE_FORMAT(wo.pick_time,'%Y-%m-%d %H:%i:%s') as pickTime,
+        DATE_FORMAT(wo.complete_time,'%Y-%m-%d %H:%i:%s') as completeTime,
+        DATE_FORMAT(wo.bill_time,'%Y-%m-%d %H:%i:%s') as billTime,
+        wo.company_name as companyName,
+        wo.device_model as deviceModel,
+        case wo.cost_type
+        when 1 then "流量计费"
+        when 2 then "包年计费" END as costTypeName,
+        DATE_FORMAT(wo.first_upgrade_time,'%Y-%m-%d %H:%i:%s') as distributorFirstUpgradetime,
+        osd.product_first_category_name as firstCategoryName,
+        osd.product_two_category_name as twoCategoryName,
+        osd.product_category_name as threeCategoryName,
+        pir.settlement_month as settlementTime,
+        CASE sb.sub_status
+        WHEN 0 THEN
+        '经销商审核中'
+        WHEN 1 THEN
+        '总部审核中'
+        WHEN 2 THEN
+        '待退货入库'
+        WHEN 3 THEN
+        '待退款'
+        WHEN 4 THEN
+        '退单失败'
+        WHEN 5 THEN
+        '退单完成'
+        ELSE
+        '未退单'
+        END as chargeBackStatusText,
+        wo.pay_complete_money as payCompleteMoney
+        from
+        workorder wo
+        inner join order_sub_detail osd on wo.sub_order_id = osd.sub_order_id
+        left join order_sub sb on osd.sub_order_id = sb.id
+        left join product_income_record pir on pir.order_id = wo.sub_order_id and pir.income_type = 1
+        where 1=1
+        <if test="id!=null and id!='' ">
+            and wo.id like CONCAT('%',trim(#{id}),'%')
+        </if>
+
+        <if test="workOrderId!=null and workOrderId!='' ">
+            and wo.id like CONCAT('%',trim(#{workOrderId}),'%')
+        </if>
+        <if test="subOrderId!=null">
+            and wo.sub_order_id like CONCAT('%',trim(#{subOrderId}),'%')
+        </if>
+        <if test="orderId!=null">
+            and wo.sub_order_id like CONCAT('%',trim(#{orderId}),'%')
+        </if>
+        <if test="status!=null">
+            and wo.status = #{status}
+        </if>
+        <if test="terminal!=null">
+            and wo.terminal = #{terminal}
+        </if>
+        <if test="type!=null">
+            and wo.type = #{type}
+        </if>
+        <if test="payType!=null">
+            and wo.pay_type = #{payType}
+        </if>
+        <if test="payTerminal!=null">
+            and wo.pay_terminal = #{payTerminal}
+        </if>
+        <if test="payStatus!=null">
+            and wo.pay_status = #{payStatus}
+        </if>
+        <if test="startTime!=null">
+            and wo.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime!=null">
+            and wo.create_time &lt;= #{endTime}
+        </if>
+        <if test="province!=null and province!='' ">
+            and wo.province = #{province}
+        </if>
+        <if test="city!=null and city!=''">
+            and wo.city = #{city}
+        </if>
+        <if test="region!=null and region!=''">
+            and wo.region = #{region}
+        </if>
+        <if test="payStartTime!=null">
+            and wo.pay_time &gt;= #{payStartTime}
+        </if>
+        <if test="payEndTime!=null">
+            and wo.pay_time &lt;= #{payEndTime}
+        </if>
+        <if test="finishStartTime!=null">
+            and wo.complete_time &gt;= #{finishStartTime}
+        </if>
+        <if test="finishEndTime!=null">
+            and wo.complete_time &lt;= #{finishEndTime}
+        </if>
+        <if test="finishMoneyStartTime!=null">
+            and wo.pay_complete_time &gt;= #{finishMoneyStartTime}
+        </if>
+        <if test="finishMoneyEndTime!=null">
+            and wo.pay_complete_time &lt;= #{finishMoneyEndTime}
+        </if>
+        <if test="userId!=null">
+            and osd.user_id=#{userId}
+        </if>
+        <if test="accountMonth!=null and accountMonth!='' ">
+            and pir.settlement_month=#{accountMonth}
+        </if>
+        <!-- 逻辑删除状态 -->
+        <if test="delStatus!=null and delStatus!=''">
+            and wo.del_status = #{delStatus}
+        </if>
+        <!-- 退单状态 -->
+        <if test="chargeBackStatus!=null and chargeBackStatus==-1">
+            and wo.chargeback_status is null
+        </if>
+        <if test="chargeBackStatus!=null and chargeBackStatus!=-1">
+            and wo.chargeback_status=#{chargeBackStatus}
+        </if>
+
+        <if test="startTime==null and endTime==null and queryTime!=null and queryTime!=''">
+            and wo.create_time &lt;=#{queryTime}
+        </if>
+        order by wo.create_time desc
+        <if test="pageSize!=null and pageSize!='' and pageSize>0">
+            limit #{pageSize}
+        </if>
+    </select>
+
+    <select id="getStationWorkOrderList" parameterType="com.yimao.cloud.pojo.query.station.WorkOrderQuery"
+            resultType="com.yimao.cloud.pojo.dto.order.WorkOrderResultDTO">
+        select
+        wo.id as id,
+        wo.main_order_id as mainOrderId,
+        wo.sub_order_id as subOrderId,
+        wo.status as status,
+        wo.province as province,
+        wo.city as city,
+        wo.region as region,
+        wo.address as address,
+        wo.address_detail as addressDetail,
+        wo.dispatch as dispatch,
+        wo.create_time as createTime,
+        wo.terminal as terminal,
+        wo.`count` as `count`,
+        wo.pay_type as payType,
+        wo.pay_status as payStatus,
+        wo.pay_terminal as payTerminal,
+        wo.invoice as invoice,
+        wo.user_name as userName,
+        wo.distributor_name as distributorName,
+        wo.engineer_name as engineerName,
+        wo.station_name as stationName,
+        wo.scan_Code_Type as scanCodeType,
+        osd.user_id as createUserId,
+        CASE wo.chargeback_status
+        WHEN 0 THEN
+        '待退单'
+        WHEN 1 THEN
+        '退单中'
+        WHEN 2 THEN
+        '退单成功'
+        ELSE
+        '未退单'
+        END as chargeBackStatusText
+        from
+        workorder wo
+        inner join order_sub_detail osd on wo.sub_order_id = osd.sub_order_id
+        <where>
+            <if test="id!=null and id!='' ">
+                and wo.id like CONCAT('%',trim(#{id}),'%')
+            </if>
+            <if test="status!=null">
+                and wo.status = #{status}
+            </if>
+            <if test="status!=null and status == 4">
+                and wo.complete_type = 1
+            </if>
+            <if test="terminal!=null">
+                and wo.terminal = #{terminal}
+            </if>
+            <if test="payTerminal!=null">
+                and wo.pay_terminal = #{payTerminal}
+            </if>
+            <if test="payStatus!=null">
+                and wo.pay_status = #{payStatus}
+            </if>
+            <if test="startTime!=null">
+                and wo.create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime!=null">
+                and wo.create_time &lt;= #{endTime}
+            </if>
+            <!-- 逻辑删除状态 -->
+            <if test="delStatus!=null and delStatus!=''">
+                and wo.del_status = #{delStatus}
+            </if>
+            <!-- 退单状态 -->
+            <if test="chargeBackStatus!=null and chargeBackStatus==-1">
+                and wo.chargeback_status is null
+            </if>
+            <if test="chargeBackStatus!=null and chargeBackStatus!=-1">
+                and wo.chargeback_status=#{chargeBackStatus}
+            </if>
+            <if test="addresseeName !=null and addresseeName !=''">
+                and osd.addressee_name=#{addresseeName}
+            </if>
+            <if test="userName !=null and userName !=''">
+                and osd.user_name=#{userName}
+            </if>
+            <if test="userPhone !=null and userPhone !=''">
+                and osd.user_phone=#{userPhone}
+            </if>
+            <if test="distributorAccount !=null and distributorAccount !=''">
+                and osd.distributor_account=#{distributorAccount}
+            </if>
+            <if test="distributorName !=null and distributorName !=''">
+                and osd.distributor_name=#{distributorName}
+            </if>
+            <if test="engineerId != null">
+                and wo.engineer_id =#{engineerId}
+            </if>
+            <if test="engineerIds != null and engineerIds.size >0">
+                and wo.engineer_id in (
+                <foreach collection="engineerIds" item="item" index="index"
+                         separator=",">
+                    #{item}
+                </foreach>
+                )
+            </if>
+        </where>
+        order by wo.create_time desc
+    </select>
+
+    <select id="getStationWorkOrderNum" resultType="com.yimao.cloud.pojo.dto.station.StationScheduleDTO">
+        select
+        ifnull(count(case wo.status when 1 then wo.id end),0) as notAcceptedNum,
+        ifnull(count(case wo.status when 2 then wo.id end),0) as acceptedNum,
+        ifnull(count(case wo.status when 3 then wo.id end),0) as processingNum,
+        ifnull(count(case when (wo.status=4 and wo.complete_type = 1) then wo.id end),0) as finishNum
+        from
+        workorder wo inner join order_sub_detail osd on wo.sub_order_id = osd.sub_order_id
+        <where>
+            <choose>
+                <when test="engineerIds != null and engineerIds.size >0">
+                    and wo.engineer_id in (
+                    <foreach collection="engineerIds" item="item" index="index"
+                             separator=",">
+                        #{item}
+                    </foreach>
+                    )
+                </when>
+                <otherwise>
+                    and 0 = 1
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+    <update id="updateWorkorderForEngineer" parameterType="com.yimao.cloud.pojo.dto.order.WorkOrderDTO">
+        UPDATE workorder
+        SET station_id = #{stationId},
+        station_name = #{stationName},
+        <if test="oldEngineerId !=null and oldEngineerId!=''">
+            old_engineer_id = #{oldEngineerId},
+        </if>
+        <if test="oldStationId !=null and oldStationId!=''">
+            old_station_id = #{oldStationId},
+        </if>
+        <if test="engineerId !=null">
+            engineer_id = #{engineerId},
+        </if>
+        <if test="engineerName !=null and engineerName!=''">
+            engineer_name = #{engineerName},
+        </if>
+        <if test="engineerPhone !=null and engineerPhone!=''">
+            engineer_phone = #{engineerPhone},
+        </if>
+        <if test="engineerIdCard !=null and engineerIdCard!=''">
+            engineer_id_card = #{engineerIdCard},
+        </if>
+        update_time = NOW()
+        WHERE
+        (STATUS != 4 or chargeback_status in (0,1))
+        <if test="oldEnId !=null">
+            AND engineer_id = #{oldEnId}
+        </if>
+        <if test="province !=null and province!=''">
+            AND province = #{province}
+        </if>
+        <if test="city !=null and city!=''">
+            AND city = #{city}
+        </if>
+        <if test="region !=null and region!=''">
+            AND region = #{region}
+        </if>
+    </update>
+
+    <select id="queryWorkOrderForUnfinished" resultType="com.yimao.cloud.pojo.dto.order.WorkOrderUnfinishedRsDTO">
+    	SELECT
+			COUNT(1) AS orderNum,
+			1 AS orderType
+		FROM
+			workorder
+		WHERE
+			(
+				STATUS != 4
+				OR chargeback_status IN (0, 1)
+			)
+		AND province = #{province}
+		AND city = #{city}
+		AND region = #{region}
+    </select>
+
+    <select id="queryWorkOrderForEngineerIdsByPcr" resultType="java.lang.Integer">
+    	SELECT
+			engineer_id
+		FROM
+			workorder
+		WHERE
+			(
+				STATUS != 4
+				OR chargeback_status IN (0, 1)
+			)
+		AND province = #{province}
+		AND city = #{city}
+		AND region = #{region}
+    </select>
+
+    <!-- 安装工app新版本获取待安装、处理中、挂单、退单工单数量 -->
+    <select id="getWorkOrderStatInfo" resultType="com.yimao.cloud.pojo.dto.order.WorkOrderStatDTO">
+    	SELECT
+			STATUS,
+			COUNT(1) as count
+		FROM
+			workorder
+		WHERE
+			engineer_id = #{engineerId} and chargeback=0
+		GROUP BY
+			`status`
+		UNION
+			SELECT
+				5,
+				COUNT(1) as count
+			FROM
+				workorder
+			WHERE
+				chargeback = 1
+			AND engineer_id = #{engineerId}
+    </select>
+
+    <!-- 安装工app新版本查询工单列表 -->
+    <select id="getWorkOrderListForEngineer" parameterType="com.yimao.cloud.pojo.dto.order.WorkOrderReqDTO"
+            resultType="com.yimao.cloud.pojo.dto.order.WorkOrderRsDTO">
+        select
+        wo.id as id,
+        wo.user_id as userId,
+        wo.user_name as customerName,
+        wo.user_phone as customerPhone,
+        wo.cost_name as costName,
+        wo.device_model as productModel,
+        wo.fee as amount,
+        wo.province,
+        wo.city,
+        wo.region,
+        wo.address_detail as serviceAdress,
+        DATE_FORMAT(wo.create_time,'%Y-%m-%d %H:%i:%s') as starTime,
+        DATE_FORMAT(wo.service_time,'%Y-%m-%d %H:%i:%s') as serviceTime,
+        DATE_FORMAT(wo.appoint_time,'%Y-%m-%d %H:%i:%s') as appointTime,
+        wo.appoint_time_limit as appointTimeLimit,
+        ifnull((
+        6378.137 * 2 * ASIN(
+        SQRT(
+        POW( SIN( ( RADIANS( #{latitude} ) - RADIANS( addr_latitude ) ) / 2 ), 2 ) + COS( RADIANS( #{latitude} ) ) *
+        COS( RADIANS( addr_latitude ) ) * POW( SIN( ( RADIANS( #{longitude} ) - RADIANS( addr_longitude ) ) / 2 ), 2 )
+        )
+        )
+        ) ,0) AS distanceNum,
+        wo.complete_time as completeTime,
+        wo.status,
+        wo.step,
+        wo.next_step as nextStep,
+        wo.pay,
+        wo.pay_status as payStatus,
+        wo.appoint_remark as appointRemark,
+        wo.addr_latitude as addrLatitude,
+        wo.addr_longitude as addrLongitude,
+        wo.address as address,
+        IFNULL(wo.not_refuse, 'N') as notRefuse,
+        wo.chargeback_time as chargebackTime,
+        IFNULL(wo.sign_status, 'N') as signStatus
+        from
+        workorder wo
+        <where>
+            <if test="engineerId!=null">
+                wo.engineer_id = #{engineerId}
+            </if>
+
+            <if test="search!=null and search!=''">
+                and (wo.address_detail like CONCAT('%',trim(#{search}),'%')
+                or wo.user_name like CONCAT('%',trim(#{search}),'%')
+                or wo.cost_name like CONCAT('%',trim(#{search}),'%')
+                or wo.device_model like CONCAT('%',trim(#{search}),'%')
+                or wo.id like CONCAT('%',trim(#{search}),'%'))
+                or wo.sn like CONCAT('%',trim(#{search}),'%')
+                or wo.sim_card like CONCAT('%',trim(#{search}),'%')
+                or wo.logistics_code like CONCAT('%',trim(#{search}),'%'))
+            </if>
+            <if test="status!=null and status!=5">
+                and wo.status=#{status} and wo.chargeback=0
+            </if>
+
+            <!-- 退单数据 -->
+            <if test="status!=null and status==5">
+                and wo.chargeback=1
+            </if>
+
+            <!-- 逻辑删除状态 -->
+            <if test="delStatus!=null and delStatus!=''">
+                and wo.del_status = #{delStatus}
+            </if>
+        </where>
+        <if test="sortBy!=null and sortBy==1 and sortType ==1">
+            order by wo.create_time asc
+        </if>
+        <if test="sortBy!=null and sortBy==1 and sortType ==2">
+            order by wo.create_time desc
+        </if>
+        <if test="sortBy!=null and sortBy==2 and sortType ==1">
+            order by distanceNum asc
+        </if>
+        <if test="sortBy!=null and sortBy==2 and sortType ==2">
+            order by distanceNum desc
+        </if>
+        <if test="sortBy!=null and sortBy==3  and sortType ==1">
+            order by wo.complete_time asc
+        </if>
+        <if test="sortBy!=null and sortBy==3  and sortType ==2">
+            order by wo.complete_time desc
+        </if>
+        <if test="sortBy!=null and sortBy==4  and sortType ==1">
+            order by wo.chargeback_time asc
+        </if>
+        <if test="sortBy!=null and sortBy==4  and sortType ==2">
+            order by wo.chargeback_time desc
+        </if>
+    </select>
+
+    <select id="getInstallWorderOrderList" resultType="com.yimao.cloud.pojo.dto.order.RenewDTO">
+        SELECT
+        device_model AS costNameType,
+        product_two_category_name AS categoryName,
+        count( 1 ) AS orderNum
+        FROM
+        workorder wo
+        INNER JOIN `order_sub_detail` osd ON osd.sub_order_id = wo.sub_order_id
+        WHERE
+        wo.`status` = 4
+        <if test="engineerId != null">
+            and engineer_id = #{engineerId}
+        </if>
+        <if test="timeType != null and timeType == 1">
+            DATE_FORMAT(wo.complete_time,'%Y-%m-%d') = #{completeTime}
+        </if>
+        <if test="timeType != null and timeType == 2">
+            DATE_FORMAT(wo.complete_time,'%Y-%m') = #{completeTime}
+        </if>
+        <if test="timeType != null and timeType == 3">
+            DATE_FORMAT(wo.complete_time,'%Y') = #{completeTime}
+        </if>
+        GROUP BY
+        device_model,
+        product_two_category_name
+    </select>
+    <select id="getInstallWorkOrder" resultType="com.yimao.cloud.pojo.dto.order.MapOrderDTO">
+        SELECT
+            wo.id,
+            wo.main_order_id AS mainOrderId,
+            wo.sub_order_id AS subOrderId,
+            wo.`status`,
+            wo.user_id AS userId,
+            wo.user_name AS userName,
+            wo.user_phone AS userPhone,
+            wo.device_model AS deviceModel,
+            wo.cost_id AS costId,
+            wo.cost_type AS costType,
+            wo.cost_name AS costName,
+            wo.province,
+            wo.city,
+            wo.region,
+            wo.address,
+            wo.addr_latitude AS addrLatitude,
+            wo.addr_longitude AS addrLongitude,
+            wo.engineer_id AS engineerId,
+            wo.service_time AS serviceTime
+        FROM
+            workorder wo
+        WHERE
+            1 = 1
+        AND wo.`status` IN (1, 2, 3)
+        AND wo.engineer_id = #{engineerId}
+    </select>
+
+
+    <select id="mergeOrder" resultType="com.yimao.cloud.pojo.dto.order.MapOrderDTO">
+        SELECT
+            wm.device_sncode AS sn,
+            GROUP_CONCAT(wm.materiel_detail_name),
+            GROUP_CONCAT(wm.create_time)
+        FROM
+            workorder_maintenance wm
+        WHERE
+            1 = 1
+        AND wm.state = #{state}
+        AND wm.engineer_id = #{engineerId}
+        AND wm.device_sncode = #{sn}
+    </select>
+
+
+    <select id="getWorkOrderCount" resultType="java.lang.Integer">
+        select
+        count(1)
+        from workorder wo
+        where 1=1 and wo.del_status = 'N'
+        <if test="engineerId != null">
+            and wo.engineer_id = #{engineerId}
+        </if>
+        <if test="status!=null">
+            and wo.status=#{status}
+        </if>
+    </select>
+
+
+    <select id="getInstallWaterDeviceTotalCount" resultType="java.lang.Integer">
+        select
+        count(1)
+        from workorder wo
+        where 1=1 and wo.del_status = 'N'
+        and wo.status in (1,2,3)
+        <if test="engineerId != null">
+            and wo.engineer_id = #{engineerId}
+        </if>
+    </select>
+</mapper>

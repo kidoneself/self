@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.yimao.cloud.hra.mapper.MiniChoiceMapper">
+
+    <!--查询选择题 题干列表 -->
+    <select id="findChoiceListByEvaId" resultType="com.yimao.cloud.hra.po.MiniChoice">
+        SELECT ch.`id` AS id,
+        ch.`evaluating_id` AS evaluatingId,
+        ch.`stem` AS stem,
+        ch.`create_time` AS createTime
+        FROM
+        healthy_choice ch
+        WHERE
+        ch.`evaluating_id` = #{evaluateId}
+    </select>
+
+</mapper>

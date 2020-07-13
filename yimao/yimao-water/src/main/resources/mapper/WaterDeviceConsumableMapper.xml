@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.water.mapper.WaterDeviceConsumableMapper">
+
+    <select id="listByDeviceModelForFilterSetting" resultType="com.yimao.cloud.pojo.dto.water.WaterDeviceConsumableDTO">
+        select `name`, `time`, `flow` from water_device_consumable where device_model = #{deviceModel}
+    </select>
+
+</mapper>

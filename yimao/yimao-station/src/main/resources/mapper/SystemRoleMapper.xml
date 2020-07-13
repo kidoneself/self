@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.station.mapper.SystemRoleMapper">
+
+    <resultMap id="BaseResultMap" type="com.yimao.cloud.station.po.SystemRole">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="station_id" jdbcType="INTEGER" property="stationId"/>
+        <result column="area_ids" jdbcType="VARCHAR" property="areaIds"/>
+        <result column="admin_id" jdbcType="INTEGER" property="adminId"/>
+        <result column="creator" jdbcType="INTEGER" property="creator"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="updater" jdbcType="INTEGER" property="updater"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+    id, station_id, area_ids, admin_id, creator, create_time, updater, update_time
+  </sql>
+
+    <delete id="deleteByAdminId" parameterType="java.lang.Integer">
+  	delete from system_role where admin_id = #{adminId}
+  </delete>
+
+    <insert id="batchInsert">
+        insert into system_role (id, station_id, area_ids,
+        admin_id,
+        creator,
+        create_time, updater, update_time
+        )
+        values
+        <foreach collection="list" item="item" index="index"
+                 separator=",">
+            (#{item.id,jdbcType=INTEGER}, #{item.stationId,jdbcType=INTEGER},
+            #{item.areaIds,jdbcType=VARCHAR},
+            #{item.adminId,jdbcType=INTEGER}, #{item.creator,jdbcType=INTEGER},
+            #{item.createTime,jdbcType=TIMESTAMP}, #{item.updater,jdbcType=INTEGER},
+            #{item.updateTime,jdbcType=TIMESTAMP}
+            )
+        </foreach>
+    </insert>
+
+	<select id="selectAreasByAdminId" resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from system_role
+		where admin_id = #{adminId,jdbcType=INTEGER}
+	</select>
+	<select id="selectSystemRoleByStationId" resultType="com.yimao.cloud.pojo.dto.station.SystemRoleDTO">
+	 	select
+        sr.id as systemRoleId,
+        sr.station_id as stationId,
+        sr.area_ids as areaIds,
+        sr.admin_id as adminId,
+        sa.station_company_id as stationCompanyId
+        from system_role sr left join station_admin sa on sr.admin_id =sa.id
+		where sr.station_id=#{stationId}
+	
+	</select>
+</mapper>

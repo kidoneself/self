@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.station.mapper.StationPermissionMapper">
+    <resultMap id="BaseResultMap" type="com.yimao.cloud.station.po.StationPermission">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="method" jdbcType="VARCHAR" property="method"/>
+        <result column="url" jdbcType="VARCHAR" property="url"/>
+        <result column="menu_id" jdbcType="INTEGER" property="menuId"/>
+        <result column="creator" jdbcType="INTEGER" property="creator"/>
+        <result column="type" jdbcType="INTEGER" property="type"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="updater" jdbcType="INTEGER" property="updater"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+    id, `name`, method, url, menu_id, creator, create_time, updater, update_time,`type`
+  </sql>
+
+    <select id="checkPermissionExist" resultType="java.lang.Integer">
+        select
+        count(1)
+        from station_permission
+        where id not in (#{id})
+        <if test="menuId != null">
+            and menu_id = #{menuId}
+        </if>
+        <if test="method != null and method.trim() != ''">
+            and method = #{method}
+        </if>
+        <if test="url != null and url.trim() != ''">
+            and url = #{url}
+        </if>
+    </select>
+
+    <select id="selectBySubMenuIdList" resultType="com.yimao.cloud.pojo.dto.station.StationPermissionDTO">
+        select distinct
+        p.id,
+        p.`name`,
+        p.method,
+        p.url,
+        p.type,
+        a1.real_name as creatorName,
+        p.create_time as createTime,
+        a2.real_name as updaterName,
+        p.update_time as updateTime
+        from station_permission p
+        left join station_admin a1 on p.creator = a1.id
+        left join station_admin a2 on p.updater = a2.id
+        where 1 = 1
+        <if test="subMenuIdList != null and subMenuIdList.size() > 0">
+            and p.menu_id in
+            <foreach collection="subMenuIdList" item="id" index="index" separator="," open="(" close=")">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="selectPermissionCacheAll" resultType="com.yimao.cloud.pojo.dto.station.StationPermissionCacheDTO">
+        select distinct
+        id,
+        method,
+        url,
+        menu_id as menuId,
+        `type`
+        from station_permission
+        where 1 = 1
+    </select>
+
+    <select id="selectCodeAndMethodByRoleId"
+            resultType="com.yimao.cloud.pojo.dto.station.StationPermissionCacheDTO">
+        select distinct
+        p.url,
+        p.method,
+        p.`type`
+        from station_permission p inner join station_role__permission rp on p.id = rp.permission_id
+        where 1=1
+        <if test="roleId != null">
+            and rp.role_id = #{roleId}
+        </if>
+    </select>
+
+    <select id="selectByQuery" resultType="com.yimao.cloud.station.po.StationPermission">
+        select
+        id,
+        `name`,
+        method,
+        url,
+        menu_id as menuId,
+        `type`,
+        creator,
+        create_time as createTime,
+        updater,
+        update_time as updateTime
+        from station_permission
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="name != null and name.trim() != ''">
+                and `name` = #{name}
+            </if>
+            <if test="method != null and method.trim() != ''">
+                and method = #{method}
+            </if>
+            <if test="url != null and url.trim() != ''">
+                and url = #{url}
+            </if>
+            <if test="menuId != null">
+                and menu_id = #{menuId}
+            </if>
+            <if test="creator != null">
+                and creator = #{creator}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updater != null">
+                and updater = #{updater}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+            <if test="type != null">
+                and `type` = #{type}
+            </if>
+        </trim>
+    </select>
+</mapper>

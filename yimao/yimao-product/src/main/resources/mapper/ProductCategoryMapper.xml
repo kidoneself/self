@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.product.mapper.ProductCategoryMapper">
+
+    <sql id="allColumns">
+        pc.id,
+        pc.name,
+        pc.code,
+        pc.icon,
+        pc.type,
+        pc.terminal,
+        pc.pid,
+        pc.`level`,
+        pc.company_id as companyId,
+        pc.company_name as companyName,
+        pc.min_moq as minMoq,
+        pc.max_moq as maxMoq,
+        pc.description,
+        pc.sorts,
+        pc.creator,
+        pc.create_time as careateTime,
+        pc.updater,
+        pc.update_time as updateTime,
+        pc.old_id as oldId
+    </sql>
+
+    <!--查询产品类目-->
+    <select id="listProductCategory" resultType="com.yimao.cloud.pojo.dto.product.ProductCategoryDTO">
+        SELECT
+        <include refid="allColumns"/>
+        FROM
+        product_category pc
+        WHERE deleted = 0
+        <if test="name != null and name != ''">
+            and pc.name like CONCAT('%', #{name}, '%')
+        </if>
+        <if test="type != null">
+            and pc.type = #{type}
+        </if>
+        <if test="terminal != null">
+            and pc.terminal = #{terminal}
+        </if>
+        <if test="pid != null">
+            and pc.pid = #{pid}
+        </if>
+        <if test="level != null">
+            and pc.`level` = #{level}
+        </if>
+        <if test="companyId != null">
+            and pc.company_id=#{companyId}
+        </if>
+        <if test="startTime != null">
+            and pc.create_time &gt; #{startTime}
+        </if>
+
+        <if test="endTime != null">
+            and pc.create_time &lt;= #{endTime}
+        </if>
+        order by pc.`level`,pc.sorts desc,pc.create_time
+    </select>
+
+    <!--查询产品前台类目-->
+    <select id="listFrontCategoryByProductId" parameterType="Integer"
+            resultType="com.yimao.cloud.pojo.dto.product.ProductCategoryDTO">
+        select distinct
+        <include refid="allColumns"/>
+        from product_category pc
+        inner join product__product_front_category ppfc on pc.id = ppfc.front_category_id
+        where 
+        pc.type = 2 
+        and ppfc.product_id = #{productId}
+        <if test="terminal != null">
+        and pc.terminal=#{terminal}
+        </if>
+        order by pc.`level`,pc.sorts,pc.create_time
+    </select>
+
+    <!--APP查询产品供应栏目下的产品前端一级类目-->
+    <select id="listCategoryBySupplyCode" resultType="com.yimao.cloud.pojo.dto.product.ProductCategoryDTO">
+        select distinct
+        <include refid="allColumns"/>
+        from product_category pc
+        inner join product__product_front_category ppfc on pc.id = ppfc.front_category_id
+        inner join product c on ppfc.product_id = c.id
+        where pc.type = 2 and pc.`level` = 1 and c.supply_code = #{supplyCode}
+        order by pc.`level`,pc.sorts,pc.create_time
+    </select>
+
+
+    <select id="getBottomCatgory" resultType="com.yimao.cloud.pojo.dto.product.ProductCategoryDTO">
+        select
+            pca.id,
+            pca.name,
+            pca.code,
+            pca.icon,
+            pca.type,
+            pca.terminal,
+            pca.pid,
+            pca.`level`,
+            pca.company_id as companyId,
+            pca.company_name as companyName,
+            pca.min_moq as minMoq,
+            pca.max_moq as maxMoq,
+            pca.description,
+            pca.sorts,
+            pca.creator,
+            pca.create_time as careateTime,
+            pca.updater,
+            pca.update_time as updateTime
+        from product_category pca
+        where pca.`level` = 3 and pca.pid in (select id from product_category pc where pc.pid = #{id})
+    </select>
+
+
+    <select id="getNextCategoryT" resultType="java.lang.Integer">
+        SELECT id FROM product_category WHERE pid = #{categoryId}
+    </select>
+    <select id="selectT" resultType="com.yimao.cloud.product.po.ProductCategory">
+        select * from product_category where id = #{id}
+    </select>
+
+    <!--根据三级产品类目查询一级产品类目-->
+    <select id="getOneCategory" resultType="com.yimao.cloud.pojo.dto.product.ProductCategoryDTO">
+        select
+        <include refid="allColumns"/>
+        from product_category pc
+        where pc.id = (select p2.pid from product_category p2 where p2.id = (select p3.pid from product_category p3 where p3.id = #{categoryId}))
+    </select>
+    <!--根据三级产品类目查询二级产品类目-->
+    <select id="getTwoCategory" resultType="com.yimao.cloud.pojo.dto.product.ProductCategoryDTO">
+        select
+        <include refid="allColumns"/>
+        from product_category pc
+        where pc.id = (select pid from product_category p3 where p3.id = #{categoryId})
+    </select>
+
+    <!--校验后台产品类目关联关系是否存在，存在则不能删除-->
+    <select id="checkProductUsing" parameterType="java.lang.Integer" resultType="java.lang.Boolean">
+        SELECT CASE WHEN COUNT(*)  > 0 THEN 1 ELSE 0 END AS result
+        from product_category pc
+        inner join product p on p.category_id = pc.id
+        where p.status in (1, 2, 3) and pc.id = #{id}
+    </select>
+    <!--校验前台产品类目关联关系是否存在，存在则不能删除-->
+    <select id="checkProductFrontUsing" parameterType="java.lang.Integer" resultType="java.lang.Boolean">
+        SELECT CASE WHEN COUNT(*)  > 0 THEN 1 ELSE 0 END AS result
+        from product_category pc
+        inner join product__product_front_category ppfc on ppfc.front_category_id = pc.id
+        where pc.id = #{id}
+    </select>
+
+    <select id="getFrontCategoryByProductId" resultType="com.yimao.cloud.pojo.dto.product.ProductCategoryDTO">
+        SELECT
+            pc.id,
+            pc.`name`,
+            pc.`code`,
+            pc.icon,
+            pc.type,
+            pc.terminal,
+            pc.pid,
+            pc.`level`,
+            pc.company_id AS companyId,
+            pc.company_name AS companyName,
+            pc.min_moq AS minMoq,
+            pc.max_moq AS maxMoq
+        FROM
+            product_category pc
+        INNER JOIN product__product_front_category pfc ON pfc.front_category_id = pc.id
+        INNER JOIN product p ON p.id = pfc.product_id
+        WHERE
+            pc.`level`=1 and p.id =  #{productId}
+        <if test="terminal != null">
+            AND pc.terminal = #{terminal}
+        </if>
+        limit 1
+    </select>
+    <select id="selectByOldId" resultType="com.yimao.cloud.pojo.dto.product.ProductCategoryDTO">
+        SELECT id, `name`, pid FROM product_category where old_id = #{oldId} limit 1
+    </select>
+
+    <select id="getFirstCategoryListByParam" resultType="com.yimao.cloud.pojo.dto.product.ProductCategoryDTO">
+        SELECT DISTINCT
+        pc.id,
+        pc.NAME,
+        pc.sorts
+        FROM
+        product_category pc
+        LEFT JOIN product__product_front_category ppfc ON pc.id = ppfc.front_category_id
+        LEFT JOIN product p ON ppfc.product_id = p.id
+        WHERE
+        pc.`level` = 1
+        AND pc.deleted = 0
+        <if test="type != null">
+            AND pc.type = #{type}
+        </if>
+        <if test="terminal != null">
+            AND pc.terminal = #{terminal}
+        </if>
+        <if test="supplyCode != null">
+            AND p.supply_code = #{supplyCode}
+        </if>
+        order by pc.sorts desc
+    </select>
+</mapper>

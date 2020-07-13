@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.user.mapper.WaterDeviceUserMapper">
+
+    <!--根据oldId校验是否存在-->
+    <select id="existsWithOldId" resultType="java.lang.Boolean">
+        SELECT CASE WHEN COUNT(*)  > 0 THEN 1 ELSE 0 END AS result
+        from water_device_user
+        where old_id = #{oldId}
+    </select>
+
+
+    <select id="deviceUserList" parameterType="com.yimao.cloud.pojo.dto.user.CustomerContidionDTO"
+            resultType="com.yimao.cloud.pojo.dto.user.WaterDeviceUserDTO">
+        SELECT
+        wdu.id,
+        wdu.real_name AS realName,
+        wdu.phone,
+        wdu.province,
+        wdu.city,
+        wdu.region,
+        wdu.address,
+        wdu.job,
+        wdu.sex,
+        wdu.age,
+        wdu.type,
+        wdu.id_card AS idCard,
+        wdu.degree,
+        wdu.email,
+        wdu.create_time AS createTime,
+        wdu.update_time AS updateTime,
+        wdu.old_id,
+        ud.user_id AS distributorUserId,
+        wdu.distributor_id AS distributorid,
+        wdu.old_distributor_id,
+        ud.user_name AS distributorAccount,
+        ud.real_name AS distributorName,
+        wdu.role_level AS roleLevel,
+        wdu.role_name AS roleName,
+        wdu.distributor_phone AS distributorPhone,
+        wdu.distributor_id_card AS distributorIdCard,
+        wdu.distributor_province AS distributorProvince,
+        wdu.distributor_city AS distributorCity,
+        wdu.distributor_region AS distributorRegion,
+        wdu.distributor_address AS distributorAddress,
+        wdu.child_distributor_name AS childDistributorName,
+        wdu.child_distributor_account AS childDistributorAccount,
+        wdu.child_distributor_phone AS childDistributorPhone,
+        wdu.company_name AS companyName,
+        wdu.company_industry AS companyIndustry,
+        wdu.scene_tag AS sceneTag,
+        wdu.service_num AS serviceNum,
+        wdu.origin,
+        wdu.origin_terminal AS originTerminal
+        FROM
+        water_device_user wdu
+        LEFT JOIN `user_distributor` ud ON ud.id = wdu.distributor_id
+        WHERE 1=1
+        <if test="id != null">
+            AND wdu.id = #{id}
+        </if>
+        <if test="name != null and name != ''">
+            AND wdu.real_name LIKE CONCAT('%',trim(#{name}),'%')
+        </if>
+        <if test="phone != null and phone != ''">
+            AND wdu.phone LIKE CONCAT('%',trim(#{phone}),'%')
+        </if>
+        <if test="type != null and type != ''">
+            AND wdu.type = #{type}
+        </if>
+        <if test="companyName != null and companyName != ''">
+            AND wdu.company_name LIKE CONCAT('%',trim(#{companyName}),'%')
+        </if>
+        <if test="province != null and province != ''">
+            AND wdu.province = #{province}
+        </if>
+        <if test="city != null and city != ''">
+            AND wdu.city = #{city}
+        </if>
+        <if test="region != null and region != ''">
+            AND wdu.region = #{region}
+        </if>
+        <if test="distributorUserId != null and distributorUserId != ''">
+            AND ud.user_id = #{distributorUserId}
+        </if>
+        <if test="originTerminal != null and originTerminal != ''">
+            AND wdu.origin_terminal = #{originTerminal}
+        </if>
+        <if test="distributorAccount != null and distributorAccount != ''">
+            AND wdu.distributor_account LIKE CONCAT('%',trim(#{distributorAccount}),'%')
+        </if>
+        <if test="distributorName != null and distributorName != ''">
+            AND wdu.distributor_name LIKE CONCAT('%',trim(#{distributorName}),'%')
+        </if>
+        <if test="startTime!=null and startTime != ''">
+            AND wdu.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime!=null and endTime != ''">
+            AND wdu.create_time &lt;= #{endTime}
+        </if>
+        ORDER BY wdu.create_time DESC
+    </select>
+
+    <!--客户列表导出 -->
+    <select id="customersList" parameterType="com.yimao.cloud.pojo.dto.user.CustomerContidionDTO"
+            resultType="com.yimao.cloud.pojo.export.user.WaterDeviceUserExport">
+        SELECT
+        wdu.id as id,
+        wdu.real_name AS realName,
+        CASE wdu.sex
+        WHEN 1 THEN '男'
+        WHEN 2 THEN '女' END AS sex,
+        wdu.phone,
+        wdu.id_card AS idCard,
+        CASE wdu.origin_terminal
+        WHEN 1 THEN '健康e家公众号'
+        WHEN 2 THEN '经销商APP'
+        WHEN 3 THEN '净水设备' END AS originTerminal,
+        DATE_FORMAT(wdu.create_time,'%Y-%m-%d %H:%i:%s') as createTime,
+        CASE wdu.type
+        WHEN 1 THEN '个人客户'
+        WHEN 2 THEN '企业客户' END AS type,
+        wdu.company_industry AS companyIndustry,
+        wdu.scene_tag AS sceneTag,
+        wdu.service_num AS serviceNum,
+        wdu.company_name AS companyName,
+        wdu.province,
+        wdu.city,
+        wdu.region,
+        wdu.address,
+        ud.user_id AS distributorUserId,
+        wdu.distributor_account AS distributorAccount,
+        wdu.distributor_name AS distributorName,
+        wdu.role_name AS roleName,
+        wdu.distributor_phone AS distributorPhone,
+        wdu.distributor_id_card AS distributorIdCard,
+        wdu.distributor_province AS distributorProvince,
+        wdu.distributor_city AS distributorCity,
+        wdu.distributor_region AS distributorRegion,
+        wdu.distributor_address AS distributorAddress
+        FROM
+        water_device_user wdu
+        LEFT JOIN `user_distributor` ud ON ud.id = wdu.distributor_id
+        WHERE 1=1
+        <if test="createTime!=null and createTime!=''">
+            and wdu.create_time &lt;= #{createTime}
+        </if>
+        <if test="name != null and name != ''">
+            AND wdu.real_name LIKE CONCAT('%',trim(#{name}),'%')
+        </if>
+        <if test="phone != null and phone != ''">
+            AND wdu.phone LIKE CONCAT('%',trim(#{phone}),'%')
+        </if>
+        <if test="type != null and type != ''">
+            AND wdu.type = #{type}
+        </if>
+        <if test="companyName != null and companyName != ''">
+            AND wdu.company_name LIKE CONCAT('%',trim(#{companyName}),'%')
+        </if>
+        <if test="province != null and province != ''">
+            AND wdu.province = #{province}
+        </if>
+        <if test="city != null and city != ''">
+            AND wdu.city = #{city}
+        </if>
+        <if test="region != null and region != ''">
+            AND wdu.region = #{region}
+        </if>
+        <if test="distributorUserId != null and distributorUserId != ''">
+            AND ud.user_id = #{distributorUserId}
+        </if>
+        <if test="originTerminal != null and originTerminal != ''">
+            AND wdu.origin_terminal = #{originTerminal}
+        </if>
+        <if test="distributorAccount != null and distributorAccount != ''">
+            AND wdu.distributor_account LIKE CONCAT('%',trim(#{distributorAccount}),'%')
+        </if>
+        <if test="distributorName != null and distributorName != ''">
+            AND wdu.distributor_name LIKE CONCAT('%',trim(#{distributorName}),'%')
+        </if>
+        <if test="startTime!=null and startTime != ''">
+            AND wdu.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime!=null and endTime != ''">
+            AND wdu.create_time &lt;= #{endTime}
+        </if>
+        order by wdu.create_time desc
+        <if test="pageSize!=null and pageSize!='' and pageSize>0">
+            limit #{pageSize}
+        </if>
+    </select>
+
+    <select id="selectRealNameAndPhoneById" resultType="com.yimao.cloud.user.po.WaterDeviceUser">
+        select
+            id,
+            real_name as realName,
+            phone
+        from
+            water_device_user
+        where
+            id = #{id}
+    </select>
+
+    <select id="datamove" resultType="com.yimao.cloud.pojo.dto.user.WaterDeviceUserDTO">
+        select
+            id,
+            real_name as realName,
+            phone,
+            old_id as oldId
+        from
+            water_device_user
+    </select>
+
+</mapper>

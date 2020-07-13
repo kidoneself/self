@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.order.mapper.WithdrawSubMapper">
+
+    <select id="getWithdrawnCount" resultType="Integer">
+        SELECT
+            count(DISTINCT main_partner_trade_no)
+        FROM
+            `withdraw_sub`
+        WHERE
+            user_id = #{userId}
+        AND (withdraw_flag = 1 or withdraw_flag is null)
+        AND YEAR (apply_time) = YEAR (NOW())
+        AND MONTH (apply_time) = MONTH (NOW())
+        AND DAY (apply_time) = DAY (NOW())
+        AND payment_no IS NOT NULL
+    </select>
+
+    <select id="getWithdrawnAmountToday" resultType="java.math.BigDecimal">
+        SELECT
+        SUM(withdraw_fee)
+        FROM
+        `withdraw_sub`
+        where user_id = #{userId}
+        AND ((withdraw_flag = 1 AND status = 1) OR (withdraw_flag is null AND status = 3))
+        AND YEAR (apply_time) = YEAR (NOW())
+        AND MONTH (apply_time) = MONTH (NOW())
+        AND DAY (apply_time) = DAY (NOW())
+        AND payment_no IS NOT NULL
+    </select>
+
+    <update id="updateCashRecordFlagAndStatus">
+        UPDATE withdraw_sub
+        SET `status` = #{status}, withdraw_flag = #{flag}, withdraw_time = #{withdrawTime}, audit_time = #{auditTime},
+        audit_reason = #{reason}, updater = #{updater}, update_time = NOW()
+        WHERE
+        status = #{oldStatus}
+        AND withdraw_type = 1
+        <if test="partnerTradeNo != null">
+            AND id IN
+            <foreach item="item" index="index" collection="partnerTradeNo" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        AND user_id IS NOT NULL
+        AND apply_time IS NOT NULL
+    </update>
+
+
+    <select id="listReviewCashRecord" resultType="com.yimao.cloud.pojo.dto.order.WithdrawSubDTO"
+            parameterType="com.yimao.cloud.pojo.dto.order.WithdrawSubDTO">
+        SELECT
+        tcr.withdraw_fee AS withdrawFee,
+        tcr.id AS id,
+        tcr.main_partner_trade_no AS mainPartnerTradeNo,
+        tcr.apply_time AS applyTime,
+        tcr.`status` AS `status`,
+        tcr.withdraw_type AS withdrawType,
+        tcr.product_type AS productType,
+        tcr.user_id AS userId,
+        tcr.user_type as userType
+        FROM
+        withdraw_sub tcr
+        WHERE `status` = 3
+        AND tcr.withdraw_flag IS NULL
+        <if test="id != null and id != '' ">
+            AND tcr.id like CONCAT('%',#{id},'%')
+        </if>
+        <if test="mainPartnerTradeNo != null and mainPartnerTradeNo != '' ">
+            AND tcr.main_partner_trade_no like CONCAT('%',#{mainPartnerTradeNo},'%')
+        </if>
+        <if test="applyStartTime != null and applyStartTime != '' ">
+            AND tcr.apply_time &gt;= #{applyStartTime}
+        </if>
+        <if test="applyEndTime != null and applyEndTime != '' ">
+            AND tcr.apply_time &lt;= #{applyEndTime}
+        </if>
+        <if test="withdrawType != null">
+            AND tcr.withdraw_type = #{withdrawType}
+        </if>
+        <if test="userId != null">
+            AND tcr.user_id = #{userId}
+        </if>
+        ORDER BY applyTime ASC
+    </select>
+
+    <select id="getWithdrawnAmount" resultType="java.math.BigDecimal">
+        SELECT sum(pirp.subject_money)
+        FROM withdraw_sub ws
+        INNER JOIN product_income_record_part pirp ON ws.id = pirp.partner_trade_no
+        INNER JOIN product_income_record pir ON pirp.record_id = pir.id AND pir.income_type = #{incomeType}
+        WHERE ws.user_id = #{userId}
+        AND((ws.withdraw_flag = 1 AND ws. STATUS = 1)
+        OR(ws.withdraw_flag IS NULL AND ws. STATUS = 3))
+        AND ws.apply_time IS NOT NULL
+    </select>
+
+</mapper>

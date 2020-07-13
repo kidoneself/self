@@ -1,0 +1,385 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.system.mapper.StationCompanyMapper">
+
+    <sql id="allColumns">
+        sc.id,
+        sc.`name`,
+        sc.code,
+        sc.`type`,
+        sc.province,
+        sc.city,
+        sc.region,
+        sc.address,
+        sc.online,
+        sc.online_time as onlineTime,
+        sc.contact,
+        sc.contact_phone as contactPhone,
+        sc.contact_id_card as contactIdCard,
+        sc.email,
+        sc.credit_code as creditCode,
+        sc.legal_person as legalPerson,
+        sc.business_license as businessLicense,
+        sc.bank,
+        sc.bank_account as bankAccount,
+        sc.bank_number as bankNumber,
+        sc.tax_number as taxNumber,
+        sc.creator,
+        sc.create_time as createTime,
+        sc.updater,
+        sc.update_time as updateTime
+    </sql>
+
+    <resultMap id="StationCompanyWithServiceArea" type="com.yimao.cloud.pojo.dto.system.StationCompanyDTO">
+        <result column="c_id" property="id" jdbcType="INTEGER"/>
+        <collection property="serviceAreas" ofType="com.yimao.cloud.pojo.dto.system.StationCompanyServiceAreaDTO"
+                    select="selectServiceArea"
+                    column="c_id">
+            <result column="c_id" property="stationCompanyId" jdbcType="INTEGER"/>
+        </collection>
+    </resultMap>
+
+    <!--根据条件查询区县级公司信息-->
+    <select id="listStationCompany" resultMap="StationCompanyWithServiceArea">
+        SELECT distinct
+        sc.id as c_id,
+        sc.`name`,
+        sc.code,
+        sc.`type`,
+        sc.province,
+        sc.city,
+        sc.region,
+        sc.address,
+        sc.online,
+        DATE_FORMAT(sc.online_time,"%Y-%m-%d %H:%i:%s") as onlineTime,
+        sc.contact,
+        sc.contact_phone as contactPhone,
+        sc.contact_id_card as contactIdCard,
+        sc.email,
+        sc.credit_code as creditCode,
+        sc.legal_person as legalPerson,
+        sc.business_license as businessLicense,
+        sc.bank,
+        sc.bank_account as bankAccount,
+        sc.bank_number as bankNumber,
+        sc.tax_number as taxNumber,
+        sc.creator,
+        sc.create_time as createTime,
+        sc.updater,
+        sc.update_time as updateTime,
+        sc.sign_up as signUp,
+        sc.yun_sign_time as yunSignTime,
+        (
+        SELECT
+        count(sca.station_id)
+        FROM
+        station_company__station sca
+        WHERE
+        sca.station_company_id = sc.id
+        ) AS stationAmount
+        FROM
+        station_company sc
+        left join station_company_service_area scsa on sc.id = scsa.station_company_id
+        WHERE 1 = 1
+        <if test="id != null">
+            and sc.id = #{id}
+        </if>
+        <if test="name != null and name.trim() != ''">
+            and sc.name like CONCAT('%', #{name}, '%')
+        </if>
+        <if test="contact != null and contact.trim() != ''">
+            and sc.contact like CONCAT('%', #{contact}, '%')
+        </if>
+        <if test="contactPhone != null and contactPhone.trim() != ''">
+            and sc.contact_phone = #{contactPhone}
+        </if>
+        <if test="startTime != null">
+            and sc.online_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and sc.online_time &lt;= #{endTime}
+        </if>
+        <if test="online != null">
+            and sc.online = #{online}
+        </if>
+        <if test="areaId != null">
+            and scsa.area_id = #{areaId}
+        </if>
+        <if test="signUp!=null">
+            and sc.sign_up = #{signUp}
+        </if>
+        <if test="province != null and province.trim() != ''">
+            and scsa.province = #{province}
+        </if>
+        <if test="city != null and city.trim() != ''">
+            and scsa.city = #{city}
+        </if>
+        <if test="region != null and region.trim() != ''">
+            and scsa.region = #{region}
+        </if>
+        <if test="locationProvince != null and locationProvince.trim() != ''">
+            and sc.province = #{locationProvince}
+        </if>
+        <if test="locationCity != null and locationCity.trim() != ''">
+            and sc.city = #{locationCity}
+        </if>
+        <if test="locationRegion != null and locationRegion.trim() != ''">
+            and sc.region = #{locationRegion}
+        </if>
+        <if test="serviceType != null">
+            and scsa.service_type = #{serviceType}
+        </if>
+        <if test="type != null">
+            and sc.`type` = #{type}
+        </if>
+    </select>
+
+    <select id="selectServiceArea" parameterType="java.lang.Integer"
+            resultType="com.yimao.cloud.pojo.dto.system.StationCompanyServiceAreaDTO">
+        select distinct
+        id as id,
+        station_company_id as stationCompanyId,
+        area_id as areaId,
+        province,
+        city,
+        region,
+        service_type as serviceType,
+        creator as creator,
+        create_time as createTime,
+        updater as updater,
+        update_time as updateTime
+        from station_company_service_area
+        where station_company_id = #{c_id}
+    </select>
+    <select id="isAreaUsed" resultType="java.lang.Integer">
+    SELECT
+    COUNT(id)
+    FROM
+        station_company_service_area
+    WHERE
+        region =#{area}
+    </select>
+    <select id="getStationCompanyInfoToExport" resultType="com.yimao.cloud.pojo.dto.system.StationCompanyExportDTO">
+        SELECT DISTINCT
+        sc. CODE,
+        sc.`name`,
+        CASE sc.`type`
+        WHEN 1 THEN "自营"
+        WHEN 2 THEN "联营"
+        WHEN 3 THEN "仅售后承包"
+        END AS type,
+        sc.province,
+        sc.city,
+        sc.region,
+        sc.address,
+        scsa.province AS serviceProvince,
+        scsa.city AS serviceCity,
+        scsa.region AS serviceRegion,
+        CASE scsa.service_type
+        WHEN 0 THEN '售前+售后'
+        WHEN 1 THEN '售前'
+        WHEN 2 THEN '售后'
+        END AS serviceType,
+        sc.contact,
+        sc.contact_id_card AS contactIdCard,
+        sc.contact_phone AS contactPhone,
+        sc.email,
+        sc.credit_code AS creditCode,
+        sc.legal_person AS legalPerson,
+        sc.bank,
+        sc.bank_account AS bankAccount,
+        sc.bank_number AS bankNumber,
+        sc.tax_number AS taxNumber,
+        CASE sc.sign_up
+        WHEN 0 THEN "未注册"
+        WHEN 1 THEN "已注册"
+        END AS signUp,
+        DATE_FORMAT(sc.yun_sign_time,"%Y-%m-%d %H:%i:%s") AS yunSignTime,
+        DATE_FORMAT(sc.online_time,"%Y-%m-%d %H:%i:%s") AS onlineTime
+        FROM
+        station_company sc
+        left JOIN station_company_service_area scsa ON sc.id = scsa.station_company_id
+        WHERE
+        1 = 1
+        <if test="name != null and name != ''">
+            and sc.name like CONCAT('%', #{name}, '%')
+        </if>
+        <if test="contact != null and contact != ''">
+            and sc.contact like CONCAT('%', #{contact}, '%')
+        </if>
+        <if test="contactPhone != null and contactPhone != ''">
+            and sc.contact_phone = #{contactPhone}
+        </if>
+        <if test="startTime != null">
+            and sc.online_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and sc.online_time &lt;= #{endTime}
+        </if>
+        <if test="online != null">
+            and sc.online = #{online}
+        </if>
+        <if test="areaId != null">
+            and scsa.area_id = #{areaId}
+        </if>
+        <if test="signUp != null">
+            and sc.sign_up = #{signUp}
+        </if>
+        <if test="province != null and province != ''">
+            and scsa.province = #{province}
+        </if>
+        <if test="city != null and city != ''">
+            and scsa.city = #{city}
+        </if>
+        <if test="region != null and region != ''">
+            and scsa.region = #{region}
+        </if>
+        <if test="locationProvince != null and locationProvince != ''">
+            and sc.province = #{locationProvince}
+        </if>
+        <if test="locationCity != null and locationCity != ''">
+            and sc.city = #{locationCity}
+        </if>
+        <if test="locationRegion != null and locationRegion != ''">
+            and sc.region = #{locationRegion}
+        </if>
+        <if test="serviceType != null">
+            and scsa.service_type = #{serviceType}
+        </if>
+        <if test="type != null">
+            and sc.`type` = #{type}
+        </if>
+    </select>
+
+    <!--根据省市区获取服务站ID和NAME-->
+    <select id="getStationCompanyByPCR" resultType="com.yimao.cloud.pojo.dto.system.StationCompanyDTO">
+        SELECT
+        sc.id,
+        sc.`name`,
+        sc.province,
+        sc.city,
+        sc.email,
+        sc.region,
+        sc.legal_person as legalPerson,
+        sc.credit_code as creditCode,
+        sc.yun_sign_id as yunSignId,
+        sc.contact,
+        sc.contact_phone as contactPhone
+        FROM station_company sc
+        left JOIN station_company_service_area scsa ON sc.id = scsa.station_company_id
+        where 1=1
+        <if test="province != null and province != ''">
+            and scsa.province = #{province}
+        </if>
+        <if test="city != null and city != ''">
+            and scsa.city = #{city}
+        </if>
+        <if test="region != null and region != ''">
+            and scsa.region = #{region}
+        </if>
+
+        <!-- 售前:service_type in (0,1) -->
+        <if test="type != null and type== 1">
+            and scsa.service_type in (0,1)
+        </if>
+
+        <!-- 售后:service_type in (0,2) -->
+        <if test="type != null and type== 2">
+            and scsa.service_type in (0,2)
+        </if>
+        <!-- 售后+售前:service_type=0 -->
+        <if test="type != null and type== 0">
+            and scsa.service_type=0
+        </if>
+    </select>
+
+    <select id="getCompanyByPCR" resultType="com.yimao.cloud.pojo.dto.system.StationCompanyDTO">
+        SELECT
+        sc.id,
+        sc.`name`
+        FROM
+        station_company sc
+        LEFT JOIN station_company_service_area scsa ON sc.id = scsa.station_company_id
+        WHERE
+        (
+        scsa.service_type IS NULL
+        OR scsa.service_type != 1
+        )
+        <if test="province != null and province != ''">
+            and sc.province = #{province}
+        </if>
+        <if test="city != null and city != ''">
+            and sc.city = #{city}
+        </if>
+        <if test="region != null and region != ''">
+            and sc.region = #{region}
+        </if>
+        order by sc.create_time desc limit 1
+    </select>
+
+    <select id="getStationCompanyByStationId" resultType="com.yimao.cloud.pojo.dto.system.StationCompanyDTO">
+       SELECT
+			sc.id,
+			sc.name,
+            sc.email,
+			sc.legal_person as legalPerson,
+			sc.credit_code as creditCode,
+			sc.yun_sign_id as yunSignId,
+			sc.contact,
+			sc.contact_phone as contactPhone
+        FROM
+            station_company sc
+            LEFT JOIN station_company__station scs ON sc.id = scs.station_company_id
+        WHERE
+            scs.station_id = #{stationId}
+    </select>
+    <select id="getStationCompanyListByPCR" resultType="com.yimao.cloud.pojo.dto.system.StationCompanyDTO">
+        SELECT
+        sc.id,
+        sc.`name`,
+        sc.province,
+        sc.city,
+        sc.email,
+        sc.region,
+        sc.legal_person as legalPerson,
+        sc.credit_code as creditCode,
+        sc.yun_sign_id as yunSignId,
+        sc.contact,
+        sc.contact_phone as contactPhone,
+        scsa.service_type as serviceType
+        FROM station_company sc
+        left JOIN station_company_service_area scsa ON sc.id = scsa.station_company_id
+        <where>
+            <if test="province != null and province != ''">
+                and scsa.province = #{province}
+            </if>
+            <if test="city != null and city != ''">
+                and scsa.city = #{city}
+            </if>
+            <if test="region != null and region != ''">
+                and scsa.region = #{region}
+            </if>
+        </where>
+    </select>
+
+    <select id="getStationCompanyByLocation" resultType="com.yimao.cloud.pojo.dto.system.StationCompanyDTO">
+        SELECT
+        sc.id,
+        sc.name
+        FROM
+        station_company sc
+        WHERE
+        1 = 1
+        <if test="province != null and province != ''">
+            and sc.province = #{province}
+        </if>
+        <if test="city != null and city != ''">
+            and sc.city = #{city}
+        </if>
+        <if test="region != null and region != ''">
+            and sc.region = #{region}
+        </if>
+    </select>
+
+</mapper>

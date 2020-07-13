@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.water.mapper.IntegralDetailMapper">
+    <select id="getDetailListByRuleId" resultType="com.yimao.cloud.pojo.dto.water.IntegralDetailDTO">
+        SELECT
+        t.integral_rule_id as integralRuleId,
+        t1.name as integralRuleName,
+        t.sn,
+        t.model,
+        t.type,
+        t.create_time as createTime,
+        t.province,
+        t.city,
+        t.region,
+        t.address,
+        t.num AS totalNum
+        FROM
+        integral_detail t  left join integral_rule t1 on t.integral_rule_id = t1.id
+        where
+        1=1
+        <if test="integralRuleId != null">
+          and  t.integral_rule_id = #{integralRuleId}
+        </if>
+        <if test="sn != null and sn != ''">
+            and t.sn like CONCAT(trim(#{sn}),'%')
+        </if>
+        <if test="province != null and province != ''">
+            and t.province = #{province}
+        </if>
+        <if test="city != null and city != ''">
+            and t.city = #{city}
+        </if>
+        <if test="region != null and region != ''">
+            and t.region = #{region}
+        </if>
+       /* GROUP BY t.sn*/
+    </select>
+
+    <select id="getCountBySn"  resultType="java.lang.Integer" >
+        SELECT
+        sum( t.num ) AS totalNum
+        FROM
+        integral_detail t
+        where
+        1=1
+        <if test="sn != null and sn != ''">
+          and  t.sn = #{sn}
+        </if>
+
+        <if test="startTime != null">
+            and t.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and t.create_time &lt;= #{endTime}
+        </if>
+        GROUP BY t.sn
+    </select>
+
+    <select id="getPadEffectiveTotalIntegralBySn"  resultType="java.lang.Integer" >
+        SELECT
+        sum(t1.num) AS totalNum
+        FROM
+        integral_detail t1
+        LEFT JOIN integral_rule t2 ON t1.integral_rule_id = t2.id
+        WHERE
+        <if test="sn != null and sn != ''">
+            t1.sn = #{sn}
+        </if>
+        AND (
+        t2.is_clear = 0
+        OR (
+        t2.is_clear = 1
+        AND NOW() &lt;= t2.clear_time
+        )
+        )
+    </select>
+
+    <!--批量插入-->
+    <insert id="batchInsert" parameterType="java.util.List">
+        insert into integral_detail (
+        integral_rule_id,
+        integral_rule_name,
+        sn,
+        model,
+        province,
+        city,
+        region,
+        address,
+        type,
+        num,
+        create_time
+        )
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.integralRuleId},
+            #{item.integralRuleName},
+            #{item.sn},
+            #{item.model},
+            #{item.province},
+            #{item.city},
+            #{item.region},
+            #{item.address},
+            #{item.type},
+            #{item.num},
+            #{item.createTime}
+            )
+        </foreach>
+    </insert>
+</mapper>

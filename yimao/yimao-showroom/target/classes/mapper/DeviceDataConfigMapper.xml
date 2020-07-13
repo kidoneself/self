@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.showroom.mapper.DeviceDataConfigMapper">
+
+    <select id="queryDeviceDataConfig" resultType="com.yimao.cloud.showroom.dto.DeviceDataConfigDTO">
+        SELECT
+            id,
+            province,
+            city,
+            region,
+            config_coefficient AS configCoefficient
+        FROM device_data_config
+        WHERE 1=1
+        <if test="province != null and province != ''">
+            AND province = #{province}
+        </if>
+        <if test="city != null and city != ''">
+            AND city = #{city}
+        </if>
+    </select>
+
+
+    <select id="queryDeviceDataConfigList" resultType="com.yimao.cloud.showroom.dto.DeviceDataConfigDTO">
+        SELECT
+            province,
+            city,
+            region,
+            config_coefficient AS configCoefficient
+        FROM device_data_config
+
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="province  != null and  province != ''">
+                and province =#{province}
+            </if>
+        </trim>
+    </select>
+
+</mapper>

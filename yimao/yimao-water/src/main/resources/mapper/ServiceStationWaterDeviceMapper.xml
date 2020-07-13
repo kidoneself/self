@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.water.mapper.ServiceStationWaterDeviceMapper">
+
+
+    <select id="selectCountByCondition"  resultType="java.lang.Integer">
+         select count(1) from water_device_service_station wd
+         <where>
+             <if test="areaList !=null and areaList.size() > 0">
+                 <foreach collection="areaList" index="index" item="item" separator="or" open="(" close=")">
+                     (
+                      <if test="item.province !=null  and  item.province != ''">
+                          wd.province = #{item.province}
+                      </if>
+                     <if test="item.city !=null  and  item.city != ''">
+                         and wd.city = #{item.city}
+                     </if>
+                     <if test="item.region !=null and  item.region != ''">
+                         and wd.region = #{item.region}
+                     </if>
+                     )
+                 </foreach>
+             </if>
+             <if test="models !=null and models.size() > 0">
+                 and  wd.device_model in
+                 <foreach collection="models" index="index" item="item" separator="," open="(" close=")">
+                     #{item}
+                 </foreach>
+             </if>
+             <if test="connectionType !=null">
+                 and  wd.connection_type =#{connectionType}
+             </if>
+
+         </where>
+    </select>
+</mapper>

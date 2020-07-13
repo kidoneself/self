@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/cloud-root.iml" filepath="$PROJECT_DIR$/cloud-root.iml" />
+      <module fileurl="file://$PROJECT_DIR$/component/component.iml" filepath="$PROJECT_DIR$/component/component.iml" />
+      <module fileurl="file://$PROJECT_DIR$/component/component-base/component-base.iml" filepath="$PROJECT_DIR$/component/component-base/component-base.iml" />
+      <module fileurl="file://$PROJECT_DIR$/component/component-pojo/component-pojo.iml" filepath="$PROJECT_DIR$/component/component-pojo/component-pojo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/config-server/config-server.iml" filepath="$PROJECT_DIR$/config-server/config-server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/eureka-server/eureka-server.iml" filepath="$PROJECT_DIR$/eureka-server/eureka-server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/framework/framework.iml" filepath="$PROJECT_DIR$/framework/framework.iml" />
+      <module fileurl="file://$PROJECT_DIR$/framework/framework-aop/framework-aop.iml" filepath="$PROJECT_DIR$/framework/framework-aop/framework-aop.iml" />
+      <module fileurl="file://$PROJECT_DIR$/framework/framework-config/framework-config.iml" filepath="$PROJECT_DIR$/framework/framework-config/framework-config.iml" />
+      <module fileurl="file://$PROJECT_DIR$/framework/framework-mysql/framework-mysql.iml" filepath="$PROJECT_DIR$/framework/framework-mysql/framework-mysql.iml" />
+      <module fileurl="file://$PROJECT_DIR$/framework/framework-redis/framework-redis.iml" filepath="$PROJECT_DIR$/framework/framework-redis/framework-redis.iml" />
+      <module fileurl="file://$PROJECT_DIR$/gateway/gateway.iml" filepath="$PROJECT_DIR$/gateway/gateway.iml" />
+      <module fileurl="file://$PROJECT_DIR$/gateway-zuul/gateway-zuul.iml" filepath="$PROJECT_DIR$/gateway-zuul/gateway-zuul.iml" />
+      <module fileurl="file://$PROJECT_DIR$/monitor/monitor.iml" filepath="$PROJECT_DIR$/monitor/monitor.iml" />
+      <module fileurl="file://$PROJECT_DIR$/monitor/monitor-admin/monitor-admin.iml" filepath="$PROJECT_DIR$/monitor/monitor-admin/monitor-admin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/monitor/monitor-dashboard/monitor-dashboard.iml" filepath="$PROJECT_DIR$/monitor/monitor-dashboard/monitor-dashboard.iml" />
+      <module fileurl="file://$PROJECT_DIR$/monitor/monitor-turbine/monitor-turbine.iml" filepath="$PROJECT_DIR$/monitor/monitor-turbine/monitor-turbine.iml" />
+      <module fileurl="file://$PROJECT_DIR$/yimao/yimao.iml" filepath="$PROJECT_DIR$/yimao/yimao.iml" />
+      <module fileurl="file://$PROJECT_DIR$/yimao/yimao-app/yimao-app.iml" filepath="$PROJECT_DIR$/yimao/yimao-app/yimao-app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/yimao/yimao-cat/yimao-cat.iml" filepath="$PROJECT_DIR$/yimao/yimao-cat/yimao-cat.iml" />
+      <module fileurl="file://$PROJECT_DIR$/yimao/yimao-cms/yimao-cms.iml" filepath="$PROJECT_DIR$/yimao/yimao-cms/yimao-cms.iml" />
+      <module fileurl="file://$PROJECT_DIR$/yimao/yimao-engineer/yimao-engineer.iml" filepath="$PROJECT_DIR$/yimao/yimao-engineer/yimao-engineer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/yimao/yimao-hra/yimao-hra.iml" filepath="$PROJECT_DIR$/yimao/yimao-hra/yimao-hra.iml" />
+      <module fileurl="file://$PROJECT_DIR$/yimao/yimao-openapi/yimao-openapi.iml" filepath="$PROJECT_DIR$/yimao/yimao-openapi/yimao-openapi.iml" />
+      <module fileurl="file://$PROJECT_DIR$/yimao/yimao-order/yimao-order.iml" filepath="$PROJECT_DIR$/yimao/yimao-order/yimao-order.iml" />
+      <module fileurl="file://$PROJECT_DIR$/yimao/yimao-out/yimao-out.iml" filepath="$PROJECT_DIR$/yimao/yimao-out/yimao-out.iml" />
+      <module fileurl="file://$PROJECT_DIR$/yimao/yimao-product/yimao-product.iml" filepath="$PROJECT_DIR$/yimao/yimao-product/yimao-product.iml" />
+      <module fileurl="file://$PROJECT_DIR$/yimao/yimao-station/yimao-station.iml" filepath="$PROJECT_DIR$/yimao/yimao-station/yimao-station.iml" />
+      <module fileurl="file://$PROJECT_DIR$/yimao/yimao-system/yimao-system.iml" filepath="$PROJECT_DIR$/yimao/yimao-system/yimao-system.iml" />
+      <module fileurl="file://$PROJECT_DIR$/yimao/yimao-task/yimao-task.iml" filepath="$PROJECT_DIR$/yimao/yimao-task/yimao-task.iml" />
+      <module fileurl="file://$PROJECT_DIR$/yimao/yimao-user/yimao-user.iml" filepath="$PROJECT_DIR$/yimao/yimao-user/yimao-user.iml" />
+      <module fileurl="file://$PROJECT_DIR$/yimao/yimao-water/yimao-water.iml" filepath="$PROJECT_DIR$/yimao/yimao-water/yimao-water.iml" />
+      <module fileurl="file://$PROJECT_DIR$/yimao/yimao-wechat/yimao-wechat.iml" filepath="$PROJECT_DIR$/yimao/yimao-wechat/yimao-wechat.iml" />
+    </modules>
+  </component>
+</project>

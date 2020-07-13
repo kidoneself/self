@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.order.mapper.StationLeaderBoardMapper">
+    <insert id="insertLinkId">
+		INSERT INTO report_station_sales_like
+		( distributor_id, station_sales_id,create_time )
+		VALUES
+		( #{id},#{dealerSalesId} ,NOW());
+	</insert>
+	<delete id="deleteLinkRecord">
+	DELETE
+	FROM
+	report_station_sales_like
+	WHERE
+	id = #{id};
+	</delete>
+
+	<select id="taskStationRanking" resultType="java.math.BigDecimal">
+	SELECT
+	SUM( product_price )
+	FROM
+	product_income_record
+	WHERE
+	income_type = 1
+	AND distributor_region = #{region}
+	AND YEARWEEK( date_format( order_complete_time, '%Y-%m-%d' ) ) = YEARWEEK( now( ) ) - 1
+	</select>
+    <select id="getSubMyStationRanking" resultType="com.yimao.cloud.order.po.StationSales">
+	SELECT
+	id,
+	sort AS sort,
+	station_name AS stationName,
+	last_sort AS lastSort,
+	champion_count AS championCount
+	FROM
+	report_station_sales
+	WHERE
+	region = #{region}
+	AND batch_id = #{batchId}
+	</select>
+    <select id="getDealerMyStationRanking" resultType="com.yimao.cloud.order.po.StationSales">
+	SELECT
+	id,
+	sort AS sort,
+	station_name AS stationName,
+	last_sort AS lastSort,
+	champion_count AS championCount,
+	sales_account AS salesAccount
+	FROM
+	report_station_sales
+	WHERE
+	region = #{region}
+	AND batch_id = #{batchId}
+	</select>
+    <select id="getFirstStationRanking" resultType="com.yimao.cloud.order.po.StationSales">
+	SELECT
+	@rownum := @rownum + 1 AS ranking,
+	distributor_province AS province,
+	distributor_city AS city,
+	distributor_region AS region,
+	SUM( product_price ) AS money
+	FROM
+	product_income_record,
+	( SELECT @rownum := 0 ) r
+	WHERE
+	YEARWEEK( date_format( order_complete_time, '%Y-%m-%d' ) ) = YEARWEEK( now( ) ) - 1
+	GROUP BY
+	distributor_region
+	LIMIT 1
+	</select>
+	<select id="getStationNationalRankingLastWeek" resultType="com.yimao.cloud.pojo.dto.order.StationSalesDTO">
+	SELECT
+	id,
+	sales_account AS salesAccount,
+	station_id AS stationId,
+	sort,
+	province,
+	city,
+	region,
+	link_count linkCount
+	FROM
+	report_station_sales
+	WHERE
+	batch_id = #{batchId}
+	ORDER BY
+	sort
+	LIMIT 0,
+	10
+	</select>
+    <select id="selectById" resultType="com.yimao.cloud.order.po.StationSales">
+	SELECT
+	id,
+	station_id AS stationId,
+	province,
+	city,
+	region,
+	sales_account AS salesAccount,
+	sort,
+	station_name AS stationName,
+	last_sort AS lastSort,
+	link_count AS linkCount,
+	champion_count AS championCount,
+	create_time AS createTime,
+	batch_id AS batchId
+	FROM
+	report_station_sales
+	WHERE
+	id =#{rankingId}
+
+	</select>
+	<select id="selectLinkRecord" resultType="java.lang.Integer">
+	SELECT
+	id
+	FROM
+	report_station_sales_like
+	WHERE
+	distributor_id = #{dealerId}
+	AND
+	station_sales_id = #{rankingId}
+	</select>
+    <select id="getAllStationNationalRankingLastWeek" resultType="com.yimao.cloud.order.dto.RankingQuery">
+		SELECT
+ 		@rownum:=@rownum+1 as ranking,
+		distributor_province AS province,
+		distributor_city AS city,
+		distributor_region AS region,
+		SUM( product_price ) AS money
+		FROM
+		product_income_record ,
+		(SELECT @rownum:=0) r
+		WHERE
+		YEARWEEK( date_format( order_complete_time, '%Y-%m-%d' ) ) = YEARWEEK( now( ) ) - 1
+		GROUP BY
+		distributor_region
+		ORDER BY
+		money DESC
+	</select>
+    <select id="getHasPraised" resultType="java.lang.Integer">
+		SELECT
+		count(1)
+		FROM
+		report_station_sales_like
+		WHERE
+		distributor_id = #{dealerId}
+		AND station_sales_id = #{stationSalesDTOId}
+	</select>
+    <select id="getLinkCount" resultType="com.yimao.cloud.pojo.dto.order.StationSalesDTO">
+	SELECT
+	id,
+	link_count AS linkCount,
+	sort,
+	sales_account AS salesAccount
+	FROM
+	report_station_sales
+	WHERE
+	batch_id = #{oldBatchId}
+	AND sort = #{j}
+	</select>
+</mapper>

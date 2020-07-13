@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.system.mapper.StationBackStockRecordMapper">
+	<select id="pageStationCompanyStoreHouse" parameterType="com.yimao.cloud.pojo.query.system.StationStoreHouseQuery" resultType="com.yimao.cloud.pojo.dto.system.StationBackStockRecordDTO">
+		select 
+		sbsr.id,
+		sbsr.station_name as stationName,
+		sc.name as stationCompanyName,
+		sbsr.product_first_category_name as productFirstCategoryName,
+		sbsr.product_two_category_name as productTwoCategoryName,
+		sbsr.product_category_name as productCategoryName,
+		sbsr.sn,
+		sbsr.engineer_name as engineerName,
+		sbsr.complete_time as completeTime
+		from station_back_stock_record sbsr
+		left join station_company__station scs on sbsr.station_id=scs.station_id
+		left join station_company sc on sc.id = scs.station_company_id
+		<where> 
+		sbsr.is_transfer_stock=0
+		<if test="province != null and province != ''">
+			and sbsr.province = #{province}
+		</if>
+		<if test="city != null and city != ''">
+			and sbsr.city = #{city}
+		</if>
+		<if test="region != null and region != ''">
+			and sbsr.region = #{region}
+		</if>
+		<if test="stationName != null and stationName != ''">
+			and sbsr.station_name like CONCAT('%', #{stationName}, '%')
+		</if>
+		<if test="stationCompanyName != null and stationCompanyName != ''">
+			and sc.name like CONCAT('%', #{stationCompanyName}, '%')
+		</if>
+		<if test="categoryId != null">
+			and sbsr.product_category_id = #{categoryId}
+		</if>
+		</where>
+		order by sbsr.complete_time desc	
+	</select>
+
+
+	<update id="changeTransferInfo" parameterType="com.yimao.cloud.system.po.StationBackStockRecord">
+		update station_back_stock_record
+		set 
+		is_transfer_stock = #{isTransferStock},
+		transfer_time = #{transferTime},
+		transfer_user_id = #{transferUserId}
+		where id=#{id} and is_transfer_stock=0
+	</update>
+</mapper>

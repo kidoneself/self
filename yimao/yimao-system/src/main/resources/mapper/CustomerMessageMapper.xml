@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.system.mapper.CustomerMessageMapper">
+
+
+    <select id="listCustomerMessage" resultType="com.yimao.cloud.pojo.dto.system.CustomerMessageDTO">
+        select
+        tcm.id,
+        tcm.customer_name as customerName,
+        tcm.mobile,
+        tcm.province,
+        tcm.city,
+        tcm.region,
+        tcm.join_type as joinType,
+        tcm.content,
+        tcm.create_time as createTime,
+        tcm.terminal
+        from t_customer_message tcm
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="province!=null and province!='' ">
+                and tcm.province = #{province}
+                <if test="city!=null and city!='' ">
+                    and tcm.city = #{city}
+                    <if test="region!=null and region!='' ">
+                        and tcm.region = #{region}
+                    </if>
+                </if>
+            </if>
+            <if test="customerName!=null and customerName!='' ">
+                and tcm.customer_name like CONCAT('%',#{customerName},'%')
+            </if>
+            <if test="mobile!=null and mobile!='' ">
+                and tcm.mobile like CONCAT('%',#{mobile},'%')
+            </if>
+            <if test="joinType!=null">
+                and tcm.join_type = #{joinType}
+            </if>
+            <if test="beginTime!=null and beginTime!='' ">
+                and tcm.create_time &gt;#{beginTime}
+            </if>
+            <if test="endTime!=null and endTime!='' ">
+                and tcm.create_time &lt;#{endTime}
+            </if>
+            <if test="terminal!=null">
+                and tcm.terminal = #{terminal}
+            </if>
+        </trim>
+        order by tcm.create_time desc
+    </select>
+</mapper>

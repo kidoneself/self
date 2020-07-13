@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.yimao.cloud.hra.mapper.MiniAnswersMapper">
+
+    <select id="findAnswersList" resultType="com.yimao.cloud.hra.po.MiniAnswers">
+        SELECT
+            ma.`id` AS id,
+            ma.`evaluating_id` AS evaluatingId,
+            ma.`answer_title` AS answerTitle,
+            ma.`content` AS content,
+            ma.`score1` AS score1,
+            ma.`score2` AS score2,
+            ma.`result_score` AS resultScore,
+            ma.`create_time` AS createTime
+        FROM
+          healthy_answers ma
+        WHERE
+          ma.`evaluating_id` = #{evaluateId}
+    </select>
+
+</mapper>

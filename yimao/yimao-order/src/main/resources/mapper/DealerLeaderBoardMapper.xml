@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.order.mapper.DealerLeaderBoardMapper">
+    <delete id="deleteLinkRecord">
+	DELETE
+	FROM
+	report_dealer_sales_like
+	WHERE
+	id = #{id}
+	</delete>
+
+    <!--定时器SQL-->
+    <!--<select id="dealerNationalRanking" resultType="java.math.BigDecimal">
+        SELECT
+	    SUM( product_price )
+        FROM
+	    product_income_record
+        WHERE
+	    income_type = 1
+	    AND distributor_id = #{id}
+	    AND
+	    YEARWEEK( date_format( order_complete_time, '%Y-%m-%d' ) ) = YEARWEEK( now( ) ) - 1
+    </select>-->
+    <select id="getDealerIdList" resultType="java.lang.Integer">
+		SELECT
+   		distributor_id
+		FROM
+		product_income_record
+		GROUP BY distributor_id
+	</select>
+    <select id="getDealerNationalRankingLastWeek" resultType="com.yimao.cloud.order.dto.RankingQuery">
+		SELECT
+ 		@rownum:=@rownum+1 as ranking,
+		distributor_id AS id,
+		SUM( product_price ) AS money
+		FROM
+		product_income_record ,
+		(SELECT @rownum:=0) r
+		WHERE
+		YEARWEEK( date_format( order_complete_time, '%Y-%m-%d' ) ) = YEARWEEK( now( ) ) - 1
+		GROUP BY
+		distributor_id
+		ORDER BY
+		money DESC
+	</select>
+
+    <select id="dealerNationalRanking" resultType="com.yimao.cloud.order.po.DealerSales">
+	  SELECT
+	  id,
+	  sort AS sort,
+	  last_sort AS lastSort,
+	  champion_count AS championCount,
+	  sales_account AS salesAccount
+	  FROM
+	  report_dealer_sales
+	  WHERE
+	  dealer_id = #{dealerId}
+	  AND batch_id = #{batchId}
+	</select>
+    <select id="getTopDealerNationalRanking" resultType="com.yimao.cloud.pojo.dto.order.DealerSalesDTO">
+	SELECT
+	id,
+	dealer_id AS dealerId,
+	sales_account AS salesAccount,
+	sort,
+	dealer_name AS dealerName,
+	link_count AS linkCount
+	FROM
+	report_dealer_sales
+	WHERE batch_id = #{batchId}
+	ORDER BY
+	sort
+	LIMIT 0,10
+	</select>
+    <select id="subDealerNationalRanking" resultType="com.yimao.cloud.order.po.DealerSales">
+	SELECT
+	id,
+	dealer_id AS dealerId,
+	sort AS sort,
+	dealer_name AS dealerName,
+	last_sort AS lastSort,
+	batch_id AS batchId,
+	champion_count AS championCount
+	FROM
+	report_dealer_sales
+	WHERE
+	dealer_id = #{pid}
+	AND batch_id = #{batchId}
+	</select>
+    <select id="agentNationalRanking" resultType="com.yimao.cloud.order.po.DealerSales">
+	SELECT
+	id,
+	dealer_id AS dealerId,
+	sort AS sort,
+	sales_account AS salesAccount,
+	dealer_name AS dealerName,
+	last_sort AS lastSort,
+	batch_id AS batchId,
+	champion_count AS championCount
+	FROM
+	report_dealer_sales
+	WHERE
+	sort = 1
+	AND batch_id = #{batchId}
+	</select>
+    <select id="getHasPraised" resultType="java.lang.Integer">
+		SELECT
+		count(1)
+		FROM
+		report_dealer_sales_like
+		WHERE
+		distributor_id = #{dealerId}
+		AND dealer_sales_id = #{dealerSalesId}
+	</select>
+    <select id="selectLinkRecord" resultType="java.lang.Integer">
+	SELECT
+	id
+	FROM
+	report_dealer_sales_like
+	WHERE distributor_id = #{dealerId}
+	AND dealer_sales_id = #{rankingId}
+	</select>
+
+    <insert id="insertLinkId">
+		INSERT INTO report_dealer_sales_like
+		( id,distributor_id, dealer_sales_id,create_time )
+		VALUES
+		( null,#{dealerId},#{rankingId} ,NOW());
+	</insert>
+</mapper>

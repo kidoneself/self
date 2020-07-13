@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.system.mapper.StationCompanyServiceAreaMapper">
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        insert into station_company_service_area (
+        station_company_id,
+        station_company_name,
+        area_id,
+        province,
+        city,
+        region,
+        creator,
+        create_time,
+        updater,
+        update_time
+        )
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.stationCompanyId},
+            #{item.stationCompanyName},
+            #{item.areaId},
+            #{item.province},
+            #{item.city},
+            #{item.region},
+            #{item.creator},
+            #{item.createTime},
+            #{item.updater},
+            #{item.updateTime}
+            )
+        </foreach>
+    </insert>
+
+    <select id="selectAfterServiceAreaByStationCompanyId"
+            resultType="com.yimao.cloud.pojo.dto.system.StationCompanyServiceAreaDTO">
+        select distinct
+        station_company_id as stationCompanyId,
+        station_company_name as stationCompanyName,
+        area_id as areaId,
+        province,
+        city,
+        region
+        from station_company_service_area
+        where station_company_id = #{stationCompanyId}
+        and service_type in (0,2)
+    </select>
+
+</mapper>

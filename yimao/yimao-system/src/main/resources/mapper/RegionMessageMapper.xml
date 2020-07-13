@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.system.mapper.RegionMessageMapper">
+    <update id="update">
+	UPDATE t_region_message
+	SET corporation_status = 0
+	WHERE
+	id = #{regionId}
+	</update>
+
+    <update id="reduceServiceArea">
+	UPDATE t_region_message
+	SET corporation_status = 1
+	WHERE
+	area_name = #{region}
+
+	</update>
+    <update id="updateServiceState">
+	UPDATE t_region_message
+	SET service_station_status = #{state}
+	WHERE
+	area_name = #{region}
+
+
+	</update>
+
+
+    <select id="pageQueryRegionMessage" resultType="com.yimao.cloud.pojo.dto.system.RegionMessageDTO">
+    SELECT
+	id AS id,
+	area_name AS areaName,
+	parent_id AS parentId,
+	population AS population,
+	crowd_funding AS crowdFunding
+	FROM
+	`t_region_message`
+	WHERE
+	`level` = #{level}
+	AND parent_id = #{parentId}
+    </select>
+    <select id="getCorporationStatus" resultType="com.yimao.cloud.pojo.dto.system.CompanyRegionDTO">
+	SELECT
+	area_name AS region,
+	corporation_status AS corporationStatus
+	FROM
+	t_region_message
+	WHERE
+	`level` = 2
+	AND id = #{regionId}
+	</select>
+
+</mapper>

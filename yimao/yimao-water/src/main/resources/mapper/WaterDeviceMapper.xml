@@ -1,0 +1,1409 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.water.mapper.WaterDeviceMapper">
+    <update id="updateSimAccountIdToNull">
+        update water_device set sim_account_id = null, sim_activating = 0 where id = #{id}
+    </update>
+    <update id="updateChangedCostInfo">
+        update water_device set cost_id = #{newCostId}, cost_name = #{newCostName}, cost_type = #{newCostType}, new_cost_id = null, cost_changed = 0 where id = #{id}
+    </update>
+
+    <update id="updateForPadSyncData">
+        update
+        water_device
+        set
+        <if test="online != null">
+            online = #{online},
+        </if>
+        <if test="lastOnlineTime != null">
+            last_online_time = #{lastOnlineTime},
+        </if>
+        <if test="connectionType != null">
+            connection_type = #{connectionType},
+        </if>
+        <if test="currentTotalFlow != null">
+            current_total_flow = #{currentTotalFlow},
+        </if>
+        <if test="currentTotalTime != null">
+            current_total_time = #{currentTotalTime},
+        </if>
+        <if test="useFlow != null">
+            use_flow = #{useFlow},
+        </if>
+        <if test="useTime != null">
+            use_time = #{useTime},
+        </if>
+        <if test="costId != null">
+            cost_id = #{costId},
+        </if>
+        <if test="costName != null and costName != ''">
+            cost_name = #{costName},
+        </if>
+        <if test="costType != null">
+            cost_type = #{costType},
+        </if>
+        <if test="initMoney != null">
+            init_money = #{initMoney},
+        </if>
+        <if test="newCostId != null">
+            new_cost_id = #{newCostId},
+        </if>
+        <if test="costChanged != null">
+            cost_Changed = #{costChanged},
+        </if>
+        <if test="days != null">
+            days = #{days},
+        </if>
+        <if test="currentCostType != null">
+            current_cost_type = #{currentCostType},
+        </if>
+        <if test="currentCostName != null and currentCostName != ''">
+            current_cost_name = #{currentCostName},
+        </if>
+        money = #{money}
+        where
+        id = #{id}
+    </update>
+
+    <!--将最后在线时间为125分钟之前的设备置为离线状态-->
+    <update id="updateToOffline">
+        update
+            water_device
+        set
+            online = 0
+        where
+            last_online_time &lt; #{compareTime}
+    </update>
+    <update id="updateForChangeDevice">
+        update
+            water_device
+        set
+            sn = #{sn},
+            iccid = #{iccid},
+            Logistics_code = #{logisticsCode},
+            bind = #{bind},
+            last_total_time = #{lastTotalTime},
+            last_total_flow = #{lastTotalFlow},
+            current_total_time = #{currentTotalTime},
+            current_total_flow = #{currentTotalFlow},
+            use_time = #{useTime},
+            use_flow = #{useFlow},
+            sim_account_id = #{simAccountId},
+            last_pp_change_time = #{lastPpChangeTime},
+            last_t33_change_time = #{lastT33ChangeTime},
+            last_cto_change_time = #{lastCtoChangeTime},
+            last_udf_change_time = #{lastUdfChangeTime}
+        where
+            id = #{id}
+    </update>
+
+    <!--经销商转让修改设备上的经销商信息-->
+    <update id="updateForTransferDistributor">
+        update
+            water_device
+        set
+            distributor_id = #{newDistributorId},
+            distributor_name = #{newDistributorName},
+            distributor_phone = #{newDistributorPhone}
+        where
+            distributor_id = #{oldDistributorId}
+    </update>
+
+    <!--客户信息修改时同步修改设备上的客户信息-->
+    <update id="updateDeviceUserInfo">
+        update
+            water_device
+        set
+            device_user_name = #{deviceUserName},
+            device_user_phone = #{deviceUserPhone}
+        where
+            device_user_id = #{deviceUserId}
+    </update>
+    <update id="updateArrearsTimeToNullById">
+        update
+            water_device
+        set
+            arrears_time = null
+        where
+            id = #{id}
+    </update>
+
+    <select id="selectPage" resultType="com.yimao.cloud.pojo.dto.water.WaterDeviceDTO">
+        SELECT
+        IFNULL(vs.num,0) as changeTimes,
+        wd.id,
+        wd.sn,
+        wd.work_order_id AS workOrderId,
+        wd.iccid,
+        wd.logistics_code AS logisticsCode,
+        wd.province,
+        wd.city,
+        wd.region,
+        wd.device_model AS deviceModel,
+        wd. ONLINE,
+        wd.device_user_id AS deviceUserId,
+        wd.device_user_name AS deviceUserName,
+        wd.device_user_phone AS deviceUserPhone,
+        wd.engineer_name AS engineerName,
+        wd.distributor_name AS distributorName,
+        wd.create_time AS createTime,
+        wd.last_online_time AS lastOnlineTime
+        FROM
+        water_device wd
+        LEFT JOIN (
+        SELECT
+        count(*) AS num,
+        new_iccid
+        FROM
+        water_device_replace_record
+        GROUP BY
+        new_iccid
+        ) AS vs ON (wd.iccid = vs.new_iccid)
+        where 1=1
+        <if test="sn != null and sn != ''">
+            and wd.sn like CONCAT('%',trim(#{sn}),'%')
+        </if>
+        <if test="workOrderId != null and workOrderId != ''">
+            and wd.work_order_id like CONCAT('%',trim(#{workOrderId}),'%')
+        </if>
+        <if test="batchCode != null and batchCode != ''">
+            and wd.logistics_code like CONCAT('%',trim(#{batchCode}),'%')
+        </if>
+        <if test="deviceModel != null and deviceModel != ''">
+            and wd.device_model = #{deviceModel}
+        </if>
+        <if test="province != null and province != ''">
+            and wd.province = #{province}
+        </if>
+        <if test="city != null and city != ''">
+            and wd.city = #{city}
+        </if>
+        <if test="region != null and region != ''">
+            and wd.region = #{region}
+        </if>
+        <if test="online != null">
+            and wd.online = #{online}
+        </if>
+        <if test="deviceUserId != null">
+            and wd.device_user_id = #{deviceUserId}
+        </if>
+        <if test="deviceUserName != null and deviceUserName != ''">
+            and wd.device_user_name = #{deviceUserName}
+        </if>
+        <if test="deviceUserPhone != null and deviceUserPhone != ''">
+            and wd.device_user_phone like CONCAT('%',trim(#{deviceUserPhone}),'%')
+        </if>
+        <if test="engineerId != null">
+            and wd.engineer_id = #{engineerId}
+        </if>
+        <if test="engineerName != null and engineerName != ''">
+            and wd.engineer_name = #{engineerName}
+        </if>
+        <if test="distributorName != null and distributorName != ''">
+            and wd.distributor_name = #{distributorName}
+        </if>
+        <if test="startTime != null">
+            and wd.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and wd.create_time &lt;= #{endTime}
+        </if>
+        <if test="ICCIDChange == 1">
+            and wd.create_time &gt; 0
+        </if>
+        order by wd.create_time desc
+    </select>
+
+    <select id="pageDeviceForEngineerApp" resultType="com.yimao.cloud.pojo.dto.water.WaterDeviceDTO">
+        SELECT
+        wd.id,
+        wd.sn,
+        wd.work_order_id as workOrderId,
+        wd.iccid,
+        wd.logistics_code as logisticsCode,
+        wd.province,
+        wd.city,
+        wd.region,
+        wd.device_model as deviceModel,
+        wd.online,
+        wd.device_user_id as deviceUserId,
+        wd.device_user_name as deviceUserName,
+        wd.device_user_phone as deviceUserPhone,
+        wd.engineer_name as engineerName,
+        wd.distributor_name as distributorName,
+        wd.distributor_phone as distributorPhone,
+        wd.create_time as createTime,
+        wd.last_online_time as lastOnlineTime
+        FROM
+        water_device wd
+        where 1=1
+        <if test="engineerId != null">
+            and wd.engineer_id = #{engineerId}
+        </if>
+        <if test="search != null and search != ''">
+            and (
+            wd.sn like CONCAT('%',trim(#{search}),'%')
+            or wd.logistics_code like CONCAT('%',trim(#{search}),'%')
+            or wd.iccid like CONCAT('%',trim(#{search}),'%')
+            or wd.distributor_name like CONCAT('%',trim(#{search}),'%')
+            or wd.distributor_phone like CONCAT('%',trim(#{search}),'%')
+            or wd.device_user_name like CONCAT('%',trim(#{search}),'%')
+            or wd.device_user_phone like CONCAT('%',trim(#{search}),'%')
+            )
+        </if>
+
+        order by wd.create_time desc
+    </select>
+
+    <select id="selectDetailById" resultType="com.yimao.cloud.pojo.vo.water.WaterDeviceVO">
+        SELECT
+        wd.id,
+        wd.work_order_id as workOrderId,
+        wd.sn,
+        wd.logistics_code as batchCode,
+        wd.engineer_id as engineerId,
+        wd.device_type as deviceType,
+        wd.device_scope as deviceScope,
+        wd.device_model as deviceModel,
+        wd.province,
+        wd.city,
+        wd.region,
+        wd.address,
+        wd.place,
+        case wd.online when 1 then '在线' else '离线' end as online,
+        case wd.connection_type when 1 then 'WIFI' when 3 then '3G' else '未知' end as connectionType,
+        wd.version,
+        wd.create_time as createTime,
+        wd.money,
+--         wd.current_total_time as currentTotalTime,
+--         wd.current_total_flow as currentTotalFlow,
+        wd.use_time as currentTotalTime,
+        wd.use_flow as currentTotalFlow,
+        wd.device_user_name as deviceUserName,
+        wd.device_user_phone as deviceUserPhone,
+        wd.engineer_name as engineerName,
+        wd.engineer_phone as engineerPhone,
+        wd.distributor_name as distributorName,
+        wd.distributor_phone as distributorPhone,
+        wd.distributor_account as distributorAccount,
+        wd.iccid,
+        case wd.sim_activating when 1 then '已激活' else '未激活' end as simActivating,
+        wd.sim_activating_time as simActivatingTime,
+        wd.sim_account_id as simAccountId,
+        wd.sim_company as simCompany,
+        wd.cost_name as costName,
+/*        wd.area_id as areaId,*/
+        wd.current_cost_name as currentCostName,
+        wd.distributor_id as distributorId
+        FROM
+        water_device wd
+        where id = #{id}
+    </select>
+
+    <!--按省分组统计设备数量并倒叙排序-->
+    <select id="countByProvince" resultType="com.yimao.cloud.pojo.vo.water.WaterDeviceAreaClassificationVO">
+        select province as name, count(1) as amount
+        from water_device GROUP BY province ORDER BY amount desc
+    </select>
+
+    <!--按设备型号分组统计设备数量并倒叙排序-->
+    <select id="countByDeviceModel" resultType="com.yimao.cloud.pojo.vo.water.WaterDeviceAreaClassificationVO">
+        select device_model as name, count(1) as amount
+        from water_device GROUP BY device_model ORDER BY amount desc
+    </select>
+
+    <!--按激活日期分组统计设备数量并倒叙排序-->
+    <select id="countByTrend" resultType="com.yimao.cloud.pojo.vo.water.WaterDeviceAreaClassificationVO">
+        select date_format(sim_active_time, "%Y-%m-%d") as name, count(1) as amount
+        from water_device
+        where date_format(sim_active_time, "%Y-%m-%d") &gt;= #{startTime} and date_format(sim_active_time, "%Y-%m-%d") &lt;= #{endTime}
+        group by date_format(sim_active_time, "%Y-%m-%d") order by date_format(sim_active_time, "%Y-%m-%d")
+    </select>
+
+    <!--根据oldId校验是否存在-->
+    <select id="existsWithOldId" resultType="java.lang.Boolean">
+        SELECT CASE WHEN COUNT(*)  > 0 THEN 1 ELSE 0 END AS result
+        from water_device
+        where old_id = #{oldId}
+    </select>
+
+    <!--根据ID获取水机设备对应的计费方式信息-->
+    <select id="selectByIdForChangeCost" resultType="com.yimao.cloud.pojo.dto.water.WaterDeviceDTO">
+        select
+        id,
+        sn,
+        device_model as deviceModel,
+        cost_id as costId,
+        cost_name as costName,
+        new_cost_id as newCostId,
+        current_total_time as currentTotalTime,
+        current_total_flow as currentTotalFlow,
+        money
+        from water_device
+        where id = #{id}
+    </select>
+
+    <!-- 一周水机趋势-->
+    <select id="oneWeekWaterDeviceTotalCount" resultType="java.util.Map">
+        select a.dateTime,ifnull(b.count,0) as count
+        from (
+        SELECT curdate() as dateTime
+        union all
+        SELECT date_sub(curdate(), interval 1 day) as dateTime
+        union all
+        SELECT date_sub(curdate(), interval 2 day) as dateTime
+        union all
+        SELECT date_sub(curdate(), interval 3 day) as dateTime
+        union all
+        SELECT date_sub(curdate(), interval 4 day) as dateTime
+        union all
+        SELECT date_sub(curdate(), interval 5 day) as dateTime
+        union all
+        SELECT date_sub(curdate(), interval 6 day) as dateTime
+        ) a left join (
+        select
+        <if test="type == 1">
+            date_format(wd.create_time,'%Y%m%d') as timeTemp,
+        </if>
+        <if test="type == 2">
+            date_format(wd.last_renew_time,'%Y%m%d') as timeTemp,
+        </if>
+        count(*) as count
+        from water_device wd
+        group by timeTemp
+        ) b on a.dateTime = b.timeTemp
+        order by dateTime
+    </select>
+    <!-- 8周水机趋势-->
+    <select id="eightWeekWaterDeviceTotalCount" resultType="java.util.Map">
+        select a.dateTime,ifnull(b.count,0) as count
+        from (
+        SELECT curdate() as dateTime
+        union all
+        SELECT date_sub(curdate(), interval 1 WEEK) as dateTime
+        union all
+        SELECT date_sub(curdate(), interval 2 WEEK) as dateTime
+        union all
+        SELECT date_sub(curdate(), interval 3 WEEK) as dateTime
+        union all
+        SELECT date_sub(curdate(), interval 4 WEEK) as dateTime
+        union all
+        SELECT date_sub(curdate(), interval 5 WEEK) as dateTime
+        union all
+        SELECT date_sub(curdate(), interval 6 WEEK) as dateTime
+        ) a left join (
+        select
+        <if test="type == 1">
+            date_format(wd.create_time,'%Y%m%d') as timeTemp,
+        </if>
+        <if test="type == 2">
+            date_format(wd.last_renew_time,'%Y%m%d') as timeTemp,
+        </if>
+        count(*) as count
+        from water_device wd
+        group by timeTemp
+        ) b on a.dateTime = b.timeTemp
+        order by dateTime
+    </select>
+
+    <!-- 8周水机趋势-->
+    <select id="sixMonthWaterDeviceTotalCount" resultType="java.util.Map">
+        select a.dateTime,ifnull(b.count,0) as count
+        from (
+        SELECT curdate() as dateTime
+        union all
+        SELECT date_sub(curdate(), interval 1 MONTH) as dateTime
+        union all
+        SELECT date_sub(curdate(), interval 2 MONTH) as dateTime
+        union all
+        SELECT date_sub(curdate(), interval 3 MONTH) as dateTime
+        union all
+        SELECT date_sub(curdate(), interval 4 MONTH) as dateTime
+        union all
+        SELECT date_sub(curdate(), interval 5 MONTH) as dateTime
+        union all
+        SELECT date_sub(curdate(), interval 6 MONTH) as dateTime
+        ) a left join (
+        select
+        <if test="type == 1">
+            date_format(wd.create_time,'%Y%m%d') as timeTemp,
+        </if>
+        <if test="type == 2">
+            date_format(wd.last_renew_time,'%Y%m%d') as timeTemp,
+        </if>
+        count(*) as count
+        from water_device wd
+        group by timeTemp
+        ) b on a.dateTime = timeTemp
+        order by dateTime
+    </select>
+
+    <!-- 设备总数 -->
+    <select id="deviceTotalCount" resultType="java.lang.Integer">
+        SELECT
+        ifnull(count(*),0)
+        FROM
+        water_device wd
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="yesterday == 1">
+                wd.create_time > DATE_SUB(CURDATE(), INTERVAL 1 day)
+            </if>
+        </trim>
+    </select>
+
+    <!-- 续费总数 -->
+    <select id="renewTotalCount" resultType="java.lang.Integer">
+        SELECT
+        ifnull(sum(wd.renew_times),0) AS total
+        FROM
+        water_device wd
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="yesterday == 1">
+                wd.last_renew_time > DATE_SUB(CURDATE(), INTERVAL 1 day)
+            </if>
+        </trim>
+    </select>
+
+    <!-- 首年销售总额-->
+    <select id="deviceTotal" resultType="java.math.BigDecimal">
+        SELECT
+        ifnull(sum(wd.money),0) AS total
+        FROM
+        water_device wd
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="yesterday == 0">
+                and wd.create_time is not null
+            </if>
+            <if test="yesterday == 1">
+                and wd.create_time > DATE_SUB(CURDATE(), INTERVAL 1 day)
+            </if>
+        </trim>
+    </select>
+
+    <!-- 续费销售总额-->
+    <select id="renewDeviceTotal" resultType="java.math.BigDecimal">
+        SELECT
+        ifnull(sum(wd.money),0) AS total
+        FROM
+        water_device wd
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="yesterday == 0">
+                and wd.last_renew_time is not null
+            </if>
+            <if test="yesterday == 1">
+                and wd.last_renew_time > DATE_SUB(CURDATE(), INTERVAL 1 day)
+            </if>
+        </trim>
+    </select>
+
+    <!-- 设备在线统计-->
+    <select id="onlineTotalCount" resultType="java.lang.Integer">
+        SELECT
+        ifnull(count(*),0) AS total
+        FROM
+        water_device wd
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="online == 1">
+                wd.online =#{online}
+            </if>
+            <if test="online == 0">
+                wd.online =#{online}
+            </if>
+        </trim>
+    </select>
+
+    <!-- 设备在线统计-->
+    <select id="stationOnlineTotalCount" resultType="java.lang.Integer">
+        SELECT
+        ifnull(count(1),0) as total
+        FROM
+        water_device wd
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="online == 1">
+                wd.online =#{online}
+            </if>
+            <if test="online == 0">
+                wd.online =#{online}
+            </if>
+            <choose>
+                <when test=" engineerIds != null and engineerIds.size > 0">
+                    AND wd.engineer_id in
+                    <foreach collection="engineerIds" item="item" index="index" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                </when>
+                <otherwise>
+                    AND 0 = 1
+                </otherwise>
+            </choose>
+        </trim>
+    </select>
+
+    <!-- 设备型号统计-->
+    <select id="modelTotalCount" resultType="java.util.Map">
+        SELECT
+        wd.device_model as deviceModel,
+        ifnull(count(*),0) AS total
+        FROM
+        water_device wd
+       group by wd.device_model
+    </select>
+
+    <!-- 站务系统设备型号统计-->
+    <select id="stationModelTotalCount" resultType="java.util.Map">
+        SELECT
+        wd.device_model as deviceModel,
+        ifnull(count(1),0) AS total
+        FROM
+        water_device wd
+        where 1 = 1
+        <choose>
+            <when test=" engineerIds != null and engineerIds.size > 0">
+                AND wd.engineer_id in
+                <foreach collection="engineerIds" item="item" index="index" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </when>
+            <otherwise>
+                AND 0 = 1
+            </otherwise>
+        </choose>
+        group by wd.device_model
+    </select>
+
+    <!-- 设备计费类型统计-->
+    <select id="costTotalCount" resultType="java.util.Map">
+        SELECT
+        wd.cost_name as costName,
+        ifnull(count(*),0) AS costCount
+        FROM
+        water_device wd
+       group by wd.cost_name
+    </select>
+
+    <!-- 站务系统设备计费类型统计-->
+    <select id="stationCostTotalCount" resultType="java.util.Map">
+        SELECT
+        wd.cost_name as costName,
+        ifnull(count(1),0) AS costCount
+        FROM
+        water_device wd
+        where 1 = 1
+        <choose>
+            <when test=" engineerIds != null and engineerIds.size > 0">
+                AND wd.engineer_id in
+                <foreach collection="engineerIds" item="item" index="index" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </when>
+            <otherwise>
+                AND 0 = 1
+            </otherwise>
+        </choose>
+        group by wd.cost_name
+    </select>
+
+
+    <!-- 按省份统计设备安装数量-->
+    <select id="provinceWaterDeviceTotalCount" resultType="java.util.Map">
+        SELECT
+        ifnull(count(*),0) AS total,
+        wd.province AS province
+        FROM
+        water_device wd
+        <if test="renewTime == 1">
+            where wd.last_renew_time is not null
+        </if>
+        GROUP BY
+        wd.province
+    </select>
+
+    <!-- 所有设备续费状态统计-->
+    <select id="allWaterDeviceRenewTotalCount" resultType="java.util.Map">
+        SELECT
+			ifnull(count(*), 0) AS total,
+			wd.renew_status AS renewStatus,
+			CASE
+		WHEN wd.renew_status = '-1' THEN
+			'无需续费'
+		WHEN wd.renew_status = '1' THEN
+			'未续费'
+		WHEN wd.renew_status = '2' THEN
+			'待续费'
+		WHEN wd.renew_status = '3' THEN
+			'已续费'
+		ELSE
+			''
+		END AS renewStatusText
+		FROM
+			water_device wd
+		GROUP BY
+			wd.renew_status
+    </select>
+
+    <!-- 站务系统所有设备续费状态统计-->
+    <select id="stationAllWaterDeviceRenewTotalCount" resultType="java.util.Map">
+        SELECT
+        ifnull(count(1), 0) AS total,
+        wd.renew_status AS renewStatus,
+        CASE
+        WHEN wd.renew_status = '-1' THEN
+        '新安装'
+        WHEN wd.renew_status = '1' THEN
+        '未续费'
+        WHEN wd.renew_status = '2' THEN
+        '待续费'
+        WHEN wd.renew_status = '3' THEN
+        '已续费'
+        ELSE
+        '其它'
+        END AS renewStatusText
+        FROM
+        water_device wd
+        where 1 = 1
+        <choose>
+            <when test=" engineerIds != null and engineerIds.size > 0">
+                AND wd.engineer_id in
+                <foreach collection="engineerIds" item="item" index="index" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </when>
+            <otherwise>
+                AND 0 = 1
+            </otherwise>
+        </choose>
+        GROUP BY
+        wd.renew_status
+    </select>
+
+    <!--根据条件查询设备数量-->
+    <select id="countDevice" resultType="java.lang.Integer">
+        select count(1) from water_device
+        where 1=1
+        <if test="pcrs != null and pcrs.size() > 0">
+            and
+            <foreach collection="pcrs" index="index" item="pcr" open="(" separator=" or " close=")">
+                <if test="pcr.province != null and pcr.province != '' ">
+                    (province = #{pcr.province}
+                    <if test="pcr.city != null and pcr.city != '' ">
+                        and city = #{pcr.city}
+                        <if test="pcr.region != null and pcr.region != '' ">
+                            and region = #{pcr.region}
+                        </if>
+                    </if>
+                    )
+                </if>
+            </foreach>
+        </if>
+        <if test="beginTime != null">
+            and last_online_time &gt;= #{beginTime}
+        </if>
+        <if test="endTime != null">
+            and last_online_time &lt;= #{endTime}
+        </if>
+        <if test="connType != null">
+            and connection_type = #{connType}
+        </if>
+        <if test="models != null and models.size() > 0">
+            and device_model in
+            <foreach collection="models" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="online != null">
+            and online = #{online}
+        </if>
+        <if test="location != null and location != ''">
+            and place like CONCAT('%',#{location},'%')
+        </if>
+        <if test="sn != null and sn != ''">
+            and sn = #{sn}
+        </if>
+        <if test="keyWord != null and keyWord != ''">
+            and address like CONCAT('%',#{keyWord},'%')
+        </if>
+        <if test="createTime != null">
+            and sim_activating_time &lt;= #{createTime}
+        </if>
+    </select>
+
+    <select id="selectWaterDeviceVO" resultType="com.yimao.cloud.pojo.vo.water.WaterDeviceVO">
+        SELECT
+        wd.id,
+        wd.sn,
+        wd.sn as snCode,
+        wd.province,
+        wd.city,
+        wd.region,
+        wd.address,
+        wd.device_model as deviceModel,
+        wd.online,
+        wd.place,
+        wd.last_online_time as lastOnlineTime,
+        wdc.ontime,
+        wdc.offtime
+        FROM
+        water_device wd
+        left join water_device_config wdc on wd.device_model = wdc.device_model
+        where 1=1
+        <if test="province != null and province != ''">
+            and wd.province = #{province}
+        </if>
+        <if test="city != null and city != ''">
+            and wd.city = #{city}
+        </if>
+        <if test="region != null and region != ''">
+            and wd.region = #{region}
+        </if>
+        <if test="online != null">
+            and wd.online = #{online}
+        </if>
+        <if test="connectionType != null">
+            and wd.connection_type = #{connectionType}
+        </if>
+        <if test="deviceModel != null and deviceModel != ''">
+            and wd.device_model = #{deviceModel}
+        </if>
+        <if test="keyWords != null and keyWords != ''">
+            and wd.address like CONCAT('%',#{keyWords},'%')
+        </if>
+        <if test="sn != null and sn != ''">
+            and wd.sn = #{sn}
+        </if>
+        <if test="place != null and place != ''">
+            and wd.place like CONCAT('%',#{place},'%')
+        </if>
+        <if test="startTime != null">
+            and wd.last_online_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and wd.last_online_time &lt;= #{endTime}
+        </if>
+    </select>
+
+    <!--翼猫APP-我的-水机续费-查询列表-->
+    <select id="selectDeviceRenewInfoForApp" resultType="com.yimao.cloud.pojo.dto.water.WaterDeviceDTO">
+        select
+        sn as sn,
+        device_user_name as deviceUserName,
+        device_user_phone as deviceUserPhone,
+        device_model as deviceModel,
+        renew_times as renewTimes,
+        money as money,
+        days as days,
+        current_cost_type as currentCostType,
+        current_cost_name as costName
+        from
+        water_device
+        where 1=1
+        <if test="distributorId != null">
+            and distributor_id = #{distributorId}
+        </if>
+        <if test="column != null and column == 10">
+            and renew_status = -1
+        </if>
+        <if test="column != null and column == 20">
+            and (renew_status = 1 or renew_status = 2)
+        </if>
+        <if test="column != null and column == 30">
+            and renew_status = 3
+        </if>
+    </select>
+
+    <select id="selectBasicInfoBySn" resultType="com.yimao.cloud.water.po.WaterDevice">
+        SELECT
+            id,
+            sn,
+            work_order_id as workOrderId,
+            iccid,
+            device_scope as deviceScope,
+            device_model as deviceModel,
+            online,
+            money,
+            days,
+            address,
+            current_total_time as currentTotalTime,
+            current_total_flow as currentTotalFlow,
+            cost_id as costId,
+            cost_name as costName,
+            cost_type as costType,
+            last_online_time as lastOnlineTime,
+            distributor_id as distributorId,
+            engineer_id as engineerId,
+            engineer_name as engineerName,
+            province,
+            city,
+            region,
+            sim_account_id as simAccountId,
+            renew_times as renewTimes,
+            logistics_code as logisticsCode
+        FROM
+            water_device
+        where
+            sn = #{sn}
+            order by create_time desc limit 1
+    </select>
+
+    <select id="selectBasicInfoById" resultType="com.yimao.cloud.water.po.WaterDevice">
+        SELECT
+            id,
+            sn,
+            work_order_id as workOrderId,
+            device_scope as deviceScope,
+            device_model as deviceModel,
+            online,
+            money,
+            days,
+            current_total_time as currentTotalTime,
+            current_total_flow as currentTotalFlow,
+            cost_id as costId,
+            cost_name as costName,
+            last_online_time as lastOnlineTime
+        FROM
+            water_device
+        where
+            id = #{id}
+    </select>
+
+    <select id="filterReplaceExport" resultType="com.yimao.cloud.pojo.export.water.FilterReplaceExport"
+            parameterType="com.yimao.cloud.pojo.query.water.WaterDeviceQuery">
+        SELECT
+        wd.sn,
+        wdfcr.filter_name AS filterName,
+        wd.province,
+        wd.city,
+        wd.region,
+        DATE_FORMAT(wd.create_time,'%Y-%m-%d %H:%i:%s') as createTime,
+        DATE_FORMAT(wdfcr.activating_time,'%Y-%m-%d %H:%i:%s') as activatingTime
+        FROM
+        `water_device` wd
+        INNER JOIN `water_device_filter_change_record` wdfcr ON wd.sn = wdfcr.sn
+        WHERE 1=1
+        <if test="sn != null and sn != ''">
+            and wd.sn like CONCAT('%',trim(#{sn}),'%')
+        </if>
+        <if test="workOrderId != null and workOrderId != ''">
+            and wd.work_order_id like CONCAT('%',trim(#{workOrderId}),'%')
+        </if>
+        <if test="batchCode != null and batchCode != ''">
+            and wd.logistics_code like CONCAT('%',trim(#{batchCode}),'%')
+        </if>
+        <if test="deviceModel != null and deviceModel != ''">
+            and wd.device_model = #{deviceModel}
+        </if>
+        <if test="province != null and province != ''">
+            and wd.province = #{province}
+        </if>
+        <if test="city != null and city != ''">
+            and wd.city = #{city}
+        </if>
+        <if test="region != null and region != ''">
+            and wd.region = #{region}
+        </if>
+        <if test="online != null">
+            and wd.online = #{online}
+        </if>
+        <if test="deviceUserId != null">
+            and wd.device_user_id = #{deviceUserId}
+        </if>
+        <if test="deviceUserName != null and deviceUserName != ''">
+            and wd.device_user_name = #{deviceUserName}
+        </if>
+        <if test="deviceUserPhone != null and deviceUserPhone != ''">
+            and wd.device_user_phone like CONCAT('%',trim(#{deviceUserPhone}),'%')
+        </if>
+        <if test="engineerId != null">
+            and wd.engineer_id = #{engineerId}
+        </if>
+        <if test="engineerName != null and engineerName != ''">
+            and wd.engineer_name = #{engineerName}
+        </if>
+        <if test="distributorName != null and distributorName != ''">
+            and wd.distributor_name = #{distributorName}
+        </if>
+        <if test="startTime != null">
+            and wd.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and wd.create_time &lt;= #{endTime}
+        </if>
+        <if test="activatingTime!=null and activatingTime!=''">
+            and wdfcr.activating_time &gt;= #{activatingTime}
+        </if>
+        ORDER BY wdfcr.activating_time asc
+        <if test="pageSize!=null and pageSize!='' and pageSize>0">
+            limit #{pageSize}
+        </if>
+    </select>
+
+
+    <!--设备列表导出-->
+    <select id="waterDeviceListExport" parameterType="com.yimao.cloud.pojo.query.water.WaterDeviceQuery"
+            resultType="com.yimao.cloud.pojo.export.water.DeviceListExport">
+        select
+        wd.id as id,
+        wd.sn,
+        wd.logistics_code as logisticsCode,
+        wd.cost_name as costName,
+        wd.province,
+        wd.city,
+        wd.region,
+        wd.distributor_account as distributorName,
+        wd.distributor_name as distributorRealName,
+        wd.device_user_name as deviceUserName,
+        wd.device_user_phone as deviceUserPhone,
+        wd.engineer_name as engineerName,
+        wd.engineer_phone as engineerPhone,
+        wd.device_model as deviceModel,
+        DATE_FORMAT(wd.sn_entry_time,'%Y-%m-%d %H:%i:%s') as snEntryTime,
+        wd.iccid,
+        DATE_FORMAT(wd.last_online_time,'%Y-%m-%d %H:%i:%s') as lastOnlineTime,
+        case wd.online
+        when '0' then '离线'
+        when '1' then '在线'
+        else '' end as online,
+        wd.money,
+        wd.current_total_time as currentTotalTime,
+        wd.current_total_flow as currentTotalFlow,
+        wd.version,
+        case when wd.last_cost_change_time is null then '否' else '是' end as costChanged,
+        case wd.cost_type
+        when '1' then '流量计费'
+        when '2' then '包年计费'
+        else '' end as costType,
+        wd.sim_company as simCompany,
+        case wd.connection_type
+        when '1' then '无线'
+        when '3' then 'SIM'
+        else '' end as connectionType,
+        wd.create_time as createTime
+        from `water_device` wd
+        where 1=1
+        <if test="createTime !=null and createTime !=''">
+            and wd.create_time &lt;= #{createTime}
+        </if>
+        <if test="sn != null and sn != ''">
+            and wd.sn like CONCAT('%',trim(#{sn}),'%')
+        </if>
+        <if test="workOrderId != null and workOrderId != ''">
+            and wd.work_order_id like CONCAT('%',trim(#{workOrderId}),'%')
+        </if>
+        <if test="batchCode != null and batchCode != ''">
+            and wd.logistics_code like CONCAT('%',trim(#{batchCode}),'%')
+        </if>
+        <if test="deviceModel != null and deviceModel != ''">
+            and wd.device_model = #{deviceModel}
+        </if>
+        <if test="province != null and province != ''">
+            and wd.province = #{province}
+        </if>
+        <if test="city != null and city != ''">
+            and wd.city = #{city}
+        </if>
+        <if test="region != null and region != ''">
+            and wd.region = #{region}
+        </if>
+        <if test="online != null">
+            and wd.online = #{online}
+        </if>
+        <if test="deviceUserId != null">
+            and wd.device_user_id = #{deviceUserId}
+        </if>
+        <if test="deviceUserName != null and deviceUserName != ''">
+            and wd.device_user_name = #{deviceUserName}
+        </if>
+        <if test="deviceUserPhone != null and deviceUserPhone != ''">
+            and wd.device_user_phone like CONCAT('%',trim(#{deviceUserPhone}),'%')
+        </if>
+        <if test="engineerName != null and engineerName != ''">
+            and wd.engineer_name = #{engineerName}
+        </if>
+        <if test="distributorName != null and distributorName != ''">
+            and wd.distributor_name = #{distributorName}
+        </if>
+        <if test="startTime != null">
+            and wd.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and wd.create_time &lt;= #{endTime}
+        </if>
+        order by wd.create_time desc
+        <if test="pageSize!=null and pageSize!='' and pageSize>0">
+            limit #{pageSize}
+        </if>
+    </select>
+
+    <select id="selectPageToStation" resultType="com.yimao.cloud.pojo.vo.station.StationWaterDeviceVO">
+        SELECT
+        wd.id,
+        wd.sn,
+        wd.work_order_id as workOrderId,
+        wd.iccid,
+        wd.logistics_code as logisticsCode,
+        wd.province,
+        wd.city,
+        wd.region,
+        wd.device_model as deviceModel,
+        wd.online,
+        wd.money,
+        wd.device_user_name as deviceUserName,
+        wd.device_user_phone as deviceUserPhone,
+        wd.renew_status as renewStatus,
+        case wd.renew_status
+        when -1 then '新安装'
+        when 1 then '应续费'
+        when 2 then '应续费'
+        when 3 then '已续费' else ''
+        end as renewStatusStr,
+        wd.engineer_name as engineerName,
+        wd.distributor_name as distributorName,
+        wd.create_time as createTime
+        FROM
+        water_device wd
+        where 1 = 1
+        <if test="sn != null and sn.trim() != ''">
+            and wd.sn like CONCAT('%',trim(#{sn}),'%')
+        </if>
+        <if test="workOrderId != null and workOrderId.trim() != ''">
+            and wd.work_order_id like CONCAT('%',trim(#{workOrderId}),'%')
+        </if>
+        <if test="deviceModel != null and deviceModel.trim() != ''">
+            and wd.device_model = #{deviceModel}
+        </if>
+        <if test="online != null">
+            and wd.online = #{online}
+        </if>
+        <if test="engineerName != null and engineerName.trim() != ''">
+            and wd.engineer_name = #{engineerName}
+        </if>
+        <if test="deviceUserName != null and deviceUserName.trim()  != ''">
+            and wd.device_user_name = #{deviceUserName}
+        </if>
+        <if test="deviceUserPhone != null and deviceUserPhone.trim() != ''">
+            and wd.device_user_phone like CONCAT('%',trim(#{deviceUserPhone}),'%')
+        </if>
+        <if test="distributorName != null and distributorName.trim()  != ''">
+            and wd.distributor_name = #{distributorName}
+        </if>
+        <if test="distributorId != null">
+            and wd.distributor_id = #{distributorId}
+        </if>
+        <if test="distributorPhone != null and distributorPhone.trim() != ''">
+            and wd.distributor_phone like CONCAT('%',trim(#{distributorPhone}),'%')
+        </if>
+        <if test="costType != null">
+            and wd.cost_type = #{costType}
+        </if>
+        <if test="startTime != null">
+            and wd.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and wd.create_time &lt;= #{endTime}
+        </if>
+        <if test="minResidueMoney != null">
+            and wd.money &gt;= #{minResidueMoney}
+        </if>
+        <if test="maxResidueMoney != null">
+            and wd.money &lt;= #{maxResidueMoney}
+        </if>
+        <choose>
+            <when test="renewStatus != null and renewStatus == -1">
+                and wd.renew_status = -1
+            </when>
+            <when test="renewStatus != null and renewStatus == 3">
+                and wd.renew_status = 3
+            </when>
+            <when test="renewStatus != null and renewStatus == 0">
+                and wd.renew_status in (1,2)
+            </when>
+        </choose>
+        <choose>
+            <when test=" engineerIds != null and engineerIds.size > 0">
+                AND wd.engineer_id in
+                <foreach collection="engineerIds" item="item" index="index" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </when>
+            <when test=" distributorIds != null and distributorIds.size > 0">
+                AND wd.distributor_id in
+                <foreach collection="distributorIds" item="item" index="index" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </when>
+            <otherwise>
+                AND 0 = 1
+            </otherwise>
+        </choose>
+        order by wd.create_time desc
+    </select>
+
+    <select id="getWaterDeviceRenewData" parameterType="com.yimao.cloud.pojo.query.station.StationWaterDeviceQuery"
+            resultType="com.yimao.cloud.pojo.dto.station.RenewStatisticsDTO">
+        select
+        ifnull(count(wd.id),0) as totalInstallNum,
+        ifnull(count(case when wd.renew_status=1 or wd.renew_status=2 then wd.id end),0) as needRenewNum,
+        ifnull(count(case when wd.renew_status=-1 then wd.id end),0) as newInstallNum,
+        ifnull(count(case when wd.renew_status=3 then wd.id end),0) as isRenewNum
+        from water_device wd
+        <where>
+            <if test="startTime != null">
+                and wd.create_time <![CDATA[>=]]> #{startTime}
+            </if>
+            <if test="endTime !=null">
+                and wd.create_time <![CDATA[<=]]> #{endTime}
+            </if>
+            <if test="engineerIds != null and engineerIds.size >0">
+                and wd.engineer_id in (
+                <foreach collection="engineerIds" item="item" index="index"
+                         separator=",">
+                    #{item}
+                </foreach>
+                )
+            </if>
+        </where>
+
+    </select>
+
+    <select id="getWaterDeviceRenewPicData" parameterType="com.yimao.cloud.pojo.query.station.StationWaterDeviceQuery"
+            resultType="com.yimao.cloud.pojo.dto.station.RenewStatisticsDTO">
+        select
+        a.time,
+        ifnull(count(a.id),0) as newInstallNum
+        from
+        (select
+        wd.id,
+        date_format(wd.create_time, '%Y%m%d') as time
+        from water_device wd
+        <where>
+            wd.create_time is not null
+            <if test="startTime != null">
+                and wd.create_time <![CDATA[>=]]> #{startTime}
+            </if>
+            <if test="endTime !=null">
+                and wd.create_time <![CDATA[<=]]> #{endTime}
+            </if>
+            <if test="engineerIds != null and engineerIds.size >0">
+                and wd.engineer_id in (
+                <foreach collection="engineerIds" item="item" index="index"
+                         separator=",">
+                    #{item}
+                </foreach>
+                )
+            </if>
+        </where>
+        ) a
+        group by a.time
+        order by time asc
+
+    </select>
+    <!-- 站务系统查询设备总数 -->
+    <select id="getDeviceTotalNum" resultType="java.lang.Integer">
+        SELECT
+        ifnull(count(*),0)
+        FROM
+        water_device wd
+        <where>
+            <choose>
+                <when test="engineerIds != null and engineerIds.size >0">
+                    and wd.engineer_id in (
+                    <foreach collection="engineerIds" item="engineerId" index="index"
+                             separator=",">
+                        #{engineerId}
+                    </foreach>
+                    )
+                </when>
+                <otherwise>
+                    AND 0 = 1
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+    <select id="getYesterdayNewInstallNum" resultType="java.lang.Integer">
+        SELECT
+        ifnull(count(*),0)
+        FROM
+        water_device wd
+        <where>
+            wd.create_time > DATE_SUB(CURDATE(), INTERVAL 1 day)
+            and wd.create_time <![CDATA[<]]> CURDATE()
+            <choose>
+                <when test="engineerIds != null and engineerIds.size >0">
+                    and wd.engineer_id in (
+                    <foreach collection="engineerIds" item="engineerId" index="index"
+                             separator=",">
+                        #{engineerId}
+                    </foreach>
+                    )
+                </when>
+                <otherwise>
+                    AND 0 = 1
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+	<update id="updateWaterDeviceForEngineer" >
+		UPDATE water_device
+		SET engineer_id=#{engineerId},
+		 engineer_name=#{engineerName},
+		 engineer_phone=#{engineerPhone}
+		WHERE 1=1
+		<if test="oldEngineerId !=null">
+               and engineer_id = #{oldEngineerId}
+        </if>
+        <if test="ids != null and ids.size >0">
+               and id in (
+               <foreach collection="ids" item="item" index="index" separator=",">
+                   #{item}
+               </foreach>
+               )
+        </if>
+	</update>
+
+	<update id="updateDeviceForEngineerPhone" >
+		UPDATE water_device
+		SET engineer_phone = #{engineerPhone}
+		WHERE
+			engineer_id = #{engineerId}
+
+	</update>
+
+	<select id="selectWaterDeviceByPrc" parameterType="com.yimao.cloud.pojo.dto.water.WaterDeviceDTO" resultType="java.lang.Integer" >
+		SELECT DISTINCT
+			water.id
+		FROM
+			(
+				SELECT
+					wd.id
+				FROM
+					water_device wd
+				WHERE
+					wd.province = #{province}
+				AND wd.city = #{city}
+				AND wd.region = #{region}
+				UNION
+					SELECT
+						wd.id
+					FROM
+						water_device wd
+					INNER JOIN water_device_place_change_record prc ON wd.sn = prc.sn
+					WHERE
+						prc.old_place = #{address}
+			) water
+
+	</select>
+
+    <select id="getDeviceRenewPropList" resultType="com.yimao.cloud.pojo.dto.order.SalesStatsDTO">
+        SELECT
+        aa.renewStatusStr as renewStatusName,
+        COUNT(1) as renewNum
+        FROM
+        (
+        SELECT
+        CASE wd.renew_status
+        WHEN - 1 THEN
+        '新安装'
+        WHEN 1 THEN
+        '待续费'
+        WHEN 2 THEN
+        '待续费'
+        WHEN 3 THEN
+        '已续费'
+        ELSE
+        ''
+        END AS renewStatusStr
+        FROM
+        water_device wd
+        where wd.distributor_id in (
+        <foreach collection="ids" item="id" index="index"
+                 separator=",">
+            #{id}
+        </foreach>
+        )
+        ) aa
+        GROUP BY
+        aa.renewStatusStr
+    </select>
+
+    <select id="getWaterDeviceList" resultType="com.yimao.cloud.pojo.dto.water.WaterDeviceDTO">
+        select
+        id,
+        sn,
+        logistics_code as logisticsCode,
+        iccid,
+        device_model as deviceModel,
+        money,
+        current_cost_name as currentCostName,
+        create_time as createTime,
+        device_user_id as deviceUserId,
+        device_user_name deviceUserName,
+        device_user_phone deviceUserPhone,
+        province,
+        city,
+        region,
+        address
+        from water_device
+        <where>
+		(
+		<foreach collection="serviceAreaList" item="serviceArea" index="index"
+                 separator="or">
+           (province=#{serviceArea.province} and  city=#{serviceArea.city} and region=#{serviceArea.region})
+        </foreach>
+            )
+            <if test="keyWords != null and keyWords != ''">
+                and
+                (sn like CONCAT('%',#{keyWords},'%')
+                or device_user_name like CONCAT('%',#{keyWords},'%')
+                or device_user_phone like CONCAT('%',#{keyWords},'%')
+                or address like CONCAT('%',#{keyWords},'%')
+                )
+            </if>
+        </where>
+    </select>
+    <select id="getWaterDeviceReplaceBySn"
+            resultType="com.yimao.cloud.pojo.dto.water.WaterDeviceReplaceRecordDTO">
+        SELECT
+            wdrr.old_sn,
+            wdrr.old_iccid,
+            wdrr.new_iccid,
+            wd.province,
+            wd.city,
+            wd.region,
+            wd.latitude,
+            wd.longitude,
+            wdrr.create_time
+        FROM
+            water_device_replace_record wdrr
+        LEFT JOIN water_device wd ON (wdrr.old_sn = wd.sn)
+        WHERE
+        wdrr.new_sn = #{sn}
+    </select>
+
+
+
+    <select id="getCompleteWorkOrderList" resultType="com.yimao.cloud.pojo.dto.water.WaterDeviceCompleteDTO">
+        select
+        wd.id,
+        wd.device_user_name as deviceUserName,
+        wd.device_model as deviceModel,
+        wd.sn as sn,
+        wd.iccid as iccid,
+        wd.logistics_code as logisticsCode,
+        wd.complete_time as completeTime,
+        wd.online as online
+        from
+        water_device wd
+        where 1=1 and wd.complete_time is not null
+        <if test="engineerId != null">
+            and engineer_id = #{engineerId}
+        </if>
+        <if test="key != null and key != ''">
+            and (wd.device_user_name like CONCAT('%',trim(#{key}),'%') or wd.device_model like CONCAT('%',trim(#{key}),'%')
+            or wd.sn like CONCAT('%',trim(#{key}),'%') or wd.iccid like CONCAT('%',trim(#{key}),'%')
+            or wd.logistics_code like CONCAT('%',trim(#{key}),'%')
+            )
+        </if>
+        order by wd.complete_time desc
+    </select>
+</mapper>

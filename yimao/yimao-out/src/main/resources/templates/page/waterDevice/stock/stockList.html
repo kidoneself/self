@@ -1,0 +1,41 @@
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+<meta charset="utf-8">
+<div class="bad-device-list-item" th:each="entry:${resultList}">
+    <span class="bad-device-list-item-type" th:text="${entry.materielCode}+'('+${entry.materielTypeName}+')'"></span></span>
+    <span class="bad-device-list-item-time" th:text="'工程师入库时间:'+${entry.engineerPutDate}"></span>
+    <span class="bad-device-list-item-no" th:text="'生产批次码:'+${entry.batchCode}"></span>
+
+    <div class="bad-device-list-item-btn"  th:if="${isFrozen == '0' && fromPageIndex == '1'}">
+        <button th:if="${status == '0'}" class="btn btn-sm" data-toggle="modal" data-target="#backbadmodal" th:attr="data-batchcode=${entry.batchCode}">转<!--服务站-->不良品库</button>
+        <button th:unless="${status == '0'}" class="btn btn-sm" data-toggle="modal" data-target="#backgoodmodal" th:attr="data-batchcode=${entry.batchCode}">转良品库</button>
+    </div>
+</div>
+<!--
+<c:if test="${!empty resultList}">
+    <c:forEach items="${resultList}" var="entry">
+        <div class="bad-device-list-item">
+            <span class="bad-device-list-item-type"><c:out value="${entry.materielCode}"/>(<c:out value="${entry.materielTypeName}"/>)</span>
+            <span class="bad-device-list-item-time">工程师入库时间:<c:out value="${entry.engineerPutDate}"/></span>
+            <span class="bad-device-list-item-no">生产批次码:<c:out value="${entry.batchCode}"/></span>
+            <c:if test="${isFrozen == 0}">
+                <c:if test="${fromPageIndex == 1}">
+                    <div class="bad-device-list-item-btn">
+                        <c:if test="${status == 0}">
+                            <button class="btn btn-sm" data-toggle="modal" data-target="#backbadmodal" data-batchcode="<c:out value='${entry.batchCode}'/>">转&lt;!&ndash;服务站&ndash;&gt;不良品库</button>
+                        </c:if>
+                        <c:if test="${status != 0}">
+                            <button class="btn btn-sm" data-toggle="modal" data-target="#backgoodmodal" data-batchcode="<c:out value='${entry.batchCode}'/>">转良品库</button>
+                        </c:if>
+                    </div>
+                </c:if>
+            </c:if>
+        </div>
+    </c:forEach>
+</c:if>
+-->
+

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.order.mapper.SalePerformRankMapper">
+    <!-- app获取销售排行数据 -->
+    <select id="getSalePerformRankData" resultType="com.yimao.cloud.pojo.dto.user.SalePerformRankDTO"> 
+      SELECT
+			station_company_id AS stationCompanyId,
+			distributor_id AS distributorId,
+			distributor_name AS distributorName,
+			num,
+			sales_amount AS salesAmount,
+			stat_month AS statMonth,
+			type
+		FROM
+			order_sale_perform_rank
+		WHERE
+		 type =#{type}
+		and stat_month=#{statMonth}
+		<if test="queryType != null and queryType==2">
+			and station_company_id =#{stationCompanyId}
+		</if>
+		<if test="queryType != null and queryType==1">
+			and distributor_id in 
+			<foreach collection="ids" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+            </foreach>
+		</if>
+		ORDER BY
+			sales_amount DESC
+		LIMIT 5
+    </select>
+    
+    <!--批量插入-->
+    <insert id="batchInsert" parameterType="java.util.List">
+        insert into order_sale_perform_rank (
+        station_company_id,
+        distributor_id,
+        distributor_name,
+        num,
+        sales_amount,
+        stat_month,
+        type,
+        create_time
+        )
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.stationCompanyId},
+            #{item.distributorId},
+            #{item.distributorName},
+            #{item.num},
+            #{item.salesAmount},
+            #{item.statMonth},
+            #{item.type},
+            #{item.createTime}
+            )
+        </foreach>
+    </insert>
+</mapper>

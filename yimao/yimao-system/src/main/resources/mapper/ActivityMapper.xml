@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.system.mapper.ActivityMapper">
+
+    <select id="findActivityList" resultType="com.yimao.cloud.pojo.dto.system.ActivityDTO">
+        select
+        tac.id,
+        tac.title,
+        tac.ac_url as acUrl,
+        tac.ac_img as acImg,
+        tac.ac_type as acType,
+        tac.side,
+        tac.sorts,
+        tac.delete_flag AS deleteFlag,
+        tac.channel,
+        tac.layout_type as layoutType,
+        tac.back_img as backImg,
+        tac.back_color as backColor,
+        tac.create_time AS createTime
+        from t_activity tac
+        where 1= 1
+        <if test="acType!=null">
+            and tac.ac_type = #{acType}
+        </if>
+        <if test="side!=null">
+            and tac.side = #{side}
+        </if>
+        <if test="deleteFlag!=null">
+            and tac.delete_flag = #{deleteFlag}
+        </if>
+        <if test="title!=null and title!='' ">
+            and tac.title like CONCAT('%',#{title},'%')
+        </if>
+
+        order by tac.sorts desc
+    </select>
+</mapper>

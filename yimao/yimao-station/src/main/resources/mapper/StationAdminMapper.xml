@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.station.mapper.StationAdminMapper">
+
+    <resultMap id="BaseResultMap" type="com.yimao.cloud.station.po.StationAdmin">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="user_name" jdbcType="VARCHAR" property="userName"/>
+        <result column="password" jdbcType="VARCHAR" property="password"/>
+        <result column="real_name" jdbcType="VARCHAR" property="realName"/>
+        <result column="sex" jdbcType="INTEGER" property="sex"/>
+        <result column="phone" jdbcType="VARCHAR" property="phone"/>
+        <result column="station_company_name" jdbcType="VARCHAR" property="stationCompanyName"/>
+        <result column="station_company_id" jdbcType="INTEGER" property="stationCompanyId"/>
+        <result column="role_id" jdbcType="INTEGER" property="roleId"/>
+        <result column="status" jdbcType="BIT" property="status"/>
+        <result column="creator" jdbcType="INTEGER" property="creator"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="updater" jdbcType="INTEGER" property="updater"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+    id, user_name, password, real_name, sex, phone, station_company_name, station_company_id, role_id, status, 
+    creator, create_time, updater, update_time
+  	</sql>
+
+    <select id="selectUserNameCount" resultType="java.lang.Integer">
+        select count(1) from station_admin where user_name = #{userName}
+        <if test="id != null">
+            and id != #{id}
+        </if>
+    </select>
+    <!-- 用户登录查询 根据用户名-->
+    <select id="selectStationAdmin" resultType="com.yimao.cloud.station.po.StationAdmin">
+  	select 
+  	id, 
+  	user_name as userName, 
+  	password, 
+  	real_name as realName, 
+  	phone, 
+  	station_company_id as stationCompanyId, 
+  	station_company_name as stationCompanyName,
+  	role_id as roleId, 
+  	status
+  	from station_admin 
+  	where user_name = #{userName}
+  	</select>
+
+  	 <!-- 用户登录查询，根据手机号 -->
+    <select id="selectStationAdminByPhone" resultType="com.yimao.cloud.station.po.StationAdmin">
+  	select
+  	id,
+  	user_name as userName,
+  	password,
+  	real_name as realName,
+  	phone,
+  	station_company_id as stationCompanyId,
+  	station_company_name as stationCompanyName,
+  	role_id as roleId,
+  	status
+  	from station_admin
+  	where phone = #{phone}
+  	</select>
+
+    <select id="selectAdminCount" resultType="java.lang.Integer">
+        select
+        count(1)
+        from station_admin
+        <where>
+            status=0
+            <if test="userName != null">
+                and user_name = #{userName,jdbcType=VARCHAR}
+            </if>
+            <if test="password != null">
+                and password = #{password,jdbcType=VARCHAR}
+            </if>
+            <if test="realName != null">
+                and real_name = #{realName,jdbcType=VARCHAR}
+            </if>
+            <if test="sex != null">
+                and sex = #{sex,jdbcType=INTEGER}
+            </if>
+            <if test="phone != null">
+                and phone = #{phone,jdbcType=VARCHAR}
+            </if>
+            <if test="stationCompanyId != null">
+                and station_company_id = #{stationCompanyId,jdbcType=INTEGER}
+            </if>
+            <if test="roleId != null">
+                and role_id = #{roleId,jdbcType=INTEGER}
+            </if>
+            <if test="creator != null">
+                and creator = #{creator,jdbcType=INTEGER}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime,jdbcType=TIMESTAMP}
+            </if>
+            <if test="updater != null">
+                and updater = #{updater,jdbcType=INTEGER}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime,jdbcType=TIMESTAMP}
+            </if>
+        </where>
+    </select>
+    <!-- 根据条件查询员工列表，这里指查询可用用户 -->
+    <select id="selectByQuery" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from station_admin
+        <where>
+            status=0
+            <if test="id != null">
+            	and id=#{id}
+            </if>
+            <if test="userName != null">
+                and user_name = #{userName,jdbcType=VARCHAR}
+            </if>
+            <if test="password != null">
+                and password = #{password,jdbcType=VARCHAR}
+            </if>
+            <if test="realName != null">
+                and real_name = #{realName,jdbcType=VARCHAR}
+            </if>
+            <if test="sex != null">
+                and sex = #{sex,jdbcType=INTEGER}
+            </if>
+            <if test="phone != null">
+                and phone = #{phone,jdbcType=VARCHAR}
+            </if>
+            <if test="stationCompanyName != null">
+                and station_company_name = #{stationCompanyName,jdbcType=VARCHAR}
+            </if>
+            <if test="stationCompanyId != null">
+                and station_company_id = #{stationCompanyId,jdbcType=INTEGER}
+            </if>
+            <if test="roleId != null">
+                and role_id = #{roleId,jdbcType=INTEGER}
+            </if>
+            <if test="creator != null">
+                and creator = #{creator,jdbcType=INTEGER}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime,jdbcType=TIMESTAMP}
+            </if>
+            <if test="updater != null">
+                and updater = #{updater,jdbcType=INTEGER}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime,jdbcType=TIMESTAMP}
+            </if>
+        </where>
+    </select>
+
+    <select id="listAdminByQuery" resultType="com.yimao.cloud.pojo.dto.station.StationAdminDTO">
+        select
+        a.id,
+        a.user_name as userName,
+        a.real_name as realName,
+        a.sex,
+        a.station_company_name as stationCompanyName,
+        a.station_company_id as stationCompanyId,
+        a.phone,
+        r.id as roleId,
+        sa.real_name as creatorName,
+        r.role_name as roleName,
+        a.create_time as createTime,
+        a.`status`
+        from station_admin a
+        left join station_admin sa on a.creator=sa.id
+        left join station_role r on a.role_id = r.id
+        left join system_role sr on a.id = sr.admin_id
+        <where>
+          	<if test="stationCompanyId != null">
+            	a.station_company_id = #{stationCompanyId,jdbcType=INTEGER}
+            </if>
+            <if test="stationCompanyName != null">
+                and a.station_company_name = #{stationCompanyName,jdbcType=VARCHAR}
+            </if>
+            <if test="userName != null and userName.trim() != ''">
+                and a.user_name = #{userName,jdbcType=VARCHAR}
+            </if>
+            <if test="realName != null and realName.trim() !=''">
+                and a.real_name = #{realName,jdbcType=VARCHAR}
+            </if>
+            <if test="status != null">
+                and a.status = #{status,jdbcType=BIT}
+            </if>
+            <if test="roleName != null and roleName.trim() != ''">
+                and r.role_name = #{roleName,jdbcType=VARCHAR}
+            </if>
+             <if test="roleId != null">
+                and a.role_id = #{roleId,jdbcType=INTEGER}
+            </if>       
+            <if test="stationList != null">
+             and sr.station_id in   
+             <foreach collection="stationList" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+           	 </foreach>
+            </if>
+        </where>
+        group by a.id
+        order by createTime desc
+    </select>
+    
+    <select id="getAllStationCompany" resultType="com.yimao.cloud.pojo.vo.station.StationCompanyVO">
+	select
+	max(station_company_id) as id,
+	max(station_company_name) as name
+	from
+	station_admin
+	group by
+	station_company_id
+    </select>
+
+    <select id="selectPhoneCount" resultType="java.lang.Integer">
+    	select count(1) from station_admin where phone = #{phone}
+        <if test="id != null">
+            and id != #{id}
+        </if>
+    </select>
+    
+    <select id="selectByRoleList" resultType="com.yimao.cloud.station.po.StationAdmin">
+		select
+		id,
+		station_company_id as stationCompanyId,
+		role_id as roleId
+		from station_admin
+		<where>
+		<if test="roleIds != null">
+             and role_id in   
+             <foreach collection="roleIds" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+           	 </foreach>
+    	</if>
+    	</where>
+    </select>
+</mapper>

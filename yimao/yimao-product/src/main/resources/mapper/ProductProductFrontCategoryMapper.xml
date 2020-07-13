@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.product.mapper.ProductProductFrontCategoryMapper">
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        insert into product__product_front_category (
+        product_id,
+        front_category_id
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.productId},
+            #{item.frontCategoryId}
+            )
+        </foreach>
+    </insert>
+    <select id="listProductProductFrontCategoryId" resultType="java.lang.Integer">
+        select distinct
+        front_category_id
+        from product__product_front_category
+        where product_id = #{id}
+    </select>
+
+</mapper>

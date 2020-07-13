@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.station.mapper.StockLoanApplyMapper">
+	<select id="listStockLoanApply" parameterType="com.yimao.cloud.pojo.query.station.GoodsLoanApplyQuery" resultType="com.yimao.cloud.pojo.dto.station.GoodsLoanApplyDTO">
+		select 
+		sla.id,
+		slo.station_name as myStationName,
+		sloo.company_name as objCompanyName,
+		sloo.station_name as objStationName,
+		sloo.station_master_phone as objStationMasterPhone,
+		sloo.station_master_name as objStationMasterName,
+		sloo.station_code as objStationCode,
+		sla.status,
+		slo.apply_type as applyType,
+		sla.first_category_level_name as firstCategoryLevelName,
+		sla.second_category_level_name as secondCategoryLevelName,
+		sla.goods_materials_name goodsMaterialsName ,
+		sla.apply_count applyCount,
+		sla.remark,
+		sla.apply_time as applyTime,
+		sa.real_name as applyerName,
+		sla.audit_time as auditTime,
+		sa1.real_name as auditorName
+		from 
+		stock_loan_object slo 
+		left join stock_loan_object sloo on slo.stock_loan_apply_id = sloo.stock_loan_apply_id and slo.apply_type != sloo.apply_type
+		left join stock_loan_apply sla on slo.stock_loan_apply_id = sla.id 
+		left join station_admin sa on sa.id = sla.applyer_id
+		left join station_admin sa1 on sa.id = sla.auditor_id
+		<where>
+			<if test="applyType != null">
+				and slo.apply_type=#{applyType}
+			</if>
+			<if test="status != null">
+				and sla.status =#{status}
+			</if>
+			<if test="stations != null and stations.size() &gt; 0">
+	            and slo.station_id in
+	            <foreach collection="stations" index="index" item="item" open="(" separator="," close=")">
+	                #{item}
+	            </foreach>
+        	</if>
+		</where>
+		order by sla.apply_time desc
+	</select>
+	
+	<select id="selectStockLoanApply" resultType="com.yimao.cloud.pojo.dto.station.GoodsLoanApplyDTO">
+		select
+		sla.id,
+		sla.goods_materials_id as goodsMaterialsId,
+		sla.apply_count as applyCount,
+		slo.station_id as stationId
+		from
+		stock_loan_apply sla
+		left join stock_loan_object slo on slo.stock_loan_apply_id = sla.id 
+		where
+		sla.id = #{id}
+		and slo.apply_type = #{applyType}
+	</select>
+ 
+</mapper>

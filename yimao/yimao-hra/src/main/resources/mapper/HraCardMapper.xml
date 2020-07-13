@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.hra.mapper.HraCardMapper">
+
+    <resultMap id="HraCardAndHraTicket" type="com.yimao.cloud.pojo.dto.hra.HraCardDTO">
+        <result column="c_card_id" property="id" jdbcType="VARCHAR"/>
+        <collection property="ticketList" ofType="com.yimao.cloud.pojo.dto.hra.HraTicketDTO"
+                    select="getHraTicketByCardId" column="c_card_id">
+            <result column="c_card_id" property="id" jdbcType="VARCHAR"/>
+        </collection>
+    </resultMap>
+
+    <select id="selectCardAndTicket" resultMap="HraCardAndHraTicket">
+        select
+        hc.id as c_card_id,
+        hc.card_type as cardType,
+        hc.user_id as userId,
+        hc.order_id as orderId,
+        hc.order_from as orderFrom,
+        hc.order_from_name as orderFromName,
+        hc.creator as creator,
+        hc.create_time as createTime,
+        hc.update_time as updateTime,
+        hc.valid_time as validTime,
+        hc.card_price as cardPrice,
+        hc.ticket_num as ticketNum,
+        hc.remark as remark,
+        hc.delete_status as deleteStatus
+        from hra_card hc
+        inner join hra_ticket ht on hc.id = ht.card_id
+        where hc.delete_status = 0 and ht.user_id = #{userId} and hc.card_type = 'Y'
+    </select>
+
+    <select id="getHraTicketByCardId" parameterType="java.lang.String"
+            resultType="com.yimao.cloud.pojo.dto.hra.HraTicketDTO">
+        select
+        id as id,
+        ticket_no as ticketNo,
+        ticket_price as ticketPrice,
+        ticket_status as ticketStatus,
+        handsel_status as handselStatus,
+        ticket_type as ticketType,
+        device_id as deviceId,
+        station_id as stationId,
+        creator as creator,
+        create_time as createTime,
+        use_time as useTime,
+        valid_begin_time as validBeginTime,
+        valid_end_time as validEndTime,
+        card_id as cardId,
+        customer_id as customerId,
+        reserve_from as reserveFrom,
+        reserve_time as reserveTime,
+        reserve_begin_time as reserveBeginTime,
+        reserve_end_time as reserveEndTime,
+        remark as remark,
+        user_id as userId,
+        self_station as selfStation,
+        use_count as useCount,
+        total as total,
+        ticket_style as ticketStyle,
+        ticket_content as ticketContent
+        from hra_ticket where delete_status = 0 and card_id = #{c_card_id}
+    </select>
+
+    <select id="selectCardByOrder" resultType="com.yimao.cloud.hra.po.HraCard">
+        select * from hra_card where id in (select card_id from hra_ticket
+        where user_id = #{userId} and ticket_type = 'Y' and delete_status = 0 group by card_id) and card_type = 'Y' and order_id = #{orderId}
+        order by update_time desc
+    </select>
+
+    <!-- 不想改前端。直接用型号 -->
+    <select id="selectCardByUser" parameterType="java.lang.Integer"
+            resultType="com.yimao.cloud.pojo.dto.hra.HraCardDTO">
+        select
+        id,
+        card_type as cardType,
+        user_id as userId,
+        order_id as orderId,
+        order_from as orderFrom,
+        valid_time as validTime,
+        card_price as cardPrice
+        from hra_card
+        <if test="orderId != null">
+            where
+            id in (select card_id from hra_ticket where user_id = #{userId} and (ticket_type = 'Y' or ticket_type = 'M')
+            and delete_status = 0
+            group by card_id) and (card_type = 'Y' or card_type = 'M')
+            and order_id = #{orderId}
+        </if>
+        <if test="orderId == null">
+            where id in
+            (select card_id from hra_ticket where user_id = #{userId} and ticket_type = 'Y' and
+            delete_status = 0 group by card_id) and card_type = 'Y'
+        </if>
+        order by update_time desc
+    </select>
+
+    <update id="updateCardUpdateTime">
+        <if test="type != null and type == 1">
+            update hra_card set update_time = now() where id = #{cardIdOrTicketNo}
+        </if>
+        <if test="type != null and type == 2">
+            update hra_card set update_time = now() where id = (select card_id from hra_ticket where ticket_no =
+            #{cardIdOrTicketNo} limit 1)
+        </if>
+        <if test="type != null and type == 3">
+            update hra_card set update_time = now() where id = (select card_id from hra_ticket where ticket_no =
+            #{cardIdOrTicketNo} limit 1)
+        </if>
+    </update>
+
+    <insert id="insertBatch" parameterType="java.util.List">
+        insert into hra_card (
+        id,
+        card_type,
+        user_id,
+        order_id,
+        order_from,
+        order_from_name,
+        creator,
+        create_time,
+        update_time,
+        valid_time,
+        card_price,
+        product_id,
+        ticket_num,
+        remark,
+        delete_status
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.id},
+            #{item.cardType},
+            #{item.userId},
+            #{item.orderId},
+            #{item.orderFrom},
+            #{item.orderFromName},
+            #{item.creator},
+            #{item.createTime},
+            #{item.updateTime},
+            #{item.validTime},
+            #{item.cardPrice},
+            #{item.productId},
+            #{item.ticketNum},
+            #{item.remark},
+            #{item.deleteStatus}
+            )
+        </foreach>
+    </insert>
+
+</mapper>

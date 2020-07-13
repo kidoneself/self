@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.order.mapper.OrderDeveryRecordMapper">
+    <!--批量插入发货记录 -->
+    <insert id="insertBatch" parameterType="java.util.List">
+      insert into order_delivery_record
+      (
+        logistics_no,
+        order_id,
+        main_order_id,
+        product_one_category_id,
+        product_one_category_name,
+        product_two_category_id,
+        product_two_category_name,
+        product_category_id,
+        product_category_name,
+        product_img,
+        num,
+        box_num,
+        delivery_time,
+        terminal,
+        user_id,
+        address_name,
+        address_phone,
+        address_province,
+        address_city,
+        address_region,
+        address_street,
+        station_id,
+        station_name,
+        sending_company,
+        sender,
+        sender_province,
+        sender_city,
+        sender_region,
+        sender_street,
+        sender_phone,
+        set_shipper,
+        set_ship_time,
+        delivery_people,
+        weigh,
+        pay_type,
+        logistics_company,
+        logistics_fee,
+        remark,
+        create_time,
+        update_time
+      ) values
+      <foreach collection="list" item="item" index="index" separator=",">
+          (
+          #{item.logisticsNo},
+          #{item.orderId},
+          #{item.mainOrderId},
+          #{item.productOneCategoryId},
+          #{item.productOneCategoryName},
+          #{item.productTwoCategoryId},
+          #{item.productTwoCategoryName},
+          #{item.productCategoryId},
+          #{item.productCategoryName},
+          #{item.productImg},
+          #{item.num},
+          #{item.boxNum},
+          #{item.deliveryTime},
+          #{item.terminal},
+          #{item.userId},
+          #{item.addressName},
+          #{item.addressPhone},
+          #{item.addressProvince},
+          #{item.addressCity},
+          #{item.addressRegion},
+          #{item.addressStreet},
+          #{item.stationId},
+          #{item.stationName},
+          #{item.sendingCompany},
+          #{item.sender},
+          #{item.senderProvince},
+          #{item.senderCity},
+          #{item.senderRegion},
+          #{item.senderStreet},
+          #{item.senderPhone},
+          #{item.setShipper},
+          #{item.setShipTime},
+          #{item.deliveryPeople},
+          #{item.weigh},
+          #{item.payType},
+          #{item.logisticsCompany},
+          #{item.logisticsFee},
+          #{item.remark},
+          #{item.createTime},
+          #{item.updateTime}
+          )
+      </foreach>
+    </insert>
+
+
+    <select id="deliveryRecordList" resultType="com.yimao.cloud.pojo.dto.order.OrderDeliveryRecordDTO">
+        select
+            odr.id,
+            odr.logistics_no AS logisticsNo,
+            odr.order_id AS orderId,
+            odr.main_order_id AS mainOrderId,
+            odr.product_one_category_id AS productOneCategoryId,
+            odr.product_one_category_name AS productOneCategoryName,
+            odr.product_two_category_id AS productTwoCategoryId,
+            odr.product_two_category_name AS productTwoCategoryName,
+            odr.product_category_id AS productCategoryId,
+            odr.product_category_name AS productCategoryName,
+            odr.product_img AS productImg,
+            os.count,
+            odr.num,
+            odr.box_num AS boxNum,
+            os.update_time AS deliveryTime,
+            odr.terminal,
+            odr.user_id AS userId,
+            odr.address_name AS addressName,
+            odr.address_phone AS addressPhone,
+            odr.address_province AS addressProvince,
+            odr.address_city AS addressCity,
+            odr.address_region AS addressRegion,
+            odr.address_street AS addressStreet,
+            odr.station_id AS stationId,
+            odr.station_name AS stationName,
+            odr.sending_company AS sendingCompany,
+            odr.sender,
+            odr.sender_province AS senderProvince,
+            odr.sender_city AS senderCity,
+            odr.sender_region AS senderRegion,
+            odr.sender_street AS senderStreet,
+            odr.sender_phone AS senderPhone,
+            odr.set_shipper AS setShipper,
+            odr.set_ship_time AS setShipTime,
+            odr.delivery_people AS deliveryPeople,
+            odr.pay_type AS payType,
+            odr.weigh
+        from order_delivery_record odr
+        inner join order_sub os on os.id = odr.order_id
+        where 1=1
+        <if test="orderId != null">
+          and (odr.order_id like concat('%',#{orderId},'%') OR odr.main_order_id like concat('%',#{orderId},'%') )
+        </if>
+        <if test="logisticsNo != null and logisticsNo != ''">
+          and odr.logistics_no like concat('%',trim(#{logisticsNo}),'%')
+        </if>
+        <if test="startTime != null and startTime != ''">
+          and os.update_time &gt; #{startTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+          and os.update_time &lt; #{endTime}
+        </if>
+        <if test="userId != null">
+          and odr.user_id = #{userId}
+        </if>
+        <if test="addreessName != null and addreessName != ''">
+          and odr.address_name LIKE CONCAT('%',trim(#{addreessName}),'%')
+        </if>
+        <if test="terminal != null">
+          and odr.terminal = #{terminal}
+        </if>
+        order by odr.set_ship_time desc
+    </select>
+</mapper>

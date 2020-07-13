@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.order.mapper.OrderInvoiceMapper">
+
+    <select id="pageQuery" resultType="com.yimao.cloud.pojo.dto.order.OrderInvoiceDTO"
+            parameterType="com.yimao.cloud.pojo.dto.order.OrderInvoiceQueryDTO">
+        SELECT
+        oi.id,
+        oi.main_order_id AS mainOrderId,
+        oi.order_id AS orderId,
+        os.STATUS AS orderStatus,
+        osd.product_name AS productName,
+        CONCAT_WS("/",osd.product_first_category_name,osd.product_two_category_name,osd.product_category_name) as
+        productCategoryName,
+        osd.cost_name AS costName,
+        os.count AS num,
+        os.fee AS amount,
+        os.create_time AS orderTime,
+        os.complete_time AS orderCompleteTime,
+        oi.apply_status AS applyStatus,
+        oi.apply_time AS applyTime,
+        CONCAT_WS("/",osd.engineer_province,osd.engineer_city,osd.engineer_region) as area,
+        CASE om.type
+        WHEN 1 THEN "首年"
+        WHEN 2 THEN "续费"
+        END AS orderType
+        FROM
+        order_invoice oi
+        LEFT JOIN order_main om ON oi.main_order_id = om.id
+        LEFT JOIN order_sub os ON oi.order_id = os.id
+        LEFT JOIN order_sub_detail osd ON os.id = osd.sub_order_id
+        <trim prefix="where" prefixOverrides="and | or">
+            os.`status` = 5
+            <if test="productCategoryId != null">
+                and (osd.product_category_id = #{productCategoryId}
+                or osd.product_two_category_id = #{productCategoryId}
+                or osd.product_first_category_id = #{productCategoryId})
+            </if>
+            <if test="orderId != null">
+                and (os.main_order_id like CONCAT(#{orderId},'%') or os.id like CONCAT(#{orderId},'%'))
+            </if>
+            <!--<if test="orderId != null">
+                or os.id like CONCAT(#{orderId},'%')
+            </if>-->
+            <!--<if test="productCategoryId!=null">-->
+            <!-- and (osd.product_first_category_id = #{productCategoryId} or osd.product_two_category_id =-->
+            <!-- #{productCategoryId} or osd.product_category_id = #{productCategoryId})-->
+            <!--</if>-->
+            <if test="province != null and province != '' ">
+                and osd.engineer_province = #{province}
+            </if>
+            <if test="city != null and city != '' ">
+                and osd.engineer_city = #{city}
+            </if>
+            <if test="region != null and region != '' ">
+                and osd.engineer_region = #{region}
+            </if>
+            <if test="applyStatus != null">
+                and oi.apply_status = #{applyStatus}
+            </if>
+            <!--  <if test="costId != null">
+                  and os.cost_id = #{costId}
+              </if>-->
+            <if test="orderBeginTime!=null">
+                and os.create_time &gt;= #{orderBeginTime}
+            </if>
+            <if test="orderEndTime!=null">
+                and os.create_time &lt;= #{orderEndTime}
+            </if>
+            <if test="orderCompleteBeginTime!=null">
+                and os.complete_time &gt;= #{orderCompleteBeginTime}
+            </if>
+            <if test="orderCompleteEndTime!=null">
+                and os.complete_time &lt;= #{orderCompleteEndTime}
+            </if>
+            <if test="applyBeginTime!=null">
+                and oi.apply_time &gt;= #{applyBeginTime}
+            </if>
+            <if test="applyEndTime!=null">
+                and oi.apply_time &lt;= #{applyEndTime}
+            </if>
+        </trim>
+        order by os.complete_time desc
+    </select>
+
+    <select id="orderInvoiceExport" resultType="com.yimao.cloud.pojo.dto.order.OrderInvoiceExportDTO" parameterType="com.yimao.cloud.pojo.dto.order.OrderInvoiceQueryDTO">
+        SELECT
+        wo.id AS workOrderId,
+        CASE when ((wo.step >= 2) and ((wo.step &lt; 6 or wo.step &gt; 6) or
+        (wo.`status` &lt; 1 or wo.`status` &gt; 1))) then "已提货"
+        ELSE "未提货" END as isTake,
+        wo.province,
+        wo.city,
+        wo.region,
+        os.count,
+        DATE_FORMAT(os.create_time,"%Y-%m-%d %H:%i:%s") AS orderTimeStr,
+        CASE os.pay_type
+        WHEN 1 THEN '微信'
+        WHEN 2 THEN '支付宝'
+        WHEN 3 THEN 'POS机'
+        WHEN 4 THEN '转账'
+        ELSE '' END AS payTypeStr,
+        CASE wo.`status`
+        WHEN 1 THEN '未受理'
+        WHEN 2 THEN '已受理'
+        WHEN 3 THEN '处理中'
+        WHEN 4 THEN '已完成'
+        ELSE '' END AS statusStr,
+        wo.distributor_name AS realName,
+        wo.distributor_phone AS distributorPhone,
+        concat_ws('/', wo.distributor_province, wo.distributor_city, wo.distributor_region) AS distributorAddress,
+        CASE
+        WHEN (wo.distributor_type = 2) OR (wo.distributor_type = 3) THEN concat (wo.distributor_region,'翼猫体验服务中心')
+        ELSE "" END AS distributorStation,
+        osd.recommend_name AS recommendName,
+        concat_ws('/', osd.recommend_province, osd.recommend_city, osd.recommend_region) AS recommendAddress,
+        IF(osd.recommend_region IS NULL,'',concat (osd.recommend_region ,'翼猫体验服务中心')) AS recommendStation,
+        wo.engineer_name AS serviceEngineerName,
+        wo.engineer_phone AS serviceEngineerPhone,
+        DATE_FORMAT(wo.accept_time,"%Y-%m-%d %H:%i:%s") AS acceptTimeStr,
+        wo.station_name AS stationName,
+        wo.trade_no AS tradeNo,
+        CASE wo.cost_type
+        WHEN 1 THEN '流量计费'
+        WHEN 2 THEN '包年计费' ELSE '' END AS costName,
+        (wo.fee - wo.open_account_fee) AS modelPrice,
+        wo.open_account_fee AS openAccountFee,
+        wo.fee AS billFee,
+        wo.device_model AS deviceModel,
+        wo.sn AS snCode,
+        DATE_FORMAT(wo.pay_time,"%Y-%m-%d %H:%i:%s") AS payTimeStr,
+        wo.user_name AS userName,
+        wo.user_phone AS userPhone,
+        CASE wo.dispatch_type
+        WHEN 1 THEN '手动派单'
+        WHEN 2 THEN '自动派单' ELSE '' END AS dispatchTypeStr,
+        CASE wo.pay_terminal
+        WHEN 1 THEN '经销商支付'
+        WHEN 2 THEN '其他(他人代付)'
+        WHEN 3 THEN '用户支付'
+        ELSE '' END as payTerminalStr,
+        DATE_FORMAT(os.complete_time,"%Y-%m-%d %H:%i:%s") AS completeTimeStr,
+        DATE_FORMAT(wo.pick_time,"%Y-%m-%d %H:%i:%s") AS pickTimeStr,
+        DATE_FORMAT(wo.sn_code_time,"%Y-%m-%d %H:%i:%s") AS deviceActiveTimeStr,
+        wo.logistics_code AS logisticsCode,
+        oi.apply_email AS billEmail,
+        CASE
+        oi.apply_status
+        WHEN 0 THEN
+        '未开票'
+        WHEN 2 THEN
+        '已开票'
+        END AS isBilling,
+        CASE oi.invoice_type
+        WHEN 1 THEN '普票'
+        WHEN 2 THEN '增票' ELSE '' END AS invoiceTypeStr,
+        CASE oi.invoice_head
+        WHEN 1 THEN '公司'
+        WHEN 2 THEN '个人' ELSE '' END AS invoiceHeadStr,
+        oi.duty_no AS dutyNo,
+        oi.bank_name AS bankName,
+        oi.bank_account AS bankAccount,
+        wo.invoice_title AS companyName,
+        CASE oi.invoice_head
+        WHEN 1 THEN
+        oi.company_address
+        WHEN 2 THEN
+        oi.apply_address
+        ELSE
+        ''
+        END AS billAddress,
+        CASE oi.invoice_head
+        WHEN 1 THEN
+        oi.company_phone
+        WHEN 2 THEN
+        oi.apply_phone
+        ELSE
+        ''
+        END AS billPhone,
+        DATE_FORMAT(oi.apply_time,"%Y-%m-%d %H:%i:%s") AS billTimeStr,
+        CASE wo.type
+        WHEN 1 THEN '经销商添加'
+        WHEN 2 THEN '用户自助下单' ELSE '' END AS workOrderTypeStr,
+        wo.distributor_type_name AS distributorTypeName
+        FROM
+        order_invoice oi
+        LEFT JOIN order_sub os ON oi.order_id = os.id
+        LEFT JOIN order_sub_detail osd ON osd.sub_order_id = os.id
+        LEFT JOIN workorder wo ON wo.sub_order_id = os.id
+        <trim prefix="where" prefixOverrides="and | or">
+            os.`status` = 5 and oi.id &gt;0
+            <if test="productCategoryId != null">
+                and (osd.product_category_id = #{productCategoryId}
+                or osd.product_two_category_id = #{productCategoryId}
+                or osd.product_first_category_id = #{productCategoryId})
+            </if>
+            <if test="orderId != null">
+                and (oi.main_order_id like CONCAT(#{orderId},'%') or oi.order_id like CONCAT(#{orderId},'%'))
+            </if>
+            <!--<if test="orderId != null">
+                or oi.order_id like CONCAT(#{orderId},'%')
+            </if>-->
+            <if test="province != null and province != '' ">
+                and osd.engineer_province = #{province}
+            </if>
+            <if test="city != null and city != '' ">
+                and osd.engineer_city = #{city}
+            </if>
+            <if test="region != null and region != '' ">
+                and osd.engineer_region = #{region}
+            </if>
+            <if test="applyStatus != null">
+                and oi.apply_status = #{applyStatus}
+            </if>
+            <if test="orderBeginTime!=null">
+                and os.create_time &gt;= #{orderBeginTime}
+            </if>
+            <if test="orderEndTime!=null">
+                and os.create_time &lt;= #{orderEndTime}
+            </if>
+            <if test="orderCompleteBeginTime!=null">
+                and os.complete_time &gt;= #{orderCompleteBeginTime}
+            </if>
+            <if test="orderCompleteEndTime!=null">
+                and os.complete_time &lt;= #{orderCompleteEndTime}
+            </if>
+            <if test="applyBeginTime!=null">
+                and oi.apply_time &gt;= #{applyBeginTime}
+            </if>
+            <if test="applyEndTime!=null">
+                and oi.apply_time &lt;= #{applyEndTime}
+            </if>
+            <if test="(completeTime!=null and completeTime!='') and ((orderCompleteBeginTime==null) and (orderCompleteEndTime==null))">
+            	and os.complete_time &lt;= #{completeTime}
+            </if>
+        </trim>
+        order by os.complete_time desc
+        <if test="pageSize!=null and pageSize!='' and pageSize >0">
+          limit #{pageSize}
+        </if>
+    </select>
+
+
+</mapper>

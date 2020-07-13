@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.system.mapper.StationCompanyGoodsApplyMapper">
+
+    <select id="pageGoodsApplyFirstAudit"
+            resultType="com.yimao.cloud.pojo.dto.system.StationCompanyGoodsApplyDTO">
+        SELECT
+        id,
+        applicant_account AS applicantAccount,
+        applicant_name AS applicantName,
+        station_company_name AS stationCompanyName,
+        province,
+        city,
+        region,
+        address,
+        first_category_name AS firstCategoryName,
+        two_category_name AS twoCategoryName,
+        goods_name AS goodsName,
+        `count`,
+        accessory,
+        two_audit_not_pass_cause AS twoAuditNotPassCause,
+        apply_time AS applyTime
+        FROM
+        station_company_goods_apply
+        WHERE 1 = 1
+        <if test="province != null and province.trim() != ''">
+            and province = #{province}
+        </if>
+        <if test="city != null and city.trim() != ''">
+            and city = #{city}
+        </if>
+        <if test="region != null and region.trim() != ''">
+            and region = #{region}
+        </if>
+        <if test="categoryId != null">
+            and (first_category_id = #{categoryId} or two_category_id = #{categoryId})
+        </if>
+        and is_after_audit = 0
+        and `status` = 1
+        ORDER BY apply_time DESC
+    </select>
+
+    <select id="pageGoodsApplyAfterAudit"
+            resultType="com.yimao.cloud.pojo.dto.system.StationCompanyGoodsApplyDTO">
+        SELECT
+        id,
+        applicant_account AS applicantAccount,
+        applicant_name AS applicantName,
+        station_company_name AS stationCompanyName,
+        province,
+        city,
+        region,
+        address,
+        first_category_name AS firstCategoryName,
+        two_category_name AS twoCategoryName,
+        goods_name AS goodsName,
+        `count`,
+        accessory,
+        apply_time AS applyTime
+        FROM
+        station_company_goods_apply
+        WHERE 1 = 1
+        <if test="province != null and province.trim() != ''">
+            and province = #{province}
+        </if>
+        <if test="city != null and city.trim() != ''">
+            and city = #{city}
+        </if>
+        <if test="region != null and region.trim() != ''">
+            and region = #{region}
+        </if>
+        <if test="categoryId != null">
+            and (first_category_id = #{categoryId} or two_category_id = #{categoryId})
+        </if>
+        and is_after_audit = 1
+        and `status` = 1
+        ORDER BY apply_time DESC
+    </select>
+
+    <select id="pageGoodsApplyTwoAudit"
+            resultType="com.yimao.cloud.pojo.dto.system.StationCompanyGoodsApplyDTO">
+        SELECT
+        id,
+        applicant_account AS applicantAccount,
+        applicant_name AS applicantName,
+        station_company_name AS stationCompanyName,
+        province,
+        city,
+        region,
+        address,
+        first_category_name AS firstCategoryName,
+        two_category_name AS twoCategoryName,
+        goods_name AS goodsName,
+        `count`,
+        accessory,
+        apply_time AS applyTime,
+        is_after_audit AS isAfterAudit,
+        first_auditor AS firstAuditor,
+        `status`
+        FROM
+        station_company_goods_apply
+        WHERE
+        1 = 1
+        <if test="province != null and province.trim() != ''">
+            and province = #{province}
+        </if>
+        <if test="city != null and city.trim() != ''">
+            and city = #{city}
+        </if>
+        <if test="region != null and region.trim() != ''">
+            and region = #{region}
+        </if>
+        <if test="categoryId != null">
+            and (first_category_id = #{categoryId} or two_category_id = #{categoryId})
+        </if>
+        <if test="status != null">
+            and `status` = #{status}
+        </if>
+        <if test="isAfterAudit != null">
+            and is_after_audit = #{isAfterAudit}
+        </if>
+        and `status` in (2,3,4)
+        ORDER BY
+        `status` ASC,
+        first_audit_time DESC
+    </select>
+
+    <select id="pageGoodsApplyHistory"
+            resultType="com.yimao.cloud.pojo.dto.system.StationCompanyGoodsApplyDTO">
+        SELECT
+        id,
+        applicant_account AS applicantAccount,
+        applicant_name AS applicantName,
+        station_company_name AS stationCompanyName,
+        province,
+        city,
+        region,
+        address,
+        first_category_name AS firstCategoryName,
+        two_category_name AS twoCategoryName,
+        goods_name AS goodsName,
+        `count`,
+        accessory,
+        apply_time AS applyTime,
+        is_after_audit AS isAfterAudit,
+        first_auditor AS firstAuditor,
+        first_audit_time AS firstAuditTime,
+        two_auditor AS twoAuditor,
+        two_audit_time AS twoAuditTime,
+        completion_time AS completionTime,
+        `status`
+        FROM
+        station_company_goods_apply
+        WHERE
+        1 = 1
+        <if test="province != null and province.trim() != ''">
+            and province = #{province}
+        </if>
+        <if test="city != null and city.trim() != ''">
+            and city = #{city}
+        </if>
+        <if test="region != null and region.trim() != ''">
+            and region = #{region}
+        </if>
+        <if test="isAfterAudit != null">
+            and is_after_audit = #{isAfterAudit}
+        </if>
+        and `status` = 5
+        ORDER BY completion_time DESC
+    </select>
+
+    <select id="pageGoodsApplyStation"
+            resultType="com.yimao.cloud.pojo.dto.system.StationCompanyGoodsApplyDTO">
+        SELECT
+        id,
+        station_company_id AS stationCompanyId,
+        station_company_name AS stationCompanyName,
+        applicant_account AS applicantAccount,
+        applicant_name AS applicantName,
+        province,
+        city,
+        region,
+        address,
+        first_category_id AS firstCategoryId,
+        first_category_name AS firstCategoryName,
+        two_category_id AS twoCategoryId,
+        two_category_name AS twoCategoryName,
+        goods_id AS goodsId,
+        goods_name AS goodsName,
+        is_after_audit AS isAfterAudit,
+        `count`,
+        accessory,
+        apply_time AS applyTime,
+        cause,
+        `status`
+        FROM
+        station_company_goods_apply
+        WHERE
+        1 = 1
+        <if test="categoryId != null">
+            and (first_category_id = #{categoryId} or two_category_id = #{categoryId})
+        </if>
+        <if test="startTime!=null">
+            and apply_time &gt;= #{startTime}
+        </if>
+        <if test="endTime!=null">
+            and apply_time &lt;= #{endTime}
+        </if>
+        and `status` in(1,2,3,4,6)
+        <choose>
+            <when test="stationCompanyId != null">
+                and station_company_id = #{stationCompanyId}
+            </when>
+            <otherwise>
+                and 0 = 1
+            </otherwise>
+        </choose>
+        ORDER BY apply_time DESC
+    </select>
+
+    <select id="pageGoodsApplyStationHistory"
+            resultType="com.yimao.cloud.pojo.dto.system.StationCompanyGoodsApplyDTO">
+        SELECT
+        id,
+        applicant_account AS applicantAccount,
+        applicant_name AS applicantName,
+        province,
+        city,
+        region,
+        address,
+        first_category_name AS firstCategoryName,
+        two_category_name AS twoCategoryName,
+        goods_name AS goodsName,
+        `count`,
+        accessory,
+        confirm_img AS confirmImg,
+        completion_time AS completionTime,
+        `status`
+        FROM
+        station_company_goods_apply
+        WHERE
+        1 = 1
+        <if test="categoryId != null">
+            and (first_category_id = #{categoryId} or two_category_id = #{categoryId})
+        </if>
+        <if test="startTime!=null">
+            and apply_time &gt;= #{startTime}
+        </if>
+        <if test="endTime!=null">
+            and apply_time &lt;= #{endTime}
+        </if>
+        <if test="status != null">
+            and `status` = #{status}
+        </if>
+        and `status` in(0,5)
+        <choose>
+            <when test="stationCompanyId != null">
+                and station_company_id = #{stationCompanyId}
+            </when>
+            <otherwise>
+                and 0 = 1
+            </otherwise>
+        </choose>
+        ORDER BY completion_time DESC
+    </select>
+</mapper>

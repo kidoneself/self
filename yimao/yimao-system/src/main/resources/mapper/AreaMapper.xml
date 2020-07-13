@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.system.mapper.AreaMapper">
+
+    <select id="areaList" resultType="com.yimao.cloud.pojo.dto.system.AreaDTO">
+        select
+        id,
+        `name`,
+        `level`,
+        sorts,
+        pid
+        from system_area where deleted = 0
+    </select>
+
+    <select id="getRegionIdByPCR" resultType="java.lang.Integer">
+        select rr.id
+        from system_area rr
+        inner join system_area cc on rr.pid = cc.id
+        inner join system_area pp on cc.pid = pp.id
+        where rr.`level` = 3 and rr.`name` = #{region} and cc.`level` = 2 and cc.`name` = #{city} and pp.`level` = 1 and pp.`name` = #{province}
+    </select>
+
+</mapper>

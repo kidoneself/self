@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.hra.mapper.HraReportRecordMapper">
+
+    <select id="findHraReportRecord" resultType="com.yimao.cloud.hra.po.HraReportRecord">
+        SELECT
+        hrr.id as id,
+        hrr.report_id as reportId,
+        hrr.user_id as userId,
+        hrr.delete_status as deleteStatus
+        FROM hra_report_record hrr
+        WHERE
+        hrr.report_id = #{reportId} and  hrr.user_id = #{userId} and hrr.delete_status=0
+    </select>
+</mapper>

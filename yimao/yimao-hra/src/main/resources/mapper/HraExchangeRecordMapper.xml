@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.hra.mapper.HraExchangeRecordMapper">
+
+
+    <!-- 获取兑换的失败记录次数 -->
+    <select id="failureCount" resultType="java.lang.Integer">
+        select count(1) from hra_exchange_record her
+        where
+        her.user_id = #{userId} and
+        her.exchange_status = 2 and
+        DATE_FORMAT(her.exchange_time,'%Y-%m-%d') = DATE_FORMAT(now(),'%Y-%m-%d')
+        <if test="channel!=null and channel!=''">
+            and her.channel = #{channel}
+        </if>
+    </select>
+
+    <!-- 获取兑换的失败记录次数 -->
+    <select id="successCount" resultType="java.lang.Integer">
+        select count(1) from hra_exchange_record her
+        where
+        her.user_id = #{userId} and
+        her.exchange_status = 1
+        <if test="channel!=null and channel!=''">
+            and her.channel = #{channel}
+        </if>
+        <if test="bTime!=null and bTime!=''">
+            and her.exchange_time &gt; #{bTime}
+        </if>
+        <if test="eTime!=null and eTime!=''">
+            and her.exchange_time&lt;#{eTime}
+        </if>
+    </select>
+</mapper>

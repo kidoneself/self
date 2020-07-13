@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+<!--
+  Created by IntelliJ IDEA.
+  Desc:根据产品批次号获取产品状态信息
+  User: yuanxw
+  Date: 2018/3/17
+  Time: 13:52
+  To change this template use File | Settings | File Templates.
+-->
+<!--<%@ page contentType="text/html;charset=UTF-8" language="java" %>-->
+<!--<c:if test="${empty stockInfo}">-->
+<div class="no-result-con hide" th:if="${#strings.isEmpty(stockInfo)}">
+    <span class="no-result-tip" th:text="查无此记录"></span>
+</div>
+<!--</c:if>-->
+<!--<c:if test="${!empty stockInfo}">-->
+<div class="result" th:if="${not #strings.isEmpty(stockInfo)}">
+    <div class="result-item">
+        <span class="result-no" th:text="'生产批次码:'+${stockInfo.batchCode}"></span>
+        <!--0:设备 1：耗材-->
+        <span class="result-type" th:if="${stockInfo.materielType== 0}" th:text="'型号/编码:'+${stockInfo.materielCode}"></span>
+        <div th:if="${stockInfo.materielType} != 0">
+            <span class="result-type" th:text="'耗材分类:'+${stockInfo.materielTypeName}"></span>
+            <span class="result-type" th:text="'耗材名称:'+${stockInfo.materielName}"></span>
+            <span class="result-type" th:text="'适用机型:'+${stockInfo.fitTypeName}"></span>
+        </div>
+        <!-- <c:choose>
+             <c:when test="${stockInfo.materielType == 0}">
+                 <span class="result-type">型号/编码:${stockInfo.materielCode}</span>
+             </c:when>
+             <c:otherwise>
+                 <span class="result-type">耗材分类:${stockInfo.materielTypeName}</span>
+                 <span class="result-type">耗材名称:${stockInfo.materielName}</span>
+                 <span class="result-type">适用机型:${stockInfo.fitTypeName}</span>
+             </c:otherwise>
+         </c:choose>-->
+        <span class="result-state">良品/不良品状态:
+            <!--（0：良品 1：不良品 2：销毁）-->
+                <span th:if="${stockInfo.status==0}"  class="badge badge-green" th:text="良品"></span>
+                <span th:if="${stockInfo.status==2 || stockInfo.status==1}"  class="badge badge-red" th:text="不良品"></span>
+            <!-- <c:if test="${stockInfo.status==0}">
+                 <span class="badge badge-green">良品</span>
+             </c:if>
+             <c:if test="${stockInfo.status==2 || stockInfo.status==1}">
+                 <span class="badge badge-red">不良品</span>
+             </c:if>-->
+            </span>
+        <span class="result-belong">当前归属:
+            <!--<c:choose>-->
+            <!--归属标识（0 供应商 1 服务站 2 工程师 3 翼猫分仓 4 客户）-->
+                <span th:if="${stockInfo.stockOwnFlag == 0 }">供应商</span>
+                <span th:if="${stockInfo.stockOwnFlag == 1 }" th:text="${stockInfo.stockOwnName}"></span>
+                <span th:if="${stockInfo.stockOwnFlag == 2 }" th:text="'安装工程师:'+${stockInfo.stockOwnName}"></span>
+                <span th:if="${stockInfo.stockOwnFlag == 3 }" th:text="'仓库:'+${stockInfo.stockOwnName}"></span>
+                <span th:if="${stockInfo.stockOwnFlag == 4 }" th:text="'用户:'+${stockInfo.stockOwnName}"></span>
+            <!--<c:when test="${stockInfo.stockOwnFlag == 0 }">
+                供应商
+            </c:when>
+            <c:when test="${stockInfo.stockOwnFlag == 1 }">
+                ${stockInfo.stockOwnName}
+            </c:when>
+            <c:when test="${stockInfo.stockOwnFlag == 2 }">
+                安装工程师:${stockInfo.stockOwnName}
+            </c:when>
+            <c:when test="${stockInfo.stockOwnFlag == 3 }">
+                仓库:${stockInfo.stockOwnFlagName}
+            </c:when>
+            <c:when test="${stockInfo.stockOwnFlag == 4 }">
+                用户:${stockInfo.stockOwnName}
+            </c:when>-->
+            <!-- </c:choose>-->
+            </span>
+        <span class="result-way">是否在途:
+            <!--是否为在途状态（0：在库  1：在途）-->
+                <span class="badge badge-blue" th:if="${stockInfo.isOnTheWay == '1'}">是</span>
+                <span class="badge badge-gray" th:unless="${stockInfo.isOnTheWay == '1'}">否</span>
+            <!-- <c:choose>
+                 <c:when test="${stockInfo.isOnTheWay == 1}">
+                     <span class="badge badge-blue">是</span>
+                 </c:when>
+                 <c:otherwise>
+                     <span class="badge badge-gray">否</span>
+                 </c:otherwise>
+             </c:choose>-->
+            </span>
+        <span class="result-freezze">是否冻结:
+            <!--是否冻结 0 未冻结 1 已冻结-->
+                <span class="badge badge-blue" th:if="${stockInfo.isFrozen == '1'}">是</span>
+                <span class="badge badge-gray" th:unless="${stockInfo.isFrozen == '1'}">否</span>
+            <!--<c:choose>
+                <c:when test="${stockInfo.isFrozen == 1}">
+                    <span class="badge badge-blue">是</span>
+                </c:when>
+                <c:otherwise>
+                    <span class="badge badge-gray">否</span>
+                </c:otherwise>
+            </c:choose>-->
+            </span>
+    </div>
+</div>
+<!--</c:if>-->

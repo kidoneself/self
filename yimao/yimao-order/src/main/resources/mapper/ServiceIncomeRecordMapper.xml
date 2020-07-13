@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.order.mapper.ServiceIncomeRecordMapper">
+
+    <select id="queryServiceIncomeList" resultType="com.yimao.cloud.pojo.vo.order.ProductIncomeVO">
+        SELECT
+        p1.id,
+        p1.ticket_no as ticketNo,
+        p1.order_id as orderId,
+        p1.main_order_id as mainOrderId,
+        p1.user_id as userId,
+        p1.user_type as userType,
+        p1.user_name as userName,
+        p1.product_id as productId,
+        osd.product_company_id as productCompanyId,
+        osd.product_category_name as productCategoryName,
+        p1.product_price as productPrice,
+        p1.settlement_fee as allocationMoney,
+        p1.distributor_id as distributorId,
+        p1.distributor_province as distributorProvince,
+        p1.distributor_city as distributorCity,
+        p1.distributor_region as distributorRegion,
+        p1.service_time as orderCompleteTime,
+        o1.fee as amountFee,
+        o1.logistics_fee as logisticsFee,
+        p1.distributor_name as distributorName,
+        p1.distributor_account as distributorAccount
+        FROM
+        service_income_record p1
+        LEFT JOIN order_sub o1 ON p1.order_id = o1.id
+        LEFT JOIN order_sub_detail osd ON osd.sub_order_id = o1.id
+        <trim prefix="where" prefixOverrides="and | or">
+            and o1.status = 5
+            <if test="productCompanyId!=null">
+                and p1.product_company_id =#{productCompanyId}
+            </if>
+            <if test="ticketNo!=null and ticketNo!='' ">
+                and p1.ticket_no like CONCAT('%',trim(#{ticketNo}),'%')
+            </if>
+            <if test="userId!=null">
+                and p1.user_id like CONCAT('%',trim(#{userId}),'%')
+            </if>
+            <if test="orderId!=null and orderId!='' ">
+                and ( p1.main_order_id = #{orderId}
+                or p1.order_id = #{orderId} )
+            </if>
+            <if test="productCategoryId!=null">
+                and (osd.product_first_category_id = #{productCategoryId} or osd.product_two_category_id =
+                #{productCategoryId} or osd.product_category_id = #{productCategoryId})
+            </if>
+            <if test="incomeType!=null">
+                and p1.income_type = #{incomeType}
+            </if>
+            <if test="userType!=null">
+                and p1.user_type =#{userType}
+            </if>
+            <if test="settlementTime!=null and settlementTime!='' ">
+                and DATE_FORMAT(DATE_ADD(p1.service_time,INTERVAL 1 MONTH),'%Y-%m') = #{settlementTime}
+            </if>
+            <if test="productMode!=null">
+                and o1.product_type = #{productMode}
+            </if>
+            <if test="startTime!=null and startTime!='' ">
+                and p1.service_time &gt;= #{startTime}
+            </if>
+            <if test="endTime!=null and endTime!='' ">
+                and p1.service_time &lt;= #{endTime}
+            </if>
+            <if test="distributorProvince!=null and distributorProvince!='' ">
+                and p1.distributor_province = #{distributorProvince}
+            </if>
+            <if test="distributorCity!=null and distributorCity!='' ">
+                and p1.distributor_city = #{distributorCity}
+            </if>
+            <if test="distributorRegion!=null and distributorRegion!='' ">
+                and p1.distributor_region = #{distributorRegion}
+            </if>
+            <if test="distributorName!=null and distributorName!='' ">
+                and p1.distributor_name like CONCAT('%',trim(#{distributorName}),'%')
+            </if>
+            <if test="distributorAccount!=null and distributorAccount!='' ">
+                and p1.distributor_account like CONCAT('%',trim(#{distributorAccount}),'%')
+            </if>
+        </trim>
+
+        order by p1.service_time desc
+    </select>
+
+    <select id="selectIncomeRecordByPrimaryKey" resultType="com.yimao.cloud.pojo.dto.order.IncomeRecordResultDTO">
+        SELECT
+            pir.id as id,
+            pir.order_id AS orderId,
+            os.fee AS totalAmount,
+            os.logistics_fee AS logisticsFee,
+            pir.settlement_fee as allocationMoney,
+            pir.station_name as stationName
+        FROM
+            service_income_record pir
+        LEFT JOIN order_sub os ON pir.order_id = os.id
+        WHERE
+            pir.id =#{id}
+    </select>
+
+
+    <select id="serviceIncomeExport" resultType="com.yimao.cloud.pojo.dto.order.IncomeExportDTO">
+        SELECT
+        sir.id as record_id,
+        sir.main_order_id AS mainOrderId,
+        sir.order_id AS orderId,
+        DATE_FORMAT(os.create_time,"%Y-%m-%d %H:%i:%s") AS createTime,
+        sir.ticket_no AS ticketNo,
+        sir.user_type_name AS userType,
+        sir.user_id AS userId,
+        sir.product_name AS productName,
+        osd.product_first_category_name AS firstProductCategory,
+        osd.product_two_category_name as secondProductCategory,
+        osd.product_category_name as productCategory,
+        osd.product_company_name as productCompanyName,
+        os.count as productCount,
+        sir.order_fee as orderFee,
+        sir.settlement_fee as settlementFee,
+        DATE_FORMAT(os.pay_time,"%Y-%m-%d %H:%i:%s") AS payTime,
+        CASE os.pay_type
+        WHEN 1 THEN "微信"
+        WHEN 2 THEN "支付宝"
+        WHEN 3 THEN "POS机"
+        WHEN 4 THEN "转账"
+        END AS payType,
+        DATE_FORMAT(sir.service_time,"%Y-%m-%d %H:%i:%s") AS examDate,
+        sir.user_name as userName,
+        sir.user_phone as userPhone,
+        sir.station_name as stationName,
+        sir.station_province as stationProvince,
+        sir.station_city as stationCity,
+        sir.station_region as stationRegion,
+        DATE_FORMAT(sir.service_time,"%Y-%m-%d %H:%i:%s") AS orderCompleteTime,
+        os.trade_no as tradeNo,
+        sirp.subject_money as stationContractorService,
+        sirp.settlement_subject_name as stationCompanyName,
+        hc.username as medicalName,
+        hc.phone as medicalPhone,
+        DATE_FORMAT(DATE_ADD(sir.service_time,INTERVAL 1 MONTH),'%Y-%m') as settlementMonth
+        FROM
+        service_income_record sir
+        INNER JOIN order_sub os ON os.id = sir.order_id
+        INNER JOIN order_sub_detail osd ON osd.sub_order_id = sir.order_id
+        INNER JOIN service_income_record_part sirp on sir.id = sirp.record_id
+        INNER JOIN `ymkj-hra`.hra_ticket ht on ht.ticket_no = sir.ticket_no
+        LEFT JOIN `ymkj-hra`.hra_customer hc on hc.id = ht.customer_id
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="productCompanyId!=null">
+                and sir.product_company_id =#{productCompanyId}
+            </if>
+            <if test="ticketNo!=null and ticketNo!='' ">
+                and sir.ticket_no like CONCAT('%',trim(#{ticketNo}),'%')
+            </if>
+            <if test="userId!=null">
+                and sir.user_id like CONCAT('%',trim(#{userId}),'%')
+            </if>
+            <if test="orderId!=null and orderId!=''">
+                and ( sir.main_order_id = #{orderId}
+                or sir.order_id = #{orderId} )
+            </if>
+            <if test="productCategoryId!=null">
+                and (osd.product_first_category_id = #{productCategoryId} or osd.product_two_category_id =
+                #{productCategoryId} or osd.product_category_id = #{productCategoryId})
+            </if>
+            <if test="incomeType!=null">
+                and sir.income_type = #{incomeType}
+            </if>
+            <if test="userType!=null">
+                and sir.user_type =#{userType}
+            </if>
+            <if test="settlementTime!=null and settlementTime!='' ">
+                and DATE_FORMAT(DATE_ADD(sir.service_time,INTERVAL 1 MONTH),'%Y-%m') = #{settlementTime}
+            </if>
+            <if test="productMode!=null">
+                and os.product_type = #{productMode}
+            </if>
+            <if test="startTime!=null and startTime!='' ">
+                and sir.service_time &gt;= #{startTime}
+            </if>
+            <if test="endTime!=null and endTime!='' ">
+                and sir.service_time &lt;= #{endTime}
+            </if>
+            <if test="distributorProvince!=null and distributorProvince!='' ">
+                and sir.distributor_province = #{distributorProvince}
+            </if>
+            <if test="distributorCity!=null and distributorCity!='' ">
+                and sir.distributor_city = #{distributorCity}
+            </if>
+            <if test="distributorRegion!=null and distributorRegion!='' ">
+                and sir.distributor_region = #{distributorRegion}
+            </if>
+            <if test="distributorName!=null and distributorName!='' ">
+                and sir.distributor_name like CONCAT('%',trim(#{distributorName}),'%')
+            </if>
+            <if test="distributorAccount!=null and distributorAccount!='' ">
+                and sir.distributor_account like CONCAT('%',trim(#{distributorAccount}),'%')
+            </if>
+        </trim>
+        order by sir.service_time desc
+    </select>
+
+</mapper>

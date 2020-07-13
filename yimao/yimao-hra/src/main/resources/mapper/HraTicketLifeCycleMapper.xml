@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.hra.mapper.HraTicketLifeCycleMapper">
+
+    <!--根据用户id查询用户的优惠卡赠送记录-->
+    <select id="ticketGiveByUserId" resultType="com.yimao.cloud.hra.po.HraTicketLifeCycle">
+        select
+        hc.id,
+        hc.card_id,
+        CONCAT_WS('*******',SUBSTRING(hc.ticket_no,1,1),SUBSTRING(hc.ticket_no,13,4)) as t_ticket_no,
+        hc.orig_user_id ,
+        hc.dest_user_id ,
+        hc.handsel_time ,
+        hc.receive_time ,
+        hc.handsel_flag ,
+        hc.expired_flag ,
+        tui.id as u_id,
+        tui.mobile as u_mobile,
+        tui.user_name as u_user_name,
+        tui.user_type as u_user_type,
+        tui.distributor as u_distributor,
+        tui.ambassador as u_ambassador,
+        tui.nick_name as u_nick_name,
+        tui.real_name as u_real_name,
+        tui.dis_user as u_dis_user,
+        tui.province as u_province,
+        tui.city as u_city,
+        tui.region as u_region
+        from hra_ticket_life_cycle hc
+        left join u_user_info tui on tui.id = hc.dest_user_id
+        left join u_user_info dui on dui.id = hc.orig_user_id
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="beginTime!=null and beginTime!=''">
+                and hc.receive_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                and hc.receive_time &lt;= #{endTime}
+            </if>
+            <if test="cashId!=null">
+                and hc.dest_user_id = #{cashId}
+            </if>
+            and hc.ticket_no like 'M%'
+            and dui.dis_user =1
+            and hc.orig_user_id = #{userId}
+            and hc.expired_flag = 1
+            order by hc.receive_time desc
+        </trim>
+    </select>
+
+    <!--根据用户和卡判断此卡是否已赠送-->
+    <select id="hasGiveCard" resultType="java.lang.Integer">
+        select
+        count(1)
+        from hra_ticket_life_cycle htlc
+        where
+        htlc.orig_user_id = #{userId}
+        and htlc.ticket_no = #{ticketNo}
+        and htlc.expired_flag = 1
+    </select>
+
+    <update id="updateHraTicketLifeCycleToBeReceive">
+        UPDATE hra_ticket_life_cycle
+        SET dest_user_id = #{destId}, receive_time = #{receiveTime}, expired_flag = #{expiredFlag}
+        WHERE orig_user_id = #{sharerId} AND handsel_flag = #{handselFlag} AND expired_flag = 0
+    </update>
+
+
+    <select id="findTicketCycle" parameterType="Map" resultType="com.yimao.cloud.hra.po.HraTicketLifeCycle">
+        select
+            htlc.id as id,
+            htlc.card_id as cardId,
+            htlc.ticket_no as ticketNo,
+            htlc.orig_user_id as origUserId,
+            htlc.dest_user_id as destUserId,
+            htlc.handsel_time as handselTime,
+            htlc.receive_time as receiveTime,
+            htlc.handsel_flag as handselFlag,
+            htlc.expired_flag as expiredFlag
+        from hra_ticket_life_cycle htlc
+        where htlc.orig_user_id = #{origUserId}
+        and htlc.ticket_no = #{ticketNo}
+        and htlc.expired_flag = 0
+    </select>
+
+    <select id="getTicketCycle" parameterType="Map" resultType="com.yimao.cloud.hra.po.HraTicketLifeCycle">
+        select
+            htlc.id as id,
+            htlc.card_id as cardId,
+            htlc.ticket_no as ticketNo,
+            htlc.orig_user_id as origUserId,
+            htlc.dest_user_id as destUserId,
+            htlc.handsel_time as handselTime,
+            htlc.receive_time as receiveTime,
+            htlc.handsel_flag as handselFlag,
+            htlc.expired_flag as expiredFlag
+        from hra_ticket_life_cycle htlc
+        where htlc.orig_user_id = #{origUserId}
+        and htlc.ticket_no = #{ticketNo}
+        and htlc.expired_flag = #{handselTime}
+    </select>
+
+    <select id="findTicketCycleByMap" parameterType="Map" resultType="com.yimao.cloud.hra.po.HraTicketLifeCycle">
+        select
+            htlc.id as id,
+            htlc.card_id as cardId,
+            htlc.ticket_no as ticketNo,
+            htlc.orig_user_id as origUserId,
+            htlc.dest_user_id as destUserId,
+            htlc.handsel_time as handselTime,
+            htlc.receive_time as receiveTime,
+            htlc.handsel_flag as handselFlag,
+            htlc.expired_flag as expiredFlag
+        from hra_ticket_life_cycle htlc
+        where htlc.ticket_no = #{ticketNo}
+        and htlc.handsel_flag = #{handselTime}
+    </select>
+
+    <select id="getTicketCycleByTimes" resultType="com.yimao.cloud.hra.po.HraTicketLifeCycle">
+        select
+        htlc.id as id,
+        htlc.card_id as cardId,
+        htlc.ticket_no as ticketNo,
+        htlc.orig_user_id as origUserId,
+        htlc.dest_user_id as destUserId,
+        htlc.handsel_time as handselTime,
+        htlc.receive_time as receiveTime,
+        htlc.handsel_flag as handselFlag,
+        htlc.expired_flag as expiredFlag
+        from hra_ticket_life_cycle htlc where htlc.handsel_flag in
+        <foreach collection="array" item="handselFlag" index="index" open="(" close=")" separator=",">
+            #{handselFlag}
+        </foreach>
+    </select>
+
+
+    <select id="selectLifeCycleByMap" parameterType="Map" resultType="com.yimao.cloud.hra.po.HraTicketLifeCycle">
+        select
+            DISTINCT htlc.ticket_no as ticketNo,
+            htlc.orig_user_id as origUserId,
+            htlc.expired_flag as expiredFlag
+        from hra_ticket_life_cycle htlc
+        where htlc.orig_user_id = #{origUserId}
+        and htlc.expired_flag = '1'
+        and htlc.ticket_no like 'Y%'
+    </select>
+
+    <!--<select id="getOrigUserInfo" resultType="com.yimao.cloud.pojo.dto.hra.HraTicketLifeCycleDTO">-->
+        <!--SELECT-->
+        <!--id AS id,-->
+        <!--nick_name AS nickName,-->
+        <!--head_img AS headImg-->
+        <!--FROM u_user_info-->
+        <!--WHERE id = #{origUserId}-->
+    <!--</select>-->
+
+</mapper>

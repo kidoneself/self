@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>yimao-out</artifactId>
+    <packaging>jar</packaging>
+
+    <parent>
+        <groupId>com.yimao.cloud</groupId>
+        <artifactId>yimao</artifactId>
+        <version>2.0</version>
+    </parent>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.yimao.cloud</groupId>
+            <artifactId>framework-config</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.springframework.boot</groupId>-->
+            <!--<artifactId>spring-boot-starter-data-mongodb</artifactId>-->
+        <!--</dependency>-->
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+        <!-- 热部署组件 -->
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.boot</groupId>-->
+<!--            <artifactId>spring-boot-devtools</artifactId>-->
+<!--            <optional>true</optional>-->
+<!--            <scope>true</scope>-->
+<!--        </dependency>-->
+        <!--迁入微服务调用售后接口业务时引入-->
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>3.6.0</version>
+        </dependency>
+
+        <!--bugu mongo start-->
+        <!--<dependency>-->
+            <!--<groupId>com.bugull</groupId>-->
+            <!--<artifactId>bugu-mongo-fs</artifactId>-->
+            <!--<version>2.13.0</version>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+            <!--<groupId>com.bugull</groupId>-->
+            <!--<artifactId>bugu-mongo-core</artifactId>-->
+            <!--<version>2.13.0</version>-->
+        <!--</dependency>-->
+        <!--bugu mong end -->
+
+        <!--<dependency>-->
+            <!--<groupId>com.tencent</groupId>-->
+            <!--<artifactId>xinge-sdk-patch</artifactId>-->
+            <!--<version>0.1</version>-->
+        <!--</dependency>-->
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <finalName>yimao-out</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+<!--        <plugins>-->
+<!--            <plugin>-->
+<!--                <groupId>org.springframework.boot</groupId>-->
+<!--                <artifactId>spring-boot-maven-plugin</artifactId>-->
+<!--                <configuration>-->
+<!--                    <fork>true</fork>&lt;!&ndash; fork:如果没有该配置，这个devtools不会起作用 &ndash;&gt;-->
+<!--                </configuration>-->
+<!--            </plugin>-->
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-surefire-plugin</artifactId>-->
+<!--                <version>2.19.1</version>-->
+<!--                <configuration>-->
+<!--                    <skipTests>true</skipTests>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
+<!--        </plugins>-->
+    </build>
+
+</project>

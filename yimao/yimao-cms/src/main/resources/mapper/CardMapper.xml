@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.cms.mapper.CardMapper">
+    <select id="findPage" resultType="com.yimao.cloud.pojo.dto.cms.CardDTO">
+        SELECT
+        id,
+        card_type AS cardType,
+        title,
+        tag,
+        background_img AS backgroundImg,
+        card_img AS cardImg,
+        content,
+        text_color AS textColor,
+        title,
+        type_code as typeCode,
+        button,
+        sorts,
+        h5_url as h5Url,
+        card_status as cardStatus
+        FROM
+        t_card
+        WHERE 1 = 1 AND card_status &lt;&gt; 4
+        <if test="cardStatus!=null">
+            AND card_status = #{cardStatus}
+        </if>
+        <if test="cardType!=null">
+            AND card_type = #{cardType}
+        </if>
+        <if test="typeCode!=null">
+            AND type_code = #{typeCode}
+        </if>
+        <if test="title!=null">
+            AND title LIKE CONCAT('%',#{title},'%')
+        </if>
+        order by sorts desc
+    </select>
+</mapper>

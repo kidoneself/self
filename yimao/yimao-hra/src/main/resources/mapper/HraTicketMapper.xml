@@ -1,0 +1,2001 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.hra.mapper.HraTicketMapper">
+
+    <insert id="insertBatch" parameterType="java.util.List">
+        insert into hra_ticket (
+        id,
+        ticket_no,
+        ticket_price,
+        ticket_status,
+        handsel_status,
+        ticket_type,
+        device_id,
+        station_id,
+        station_name,
+        station_province,
+        station_city,
+        station_region,
+        creator,
+        create_time,
+        use_time,
+        valid_begin_time,
+        valid_end_time,
+        card_id,
+        customer_id,
+        reserve_from,
+        reserve_time,
+        reserve_begin_time,
+        reserve_end_time,
+        remark,
+        user_id,
+        self_station,
+        use_count,
+        total,
+        delete_status,
+        ticket_style,
+        ticket_content,
+        image,
+        image_used
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.id},
+            #{item.ticketNo},
+            #{item.ticketPrice},
+            #{item.ticketStatus},
+            #{item.handselStatus},
+            #{item.ticketType},
+            #{item.deviceId},
+            #{item.stationId},
+            #{item.stationName},
+            #{item.stationProvince},
+            #{item.stationCity},
+            #{item.stationRegion},
+            #{item.creator},
+            #{item.createTime},
+            #{item.useTime},
+            #{item.validBeginTime},
+            #{item.validEndTime},
+            #{item.cardId},
+            #{item.customerId},
+            #{item.reserveFrom},
+            #{item.reserveTime},
+            #{item.reserveBeginTime},
+            #{item.reserveEndTime},
+            #{item.remark},
+            #{item.userId},
+            #{item.selfStation},
+            #{item.useCount},
+            #{item.total},
+            #{item.deleteStatus},
+            #{item.ticketStyle},
+            #{item.ticketContent},
+            #{item.image},
+            #{item.imageUsed}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 通过userId查询体检券 -->
+    <select id="findTicketListByUserId" resultType="com.yimao.cloud.pojo.dto.hra.HraTicketDTO">
+        SELECT
+        id,
+        ticket_no AS ticketNo,
+        card_id AS cardId,
+        user_id AS userId,
+        ticket_price AS ticketPrice,
+        ticket_status AS ticketStatus,
+        handsel_status AS handselStatus,
+        handsel_time AS handselTime,
+        receive_time AS receiveTime,
+        ticket_type AS ticketType,
+        device_id AS deviceId,
+        station_id AS stationId,
+        station_name AS stationName,
+        station_province AS stationProvince,
+        station_city AS stationCity,
+        station_region AS stationRegion,
+        creator AS creator,
+        create_time AS createTime,
+        use_time AS useTime,
+        valid_begin_time AS validBeginTime,
+        valid_end_time AS validEndTime,
+        customer_id AS customerId,
+        reserve_from AS reserveFrom,
+        reserve_time AS reserveTime,
+        reserve_begin_time AS reserveBeginTime,
+        reserve_end_time AS reserveEndTime,
+        remark AS remark,
+        self_station AS selfStation,
+        use_count AS useCount,
+        total,
+        delete_status AS deleteStatus,
+        book_time AS bookTime,
+        ticket_style AS ticketStyle,
+        ticket_content AS ticketContent,
+        image,
+        image_used AS imageUsed,
+        handsel_flag AS handselFlag
+        FROM
+        hra_ticket
+        WHERE
+        user_id = #{userId} AND ticket_status = 2
+        ORDER BY use_time DESC
+    </select>
+
+    <!-- 根据体检卡号和使用状态-->
+    <select id="findByTicketNoAndStatus" resultType="com.yimao.cloud.pojo.dto.hra.HraTicketDTO">
+        SELECT
+        id,
+        ticket_no AS ticketNo,
+        card_id AS cardId,
+        user_id AS userId,
+        ticket_price AS ticketPrice,
+        ticket_status AS ticketStatus,
+        handsel_status AS handselStatus,
+        handsel_time AS handselTime,
+        receive_time AS receiveTime,
+        ticket_type AS ticketType,
+        device_id AS deviceId,
+        station_id AS stationId,
+        station_name AS stationName,
+        station_province AS stationProvince,
+        station_city AS stationCity,
+        station_region AS stationRegion,
+        creator AS creator,
+        create_time AS createTime,
+        use_time AS useTime,
+        valid_begin_time AS validBeginTime,
+        valid_end_time AS validEndTime,
+        customer_id AS customerId,
+        reserve_from AS reserveFrom,
+        reserve_time AS reserveTime,
+        reserve_begin_time AS reserveBeginTime,
+        reserve_end_time AS reserveEndTime,
+        remark AS remark,
+        self_station AS selfStation,
+        use_count AS useCount,
+        total,
+        delete_status AS deleteStatus,
+        book_time AS bookTime,
+        ticket_style AS ticketStyle,
+        ticket_content AS ticketContent,
+        image,
+        image_used AS imageUsed,
+        handsel_flag AS handselFlag
+        FROM
+        hra_ticket
+        WHERE
+        ticket_no = #{ticketNo} AND ticket_status = 2
+    </select>
+
+    <!--根据用户id和体检卡查询体检卡和体检人-->
+    <select id="findTicketByUserIdAndTicketNo" resultType="com.yimao.cloud.hra.po.HraTicket">
+        select
+        ht.id as id,
+        ht.ticket_no as ticketNo,
+        ht.card_id as cardId,
+        ht.user_id as userId,
+        ht.ticket_price as ticketPrice,
+        ht.ticket_status as ticketStatus,
+        ht.handsel_status as handselStatus,
+        ht.handsel_time as handselTime,
+        ht.receive_time as receiveTime,
+        ht.ticket_type as ticketType,
+        ht.device_id as deviceId,
+        ht.station_id as stationId,
+        ht.creator as creator,
+        ht.create_time as createTime,
+        ht.use_time as useTime,
+        ht.valid_begin_time as validBeginTime,
+        ht.valid_end_time as validEndTime,
+        ht.customer_id as customerId,
+        ht.reserve_from as reserveFrom,
+        ht.reserve_time as reserveTime,
+        ht.reserve_begin_time as reserveBeginTime,
+        ht.reserve_end_time as reserveEndTime,
+        ht.remark as remark,
+        ht.self_station as selfStation,
+        ht.use_count as useCount
+        from hra_ticket ht
+        where
+        ht.ticket_no = #{ticketNo}
+    </select>
+
+
+    <select id="reportTicket" resultType="com.yimao.cloud.pojo.dto.hra.HraTicketDTO">
+        SELECT
+        ht.*
+        FROM
+        hra_ticket ht
+        left join hra_report hr on ht.ticket_no = hr.ticket_no
+        left join hra_report_record  hre on hr.id = hre.report_id
+        WHERE
+        ht.user_id = #{userId} AND ht.ticket_status = 2
+		and ht.device_id is not null and hr.id is not null
+		and (hre.id is null or (hre.id IS NOT NULL and hre.delete_status = 1))
+        ORDER BY ht.use_time DESC
+    </select>
+
+    <!--待使用、已使用、已过期评估券数量、 -->
+    <select id="getNoUsedCount" resultType="java.lang.Integer">
+        select
+        count(1)
+        from hra_ticket t
+        where t.user_id = #{userId}
+        and t.ticket_status = #{ticketStatus}
+        and t.ticket_type = 'Y'
+    </select>
+
+    <!--已赠出评估券数量 -->
+    <select id="getSendCount" resultType="java.lang.Integer">
+        SELECT
+        count(distinct htlc.ticket_no)
+        from hra_ticket_life_cycle htlc
+        WHERE
+        htlc.orig_user_id = #{userId}
+        and htlc.expired_flag=1
+        and htlc.ticket_no like 'Y%'
+    </select>
+
+    <select id="findHraTicketByList" resultType="com.yimao.cloud.hra.po.HraTicket">
+        select
+        h.id as id,
+        h.ticket_no as ticketNo ,
+        h.ticket_status as ticketStatus,
+        h.handsel_status as handselStatus,
+        h.ticket_type as ticketType,
+        h.valid_begin_time as validBeginTime,
+        h.valid_end_time as validEndTime,
+        h.reserve_from as reserveFrom,
+        h.reserve_time as reserveTime,
+        h.user_id as userId,
+        h.ticket_style as ticketStyle,
+        h.ticket_price as ticketPrice,
+        h.ticket_content as ticketContent,
+        h.image as image,
+        h.image_used as imageUsed
+        from hra_ticket h
+        where h.ticket_no in
+        <foreach collection="tickectNoList" item="ticketno" index="index" open="(" close=")" separator=",">
+            #{ticketno}
+        </foreach>
+    </select>
+
+    <!--根据用户id，查询预约的体检卡 -->
+    <select id="getHraTicketByUser" resultType="com.yimao.cloud.pojo.dto.hra.HraTicketDTO">
+        select
+            t.id as id,
+            t.ticket_no as ticketNo,
+            t.valid_begin_time as validBeginTime,
+            t.valid_end_time as validEndTime,
+            t.ticket_style as ticketStyle,
+            t.ticket_content as ticketContent,
+            t.ticket_status as ticketStatus,
+            t.customer_id as customerId,
+            t.handsel_status as handselStatus,
+            t.reserve_station_id as reserveStationId,
+            t.station_id as stationId,
+            t.reserve_time as reserveTime,
+            t.user_id as userId
+        from hra_ticket t
+        left join hra_card hc on t.card_id = hc.id
+--         left join t_orders tor on tor.id = hc.order_id
+        where t.user_id = #{userId} and
+            t.station_id is not null and
+            t.reserve_time is not null
+        order by t.reserve_time desc
+    </select>
+
+
+    <!--根据体检卡状态-查询体检卡数量 -->
+    <select id="selectFreeCardCount" resultType="java.lang.Integer">
+        select
+        count(1)
+        from hra_ticket t
+        where
+        <if test="ticketStatus != null">
+            <if test="ticketStatus == 3">
+                t.user_id = #{userId} and t.ticket_status = 3 and (t.handsel_status is null or t.handsel_status = 2) and
+                t.ticket_type = 'M' and t.valid_end_time &gt; DATE_SUB(NOW(),INTERVAL 1 DAY)
+            </if>
+            <if test="ticketStatus != 3">
+                t.ticket_status = #{ticketStatus} and t.ticket_type = 'M' and t.user_id = #{userId} and t.delete_status
+                = 0
+            </if>
+        </if>
+        <if test="ticketStatus == null">
+            t.ticket_status = -1
+        </if>
+    </select>
+
+    <!--已赠出的优惠卡数量 -->
+    <select id="selectGiveCardCountByUser" resultType="java.lang.Integer">
+        SELECT
+        count(distinct htlc.ticket_no)
+        from hra_ticket_life_cycle htlc
+        WHERE
+        htlc.orig_user_id = #{userId}
+        and htlc.expired_flag=1
+        and htlc.ticket_no like  'M%'
+    </select>
+
+    <!--已赠出的优惠卡 -->
+    <select id="selectGiveCardByUser" resultType="com.yimao.cloud.pojo.dto.hra.HraTicketDTO">
+        select htlc.ticket_no as  ticketNo
+        from hra_ticket_life_cycle htlc
+        where
+        htlc.orig_user_id = #{userId}
+        and htlc.expired_flag = 1
+        and htlc.ticket_no like 'M%'
+        group by htlc.ticket_no
+        order by min(htlc.receive_time) desc
+    </select>
+
+    <!--根据体检卡号，获取体检卡 -->
+    <select id="findTicketByTicketNo" resultType="com.yimao.cloud.pojo.dto.hra.HraTicketDTO">
+        select
+        t.id as id,
+        t.user_id as userId,
+        t.card_id as cardId,
+        t.ticket_price as ticketPrice,
+        t.valid_begin_time as validBeginTime,
+        t.valid_end_time as validEndTime,
+        t.ticket_style as ticketStyle,
+        t.ticket_content as ticketContent,
+        t.ticket_status as ticketStatus,
+		t.handsel_status as handselStatus,
+		t.customer_id as customerId,
+		t.use_count as useCount,
+		t.self_station as selfStation,
+		t.station_id as stationId,
+        t.image as image,
+        t.image_used as imageUsed
+        from hra_ticket t
+        where t.ticket_no = #{ticketNo}
+    </select>
+
+    <!-- 改：ticketStatus in (1,3)按过期时间排序，完成的按体检时间，过期的按过期时间 -->
+    <select id="selectFreeCardByUser" resultType="com.yimao.cloud.pojo.dto.hra.HraTicketDTO">
+        select * from (
+        <if test="ticketStatus==null">
+            SELECT
+            t.create_time as ctime,
+            t.id as id,
+            t.ticket_no as ticketNo,
+            t.user_id as userId,
+            t.ticket_price as ticketPrice,
+            t.valid_begin_time as validBeginTime,
+            t.valid_end_time as validEndTime,
+            t.ticket_style as ticketStyle,
+            t.ticket_content as ticketContent,
+            t.ticket_status as ticketStatus,
+            t.customer_id as customerId,
+            t.handsel_status as handselStatus,
+            t.image as image,
+            t.image_used as imageUsed,
+            t.create_time as createTime
+            FROM hra_ticket t
+            <if test="orderId != null">
+                INNER JOIN hra_card c ON c.id = t.card_id and c.order_id = #{orderId}
+            </if>
+            where t.ticket_type = #{ticketType}
+            ) as cdata order by ctime desc
+        </if>
+        <if test="ticketStatus!=null">
+            <if test="ticketStatus==1">
+                SELECT
+                t.valid_end_time as ctime,
+                t.id as id,
+                t.ticket_no as ticketNo,
+                t.user_id as userId,
+                t.ticket_price as ticketPrice,
+                t.valid_begin_time as validBeginTime,
+                t.valid_end_time as validEndTime,
+                t.ticket_style as ticketStyle,
+                t.ticket_content as ticketContent,
+                t.ticket_status as ticketStatus,
+                t.customer_id as customerId,
+                t.handsel_status as handselStatus,
+                t.image as image,
+                t.image_used as imageUsed,
+                t.create_time as createTime
+                FROM hra_ticket t
+                inner join hra_card hc on t.card_id = hc.id
+                where
+                t.ticket_type = #{ticketType}
+                and t.user_id = #{userId} and t.delete_status = 0 and hc.order_id is not null
+                and t.ticket_status = #{ticketStatus}
+                ) as cdata order by ctime asc
+            </if>
+            <if test="ticketStatus==3">
+                SELECT
+                t.valid_end_time as ctime,
+                t.id as id,
+                t.ticket_no as ticketNo,
+                t.user_id as userId,
+                t.ticket_price as ticketPrice,
+                t.valid_begin_time as validBeginTime,
+                t.valid_end_time as validEndTime,
+                t.ticket_style as ticketStyle,
+                t.ticket_content as ticketContent,
+                t.ticket_status as ticketStatus,
+                t.customer_id as customerId,
+                t.handsel_status as handselStatus,
+                t.image as image,
+                t.image_used as imageUsed,
+                t.create_time as createTime
+                FROM hra_ticket t
+                where
+                t.ticket_type = #{ticketType}
+                and t.user_id = #{userId} and t.delete_status = 0
+                and t.ticket_status = #{ticketStatus}
+                ) as cdata order by ctime asc
+            </if>
+            <if test="ticketStatus==2 ">
+                SELECT
+                t.use_time as ctime,
+                t.id as id,
+                t.ticket_no as ticketNo,
+                t.user_id as userId,
+                t.ticket_price as ticketPrice,
+                t.valid_begin_time as validBeginTime,
+                t.valid_end_time as validEndTime,
+                t.ticket_style as ticketStyle,
+                t.ticket_content as ticketContent,
+                t.ticket_status as ticketStatus,
+                t.customer_id as customerId,
+                t.handsel_status as handselStatus,
+                t.image as image,
+                t.image_used as imageUsed,
+                t.create_time as createTime
+                FROM hra_ticket t
+                where
+                t.ticket_type = #{ticketType}
+                and t.user_id = #{userId} and t.delete_status = 0
+                and t.ticket_status = #{ticketStatus}
+                ) as cdata order by ctime desc
+            </if>
+            <if test="ticketStatus==4 ">
+                SELECT
+                t.valid_end_time as ctime,
+                t.id as id,
+                t.ticket_no as ticketNo,
+                t.user_id as userId,
+                t.ticket_price as ticketPrice,
+                t.valid_begin_time as validBeginTime,
+                t.valid_end_time as validEndTime,
+                t.ticket_style as ticketStyle,
+                t.ticket_content as ticketContent,
+                t.ticket_status as ticketStatus,
+                t.customer_id as customerId,
+                t.handsel_status as handselStatus,
+                t.image as image,
+                t.image_used as imageUsed,
+                t.create_time as createTime
+                FROM hra_ticket t
+                where
+                t.ticket_type = #{ticketType}
+                and t.user_id = #{userId} and t.delete_status = 0
+                and t.ticket_status = #{ticketStatus}
+                ) as cdata order by ctime desc
+            </if>
+        </if>
+    </select>
+
+    <!--<select id="getPayTimeByTicketNo" resultType="java.util.Date">-->
+    <!--SELECT-->
+    <!--tor.pay_time-->
+    <!--FROM-->
+    <!--hra_ticket hrt-->
+    <!--INNER JOIN hra_card hrc ON hrc.id = hrt.card_id-->
+    <!--INNER JOIN t_orders tor ON tor.id = hrc.order_id-->
+    <!--WHERE hrt.ticket_no = #{ticketNo}-->
+    <!--</select>-->
+
+    <select id="getCanBeSendCardCount" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM hra_ticket hrt
+        WHERE hrt.user_id = #{id}
+        AND hrt.ticket_type = #{ticketType}
+        <if test="ticketStatus != null">
+            AND hrt.ticket_status = #{ticketStatus}
+        </if>
+        AND (hrt.handsel_status = 2 OR hrt.handsel_status IS NULL)
+        AND hrt.customer_id IS NULL
+    </select>
+
+
+    <!--根据评估劵号查询 此评估卡的型号和评估卡号 -->
+    <!--<select id="findByTicketNo" resultMap="allotTicketList">-->
+    <!--select ht.*,-->
+    <!--hc.id as c_id,-->
+    <!--hc.card_type,-->
+    <!--hc.station_id as c_station_id,-->
+    <!--hc.distributor_id,-->
+    <!--hc.user_id as c_user_id,-->
+    <!--hc.order_id,-->
+    <!--hc.creator as c_creator,-->
+    <!--hc.create_time as c_create_time,-->
+    <!--hc.order_from,-->
+    <!--hc.card_price,-->
+    <!--hc.product_model_id,-->
+    <!--hc.ticket_num,-->
+    <!--from hra_ticket ht-->
+    <!--inner join hra_card hc on hc.id=ht.card_id-->
+    <!--WHERE ht.ticket_no = #{ticketNo}-->
+
+    <!--</select>-->
+
+    <!--根据体检卡号 获取体检卡 -->
+    <select id="getTicketByTicketNo" resultType="com.yimao.cloud.pojo.dto.hra.HraTicketDTO">
+        select
+            t.id as id,
+            t.ticket_no as ticketNo,
+            t.use_time as useTime,
+            t.ticket_price as ticketPrice,
+            t.valid_begin_time as validBeginTime,
+            t.valid_end_time as validEndTime,
+            t.ticket_style as ticketStyle,
+            t.ticket_content as ticketContent,
+            t.ticket_status as ticketStatus,
+            t.customer_id as customerId,
+            hco.username as customerName,
+            hco.phone as customerPhone,
+            t.user_id as userId,
+            t.card_id as cardId,
+            t.handsel_status as handselStatus,
+            t.station_id AS stationId,
+            hc.product_id as productId,
+            hc.order_id as orderId
+        from hra_ticket t
+        inner join hra_card hc on hc.id = t.card_id
+        left join  hra_customer hco ON t.customer_id = hco.id
+        where t.ticket_no = #{ticketNo}
+    </select>
+
+
+    <!--根据体检卡号和用户ID，获取体检卡 -->
+    <select id="getTicketByUserIdAndTicketNo" parameterType="Map"
+            resultType="com.yimao.cloud.pojo.dto.hra.HraTicketDTO">
+        select
+            t.id as id,
+            t.ticket_price as ticketPrice,
+            t.valid_begin_time as validBeginTime,
+            t.valid_end_time as validEndTime,
+            t.ticket_style as ticketStyle,
+            t.ticket_content as ticketContent,
+            t.ticket_status as ticketStatus,
+            t.customer_id as customerId,
+            t.user_id as userId,
+            t.handsel_status as handselStatus
+            from hra_ticket t
+            where t.ticket_no = #{ticketNo}
+            and t.user_id = #{userId}
+            and t.handsel_status = 2
+    </select>
+
+
+    <select id="getCanBeSendCardList" resultType="com.yimao.cloud.pojo.dto.hra.HraTicketDTO">
+        SELECT
+        hrt.id as id,
+        hrt.ticket_no as ticketNo,
+        hrt.card_id as cardId,
+        hrt.ticket_price as ticketPrice,
+        hrt.valid_begin_time as validBeginTime,
+        hrt.valid_end_time as validEndTime,
+        hrt.ticket_style as ticketStyle,
+        hrt.ticket_content as ticketContent,
+        hrt.ticket_status as ticketStatus,
+        hrt.customer_id as customerId,
+        hrt.user_id as userId,
+        hrt.handsel_status as handselStatus
+        FROM hra_ticket hrt
+        WHERE hrt.user_id = #{id}
+        AND hrt.ticket_type = #{ticketType}
+        <if test="ticketStatus != null">
+            AND hrt.ticket_status = #{ticketStatus}
+        </if>
+        AND (hrt.handsel_status = 2 OR hrt.handsel_status IS NULL)
+        AND hrt.reserve_station_id IS NULL
+        ORDER BY valid_end_time ASC
+    </select>
+
+    <update id="updateBatchHraTicketStatus">
+        update hra_ticket hrt
+        SET hrt.handsel_time = #{handselTime}, hrt.handsel_status = #{handselStatus}, hrt.handsel_flag =
+        #{handselFlag},update_time = now()
+        WHERE hrt.ticket_no IN
+        <foreach collection="ticketNoList" open="(" close=")" item="ticketNo" separator=",">
+            #{ticketNo}
+        </foreach>
+    </update>
+
+
+    <update id="changeTicketOwner">
+        update hra_ticket
+        set user_id = #{userId}, handsel_status = 2, receive_time = #{receiveTime},update_time = now()
+        where handsel_status = 1 and user_id = #{sharerId} and customer_id is null
+        <if test="type != null and type == 1">
+            and ticket_status = 1 and card_id = #{cardIdOrTicketNo}
+        </if>
+        <if test="type != null and type == 2">
+            and ticket_status = 1 and ticket_no = #{cardIdOrTicketNo}
+        </if>
+        <if test="type != null and type == 3">
+            and (ticket_status = 1 or ticket_status = 3) and ticket_no = #{cardIdOrTicketNo}
+        </if>
+    </update>
+
+    <!--可使用优惠卡数量-->
+    <select id="getTicketNum" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+      SELECT
+        count( 1 )
+      FROM
+        hra_ticket ht
+      WHERE
+        ht.user_id = #{userId}
+    </select>
+
+
+    <select id="selectTickets" parameterType="java.lang.Integer" resultType="com.yimao.cloud.hra.po.HraTicket">
+          select
+            h.id as id,
+            h.ticket_no as ticketNo ,
+            h.ticket_status as ticketStatus,
+            h.handsel_status as handselStatus,
+            h.ticket_type as ticketType,
+            h.valid_begin_time as validBeginTime,
+            h.valid_end_time as validEndTime,
+            h.reserve_from as reserveFrom,
+            h.reserve_time as reserveTime,
+            h.user_id as userId,
+            h.ticket_style as ticketStyle,
+            h.ticket_price as ticketPrice,
+            h.ticket_content as ticketContent,
+            h.image as image,
+            h.image_used as imageUsed
+        from hra_ticket h
+        where h.user_id = #{userId}
+        and h.ticket_status = '1'
+        and h.ticket_type = 'Y'
+    </select>
+
+    <!-- 体检管理：查询所有已体检的评估/已预约的评估卡 -->
+    <select id="listTicket" resultType="com.yimao.cloud.pojo.dto.hra.HraTicketResultDTO">
+        SELECT
+        ht.id,
+        ht.ticket_no as ticketNo,
+        ht.ticket_type as ticketType,
+        ht.ticket_status as ticketStatus,
+        ht.reserve_time as reserveTime,
+        ht.reserve_from as reserveFrom,
+        ht.user_id as userId,
+        hc.username as customerUserName,
+        hc.sex as customerSex,
+        hc.phone as customerPhone,
+        hc.birthdate as customerBirthDate,
+        hc.idcard as customerIdCard,
+        hc.age as customerAge,
+        hc.height as customerHeight,
+        hc.weight as customerWeight,
+        hr.id as reportId,
+        hr.exam_date as examDate,
+        hr.report_pdf as reportPdf,
+        ht.station_id as stationId
+        FROM
+        hra_ticket ht
+        inner join hra_customer hc on ht.customer_id = hc.id
+        inner join hra_report hr on ht.ticket_no = hr.ticket_no
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="userId !=null and userId != '' ">
+                and ht.user_id = #{userId}
+            </if>
+            <if test="ticketNo != null and ticketNo != '' ">
+                and ht.ticket_no like CONCAT('%',trim(#{ticketNo}),'%')
+            </if>
+            <if test="name != null and name != '' ">
+                and hc.username like CONCAT('%',trim(#{name}),'%')
+            </if>
+            <if test="userSource != null ">
+                and ht.reserve_from = #{userSource}
+            </if>
+            <if test="mobile != null and mobile != '' ">
+                and hc.phone like CONCAT('%',trim(#{mobile}),'%')
+            </if>
+
+            <if test="ticketType != null and ticketType != '' ">
+                and ht.ticket_type = #{ticketType}
+            </if>
+            <if test="flag==1">
+                <if test="beginTime!=null and beginTime!='' ">
+                    and ht.use_time &gt;= #{beginTime}
+                </if>
+                <if test="endTime != null and endTime != '' ">
+                    and ht.use_time &lt;= #{endTime}
+                </if>
+                <if test="hasUpload != null">
+                    <if test="hasUpload==1">
+                        and hr.report_pdf is not null
+                    </if>
+                    <if test="hasUpload==0">
+                        and hr.report_pdf is null
+                    </if>
+                </if>
+                <if test="stationIds != null and stationIds.size() &gt; 0 ">
+                    and ht.station_id in
+                    <foreach collection="stationIds" index="index" item="item" open="(" separator="or" close=")">
+                        #{item}
+                    </foreach>
+                </if>
+                and ht.ticket_type!='F'
+                and ht.ticket_status=2 order by ht.use_time desc
+            </if>
+            <if test="flag==2">
+                <if test="beginTime != null and beginTime != '' ">
+                    and ht.reserve_time &gt;= #{beginTime}
+                </if>
+                <if test="endTime != null and endTime != '' ">
+                    and ht.reserve_time &lt;= #{endTime}
+                </if>
+                <if test="reserveStatus != null and reserveStatus != '' ">
+                    <if test="reserveStatus==1">
+                        and ht.reserve_time &gt;DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 DAY), '%Y-%m-%d 23:59:59')
+                    </if>
+                    <if test="reserveStatus==2">
+                        and ht.reserve_time &lt;DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 DAY), '%Y-%m-%d 23:59:59')
+                    </if>
+                </if>
+                <if test="stationIds != null and stationIds.size() &gt; 0 ">
+                    and ht.reserve_station_id in
+                    <foreach collection="stationIds" index="index" item="item" open="(" separator="or" close=")">
+                        #{item}
+                    </foreach>
+                </if>
+                and ht.ticket_type!='F' and ht.reserve_time is not null and ht.customer_id is not null and
+                ht.delete_status=0
+                and (ht.ticket_status=1 or ht.ticket_status=3 or ht.ticket_status=4) order by ht.reserve_time desc
+            </if>
+        </trim>
+    </select>
+    
+    <!-- 站务系统服务站预约统计数(微信公众号)-->
+    <select id="getStationHraReserveData" parameterType="com.yimao.cloud.pojo.query.station.HraTicketQuery" resultType="com.yimao.cloud.pojo.dto.station.HraStatisticsDTO">
+	    select
+		ht.reserve_station_id as stationId,
+		count(ht.id) as reserveNum
+		from
+		hra_ticket ht
+		<where>
+		ht.delete_status=0
+		and ht.reserve_from=2
+	  	<if test="beginTime != null and beginTime != '' ">
+	        and ht.reserve_time &gt;= #{beginTime}
+	    </if>
+	    <if test="endTime != null and endTime != '' ">
+	        and ht.reserve_time &lt;= #{endTime}
+	    </if>
+		<if test="stations != null and stations.size >0 ">
+            and ht.reserve_station_id in
+           <foreach collection="stations" index="index" item="item" open="(" separator="," close=")">
+               #{item}
+           </foreach>
+        </if>      
+		</where>
+		group by ht.reserve_station_id
+    </select>
+    
+     <!-- 站务系统服务站评估统计数-->
+    <select id="getStationHraUsedData" parameterType="com.yimao.cloud.pojo.query.station.HraTicketQuery" resultType="com.yimao.cloud.pojo.dto.station.HraStatisticsDTO">
+	    select
+		ht.station_id as stationId,
+		count(ht.id) as usedNum
+		from
+		hra_ticket ht
+		<where>
+		ht.ticket_type !='F'
+		and ht.ticket_status=2 
+	 	<if test="beginTime!=null and beginTime!='' ">
+            and ht.use_time &gt;= #{beginTime}
+        </if>
+        <if test="endTime != null and endTime != '' ">
+            and ht.use_time &lt;= #{endTime}
+        </if>
+		<if test="stations != null and stations.size >0 ">
+            and ht.station_id in
+            <foreach collection="stations" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>  
+		</where>
+		group by ht.station_id
+	    
+    </select>
+    
+      <!-- 站务系统服务站评估数图表数据-->
+    <select id="getStationHraUsedPicData" parameterType="com.yimao.cloud.pojo.query.station.HraTicketQuery" resultType="com.yimao.cloud.pojo.dto.station.HraStatisticsDTO">
+    	select
+    	a.time ,
+		count(a.id) as usedNum
+		from
+		(select
+			date_format(ht.use_time, '%Y%m%d') as time,
+			ht.id
+			from
+			hra_ticket ht
+			<where>
+			ht.ticket_type !='F'
+			and ht.ticket_status=2 
+			and ht.use_time is not null
+		 	<if test="beginTime!=null and beginTime!='' ">
+	            and ht.use_time &gt;= #{beginTime}
+	        </if>
+	        <if test="endTime != null and endTime != '' ">
+	            and ht.use_time &lt;= #{endTime}
+	        </if>
+			<if test="stations != null and stations.size >0 ">
+	            and ht.station_id in
+	            <foreach collection="stations" index="index" item="item" open="(" separator="," close=")">
+	                #{item}
+	            </foreach>
+	        </if>  
+			</where>
+		) a
+		group by a.time
+    </select>
+    
+     <!-- 站务系统服务站预约统计数(微信公众号)图表数据-->
+    <select id="getStationHraReservePicData" parameterType="com.yimao.cloud.pojo.query.station.HraTicketQuery" resultType="com.yimao.cloud.pojo.dto.station.HraStatisticsDTO">
+    	select
+    	a.time ,
+		count(a.id) as reserveNum
+		from
+		(select
+			date_format(ht.reserve_time, '%Y%m%d') as time,
+			ht.id
+			from
+			hra_ticket ht
+			<where>
+			ht.delete_status=0
+			and ht.reserve_from=2
+			and ht.reserve_time is not null
+		  	<if test="beginTime != null and beginTime != '' ">
+		        and ht.reserve_time &gt;= #{beginTime}
+		    </if>
+		    <if test="endTime != null and endTime != '' ">
+		        and ht.reserve_time &lt;= #{endTime}
+		    </if>
+			<if test="stations != null and stations.size >0 ">
+	            and ht.reserve_station_id in
+	           <foreach collection="stations" index="index" item="item" open="(" separator="," close=")">
+	               #{item}
+	           </foreach>
+	        </if>      
+			</where>
+		) a
+		group by a.time
+    
+    </select>
+    
+    <!-- 站务系统预约列表-->
+    <select id="getStationHraTicketReservationList" parameterType="com.yimao.cloud.pojo.query.station.HraTicketQuery" resultType="com.yimao.cloud.pojo.dto.hra.HraTicketResultDTO">
+     select
+        ht.id,
+        ht.ticket_no as ticketNo,
+        ht.ticket_type as ticketType,
+        ht.ticket_status as ticketStatus,
+        ht.reserve_time as reserveTime,
+        ht.reserve_from as reserveFrom,
+        ht.user_id as userId,
+        hc.username as customerUserName,
+        hc.sex as customerSex,
+        hc.phone as customerPhone,
+        hc.birthdate as customerBirthDate,
+        hc.idcard as customerIdCard,
+        hc.age as customerAge,
+        hc.height as customerHeight,
+        hc.weight as customerWeight,
+        hr.id as reportId,
+        hr.exam_date as examDate,
+        hr.report_pdf as reportPdf,
+        ht.station_id as stationId
+        from
+        hra_ticket ht
+        inner join hra_customer hc on ht.customer_id = hc.id
+        inner join hra_report hr on ht.ticket_no = hr.ticket_no
+        <where>
+        	 ht.delete_status=0
+             and (ht.ticket_status=1 or ht.ticket_status=3 or ht.ticket_status=4) 
+            <if test="userId !=null and userId != '' ">
+                and ht.user_id = #{userId}
+            </if>
+            <if test="ticketNo != null and ticketNo != '' ">
+                and ht.ticket_no like CONCAT('%',trim(#{ticketNo}),'%')
+            </if>
+            <if test="name != null and name != '' ">
+                and hc.username like CONCAT('%',trim(#{name}),'%')
+            </if>
+            <if test="userSource != null ">
+                and ht.reserve_from = #{userSource}
+            </if>
+            <if test="mobile != null and mobile != '' ">
+                and hc.phone like CONCAT('%',trim(#{mobile}),'%')
+            </if>
+            <if test="ticketType != null and ticketType != '' ">
+                and ht.ticket_type = #{ticketType}
+            </if>          
+            <if test="beginTime != null and beginTime != '' ">
+                    and ht.reserve_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null and endTime != '' ">
+                and ht.reserve_time &lt;= #{endTime}
+            </if>
+            <if test="reserveStatus != null and reserveStatus != '' ">
+                <if test="reserveStatus==1">
+                    and ht.reserve_time &gt;DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 DAY), '%Y-%m-%d 23:59:59')
+                </if>
+                <if test="reserveStatus==2">
+                    and ht.reserve_time &lt;DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 DAY), '%Y-%m-%d 23:59:59')
+                </if>
+            </if>
+            <if test="stations != null and stations.size >0 ">
+                 and ht.reserve_station_id in
+                <foreach collection="stations" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>                        
+    	</where>
+    	 order by ht.reserve_time desc
+    </select>
+    
+    <!-- 站务系统评估列表-->
+    <select id="getStationHraTicketUsedList" parameterType="com.yimao.cloud.pojo.query.station.HraTicketQuery" resultType="com.yimao.cloud.pojo.dto.hra.HraTicketResultDTO">
+     select
+        ht.id,
+        ht.ticket_no as ticketNo,
+        ht.ticket_type as ticketType,
+        ht.ticket_status as ticketStatus,
+        ht.reserve_time as reserveTime,
+        ht.reserve_from as reserveFrom,
+        ht.user_id as userId,
+        hc.username as customerUserName,
+        hc.sex as customerSex,
+        hc.phone as customerPhone,
+        hc.birthdate as customerBirthDate,
+        hc.idcard as customerIdCard,
+        hc.age as customerAge,
+        hc.height as customerHeight,
+        hc.weight as customerWeight,
+        hr.id as reportId,
+        hr.exam_date as examDate,
+        hr.report_pdf as reportPdf,
+        ht.station_id as stationId
+        from
+        hra_ticket ht
+        inner join hra_customer hc on ht.customer_id = hc.id
+        inner join hra_report hr on ht.ticket_no = hr.ticket_no
+        <where>
+        	ht.ticket_type !='F'
+            and ht.ticket_status=2 
+            <if test="userId !=null and userId != '' ">
+                and ht.user_id = #{userId}
+            </if>
+            <if test="ticketNo != null and ticketNo != '' ">
+                and ht.ticket_no like CONCAT('%',trim(#{ticketNo}),'%')
+            </if>
+            <if test="name != null and name != '' ">
+                and hc.username like CONCAT('%',trim(#{name}),'%')
+            </if>
+            <if test="userSource != null ">
+                and ht.reserve_from = #{userSource}
+            </if>
+            <if test="mobile != null and mobile != '' ">
+                and hc.phone like CONCAT('%',trim(#{mobile}),'%')
+            </if>
+            <if test="ticketType != null and ticketType != '' ">
+                and ht.ticket_type = #{ticketType}
+            </if>          
+            <if test="beginTime!=null and beginTime!='' ">
+                and ht.use_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null and endTime != '' ">
+                and ht.use_time &lt;= #{endTime}
+            </if>
+            <if test="hasUpload != null">
+                <if test="hasUpload==1">
+                    and hr.report_pdf is not null
+                </if>
+                <if test="hasUpload==0">
+                    and hr.report_pdf is null
+                </if>
+            </if>
+            <if test="stations != null and stations.size >0 ">
+                and ht.station_id in
+                <foreach collection="stations" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>                        
+    	</where>
+    	 order by ht.use_time desc
+    </select>
+    
+    <!-- 站务系统获取总评估数 -->
+    <select id="getTotalAssessNum" resultType="java.lang.Integer">
+	    select
+	    count(ht.id)
+	    from
+	    hra_ticket ht
+	    inner join hra_customer hc on ht.customer_id = hc.id
+	    inner join hra_report hr on ht.ticket_no = hr.ticket_no
+	    <where>
+	    ht.ticket_type !='F'
+	    and ht.ticket_status=2 
+	    <if test="stations != null and stations.size >0 ">
+                and ht.station_id in
+                <foreach collection="stations" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+        </if> 
+	    </where>
+    </select>
+    
+    <!-- 站务系统获取昨日评估数 -->
+    <select id="getYesterdayAssessNum" resultType="java.lang.Integer">
+    	select
+	    count(ht.id)
+	    from
+	    hra_ticket ht
+	    inner join hra_customer hc on ht.customer_id = hc.id
+	    inner join hra_report hr on ht.ticket_no = hr.ticket_no
+	    <where>
+	    ht.ticket_type !='F'
+	    and ht.ticket_status=2 
+	    and ht.use_time <![CDATA[>]]> DATE_SUB(CURDATE(), INTERVAL 1 day)
+        and ht.use_time <![CDATA[<]]> CURDATE()
+	    <if test="stations != null and stations.size >0 ">
+                and ht.station_id in
+                <foreach collection="stations" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+        </if> 
+	    </where>
+    </select>
+    
+    <!-- 站务系统获取今日待评估数 -->
+    <select id="getTodayNeedAssessNum" resultType="java.lang.Integer">
+    	select
+	    count(ht.id)
+	    from
+	    hra_ticket ht
+	    inner join hra_customer hc on ht.customer_id = hc.id
+        inner join hra_report hr on ht.ticket_no = hr.ticket_no
+        <where>
+        	 ht.delete_status=0
+             and ht.ticket_status=1
+             and ht.reserve_time <![CDATA[>]]> CURDATE()
+             and ht.reserve_time <![CDATA[<]]> DATE_ADD(CURDATE(), INTERVAL 1 day)
+         <if test="stations != null and stations.size >0 ">
+                and ht.station_id in
+                <foreach collection="stations" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+        </if> 
+        </where>
+    </select>
+
+    <!-- 体检卡列表：Y、M-->
+    <select id="physical" parameterType="com.yimao.cloud.pojo.dto.hra.HraQueryDTO"
+            resultType="com.yimao.cloud.pojo.dto.hra.HraPhysicalDTO">
+        SELECT
+        ht.id AS id,
+        ht.ticket_no AS ticketNo,
+        ht.user_id AS currentUserId,
+        ht.ticket_status AS ticketStatus,
+        ht.valid_begin_time AS validBeginTime,
+        ht.valid_end_time AS validEndTime,
+        ht.create_time AS createTime,
+        ht.station_id AS stationId,
+        ht.reserve_from AS reserveFrom,
+        ht.use_count AS userCount,
+        ht.self_station AS selfStation,
+        ht.customer_id AS customerId,
+        ht.ticket_type AS cardType,
+        ht.card_id AS cardId
+        -- hc.user_id AS createUserId,
+        -- hc.card_type AS cardType,
+        -- hc.order_from AS orderFrom,
+        -- hc.order_id AS orderId,
+        -- hc.id AS cardId,
+        -- hcu.idcard
+        FROM
+        hra_ticket ht
+        -- LEFT JOIN hra_card hc ON ht.card_id = hc.id
+        -- LEFT JOIN hra_customer hcu ON hcu.id = ht.customer_id
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="ticketNo != null and ticketNo != '' ">
+                and ht.ticket_no like CONCAT('%',trim(#{ticketNo}),'%')
+            </if>
+            <if test="cardType != null and cardType != '' ">
+                and ht.ticket_type = #{cardType}
+            </if>
+            <if test="cardType == null or cardType == ''">
+                and ht.ticket_type in ('M','Y')
+            </if>
+            <if test="stationIds != null">
+                <if test="stationIds.size() != 0">
+                    and ht.station_id in
+                    <foreach collection="stationIds" index="index" item="item" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                </if>
+            </if>
+            <if test="ids != null and ids.size() > 0">
+                and ht.user_id in
+                <foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="currentUserId != null and currentUserId != ''">
+                and ht.user_id = #{currentUserId}
+            </if>
+            <if test="minSurplus != null and minSurplus != ''">
+                and ht.use_count &gt;= #{minSurplus}
+            </if>
+            <if test="ticketStatus != null and ticketStatus != ''">
+                and ht.ticket_status = #{ticketStatus}
+            </if>
+            <if test="maxSurplus != null and maxSurplus != ''">
+                and ht.use_count &lt;= #{maxSurplus}
+            </if>
+            <if test="beginTime != null">
+                and ht.create_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and ht.create_time &lt;= #{endTime}
+            </if>
+            and ht.delete_status=0 order by ht.create_time desc
+        </trim>
+    </select>
+
+    <select id="allotTicket" resultType="com.yimao.cloud.pojo.dto.hra.HraAllotTicketDTO">
+        select
+        ht.id AS id,
+        ht.ticket_no AS ticketNo,
+        ht.ticket_price AS ticketPrice,
+        ht.ticket_status AS ticketStatus,
+        ht.handsel_status AS handselStatus,
+        ht.ticket_type AS ticketType,
+        ht.device_id AS deviceId,
+        ht.creator AS creator,
+        ht.create_time AS createTime,
+        ht.station_id AS stationId,
+        ht.use_time AS useTime,
+        ht.valid_begin_time AS validBeginTime,
+        ht.valid_end_time AS validEndTime,
+        ht.card_id AS cardId,
+        ht.customer_id AS customerId,
+        ht.reserve_from AS reserveFrom,
+        ht.reserve_time AS reserveTime,
+        ht.reserve_begin_time AS reserveBeginTime,
+        ht.reserve_end_time AS reserveEndTime,
+        ht.remark AS remark,
+        ht.user_id AS userId,
+        ht.self_station AS selfStation,
+        ht.use_count AS useCount,
+        ht.total AS total,
+        ht.ticket_style AS ticketStyle,
+        ht.ticket_content AS ticketContent,
+        ht.image AS image,
+        ht.image_used AS imageUsed,
+        ht.handsel_flag AS handsel,
+        hc.id as hcId,
+        hc.card_type AS hcCardType,
+        hc.distributor_id AS distributorId,
+        hc.user_id AS hcUserId,
+        hc.order_id AS orderId,
+        hc.creator AS hcCreator,
+        hc.create_time AS hcCreateTime,
+        hc.order_from AS orderFrom,
+        hc.card_price AS cardPrice,
+        hc.product_model_id AS productModelId,
+        hc.ticket_num AS ticketNum,
+        hc.delete_status AS hcDeleteStatus
+        from hra_ticket ht
+        inner join hra_card hc on hc.id=ht.card_id
+        where 1=1
+        <if test="ticketNo != null and ticketNo != ''">
+            and ht.ticket_no like CONCAT(trim(#{ticketNo}),'%')
+        </if>
+        <if test="province != null and province != ''">
+            and ht.station_province = #{province}
+            <if test="city != null and city != ''">
+                and ht.station_city = #{city}
+                <if test="region != null and region != ''">
+                    and ht.station_region = #{region}
+                </if>
+            </if>
+        </if>
+        <if test="stationName != null and stationName != ''">
+            and ht.station_name = #{stationName}
+        </if>
+        <if test="isExpire != null">
+            <if test="isExpire == 0">
+                and ht.valid_end_time &gt;= NOW()
+            </if>
+            <if test="isExpire == 1">
+                and ht.valid_end_time &lt;= NOW()
+            </if>
+        </if>
+        <if test="state != null">
+            <if test="state == 0">
+                and ht.ticket_status &lt;&gt; 3
+            </if>
+            <if test="state == 1">
+                and ht.ticket_status = 3
+            </if>
+        </if>
+        <if test="minSurplus != null">
+            and ht.use_count &gt;= #{minSurplus}
+        </if>
+        <if test="maxSurplus != null">
+            and ht.use_count &lt;= #{maxSurplus}
+        </if>
+        <if test="beginTime != null and beginTime != ''">
+            and ht.create_time &gt;= #{beginTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            and ht.create_time &lt;= #{endTime}
+        </if>
+        and ht.delete_status = 0 and ht.ticket_type = 'F' order by ht.create_time desc
+    </select>
+
+
+    <select id="ticketByCardId" resultType="com.yimao.cloud.pojo.dto.hra.HraTicketDTO">
+        select
+            h.id as id,
+            h.ticket_no as ticketNo ,
+            h.ticket_status as ticketStatus,
+            h.handsel_status as handselStatus,
+            h.ticket_type as ticketType,
+            h.valid_begin_time as validBeginTime,
+            h.valid_end_time as validEndTime,
+            h.reserve_from as reserveFrom,
+            h.reserve_time as reserveTime,
+            h.user_id as userId,
+            h.ticket_style as ticketStyle,
+            h.ticket_price as ticketPrice,
+            h.ticket_content as ticketContent,
+            h.image as image,
+            h.image_used as imageUsed
+        from hra_ticket h
+        where h.card_id = #{cardId}
+        and h.delete_status = 0
+        order by h.create_time asc,h.ticket_status asc
+    </select>
+
+    <!-- 所有可预约的卡 -->
+    <select id="reserveTicketList" resultType="com.yimao.cloud.pojo.dto.hra.HraTicketDTO">
+          select
+            ht.id as id,
+            ht.ticket_no as ticketNo ,
+            ht.ticket_status as ticketStatus,
+            ht.handsel_status as handselStatus,
+            ht.ticket_type as ticketType,
+            ht.valid_begin_time as validBeginTime,
+            ht.valid_end_time as validEndTime,
+            ht.reserve_from as reserveFrom,
+            ht.reserve_time as reserveTime,
+            ht.user_id as userId,
+            ht.ticket_style as ticketStyle,
+            ht.ticket_content as ticketContent,
+            ht.image as image,
+            ht.image_used as imageUsed
+        from hra_ticket ht
+        inner join hra_card hc on ht.card_id = hc.id
+        where
+            (ht.user_id = #{userId} and ht.delete_status = 0 and ht.ticket_status= 1 and ht.reserve_time is null and ht.handsel_status is null) or
+            (ht.user_id = #{userId} and ht.delete_status = 0 and ht.ticket_status= 3 and ht.reserve_time is null and ht.handsel_status is null and ht.ticket_type = 'M') or
+            (ht.user_id = #{userId} and ht.delete_status = 0 and ht.ticket_status= 1 and ht.reserve_time is null and ht.handsel_status is not null and ht.handsel_status = 2) or
+            (ht.user_id = #{userId} and ht.delete_status = 0 and ht.ticket_status= 3 and ht.reserve_time is null and ht.handsel_status is not null and ht.handsel_status = 2 and ht.ticket_type='M') or
+            (ht.user_id = #{userId} and ht.delete_status = 0 and ht.ticket_status= 1 and ht.reserve_time is not null and ht.reserve_time &lt;= NOW() and ht.handsel_status is null ) or
+            (ht.user_id = #{userId} and ht.delete_status = 0 and ht.ticket_status= 3 and ht.reserve_time is not null and ht.reserve_time &lt;= NOW() and ht.handsel_status is null and ht.ticket_type='M') or
+            (ht.user_id = #{userId} and ht.delete_status = 0 and ht.ticket_status= 1 and ht.reserve_time is not null and ht.reserve_time &lt;= NOW() and ht.handsel_status is not null and ht.handsel_status=2) or
+            (ht.user_id = #{userId} and ht.delete_status = 0 and ht.ticket_status= 3 and ht.reserve_time is not null and ht.reserve_time &lt;= NOW() and ht.handsel_status is not null and ht.handsel_status=2 and ht.ticket_type='M')
+        order by ht.valid_end_time asc
+    </select>
+
+    <!--根据体检劵号 获取订单Id-->
+    <select id="getOrderIdByTicketNo" resultType="java.lang.Long">
+        SELECT
+        hc.order_id as orderId
+        FROM hra_ticket t
+        inner join hra_card hc on t.card_id = hc.id
+        where t.ticket_no = #{ticketNo}
+    </select>
+
+
+    <!-- 改变为赠送状态-->
+    <update id="changeTicketHandselStatus">
+        update hra_ticket
+        set handsel_status = 1, handsel_time = #{handselTime}, handsel_flag = #{handselFlag}
+        where user_id = #{userId} and customer_id is null and (handsel_status is null or handsel_status = 2)
+        <if test="type != null and type == 1">
+            and ticket_status = 1 and card_id = #{cardIdOrTicketNo}
+        </if>
+        <if test="type != null and type == 2">
+            and ticket_status = 1 and ticket_no = #{cardIdOrTicketNo}
+        </if>
+        <if test="type != null and type == 3">
+            and (ticket_status = 1 or ticket_status = 3) and ticket_no = #{cardIdOrTicketNo}
+        </if>
+    </update>
+
+    <!--将评估卡劵修改为过期状态且赠送状态设置为null-->
+    <update id="updateHraTicketExpired">
+        UPDATE hra_ticket
+        SET handsel_status = NULL, ticket_status = 4
+        WHERE
+        id = #{ticketId};
+    </update>
+    <!--将赠送状态修改为未赠送状态-->
+    <update id="updateHraTicketHandselStatusToNull">
+        UPDATE hra_ticket
+        SET handsel_status = NULL
+        WHERE
+        id = #{ticketId};
+    </update>
+
+    <update id="changeTicketOwnerBatch">
+        UPDATE hra_ticket hrt
+        SET hrt.handsel_status = 2, hrt.user_id = #{userId}, hrt.receive_time = #{receiveTime}
+        WHERE hrt.user_id = #{sharerId} AND hrt.handsel_status = 1
+        AND hrt.ticket_no IN
+        <foreach collection="handselList" open="(" close=")" item="ticketNo" separator=",">
+            #{ticketNo}
+        </foreach>
+    </update>
+
+    <!--查询需要支付的优惠卡 -->
+    <select id="listTicketForPay" resultType="com.yimao.cloud.pojo.dto.hra.HraTicketDTO">
+        select
+        t.id,
+        t.ticket_no as ticketNo,
+        t.ticket_price as ticketPrice,
+        t.ticket_status as ticketStatus,
+        t.handsel_status as handselStatus,
+        t.ticket_type as ticketType,
+        t.valid_begin_time as validBeginTime,
+        t.valid_end_time as validEndTime,
+        t.card_id as cardId,
+        t.user_id as userId,
+        hc.product_id as productId
+        from hra_ticket t
+        inner join hra_card hc on hc.id = t.card_id
+        where
+        t.ticket_status = 3 and
+        (t.handsel_status is null or t.handsel_status = 2) and
+        t.ticket_type = 'M' and t.user_id = #{userId} and
+        t.valid_end_time &gt; DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL -1 DAY), '%Y-%m-%d 23:59:50')
+        limit #{count}
+    </select>
+    <select id="listTicketExport" parameterType="com.yimao.cloud.pojo.dto.hra.HraExportQuery"
+            resultType="com.yimao.cloud.pojo.dto.hra.HraExportReservationDTO">
+        SELECT
+        ht.ticket_no AS ticketNo,
+        CASE ht.ticket_status
+        WHEN 1 THEN "未使用"
+        WHEN 2 THEN "已使用"
+        WHEN 3 THEN "已禁用"
+        WHEN 4 THEN "已过期"
+        END AS ticketStatus,
+        CASE ht.reserve_from
+        WHEN 1 THEN "终端用户APP"
+        WHEN 2 THEN "微信公众号"
+        WHEN 3 THEN "后台录入"
+        WHEN 4 THEN "经销商APP"
+        END AS reserveFrom,
+        ht.user_id AS userId,
+        hc.username AS customerUserName,
+        hc.sex AS customerSex,
+        hc.phone AS customerPhone,
+        hc.birthdate AS customerBirthDate,
+        hc.idcard AS customerIdCard,
+        hc.age AS customerAge,
+        hc.height AS customerHeight,
+        hc.weight AS customerWeight,
+        hr.exam_date AS examDate,
+        ht.station_id AS stationId,
+        ht.ticket_type AS ticketType
+        FROM
+        hra_ticket ht
+        inner join hra_customer hc on ht.customer_id = hc.id
+        inner join hra_report hr on ht.ticket_no = hr.ticket_no
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="userId !=null and userId != '' ">
+                and ht.user_id = #{userId}
+            </if>
+            <if test="ticketNo != null and ticketNo != '' ">
+                and ht.ticket_no like CONCAT('%',trim(#{ticketNo}),'%')
+            </if>
+            <if test="name != null and name != '' ">
+                and hc.username like CONCAT('%',trim(#{name}),'%')
+            </if>
+            <if test="userSource != null ">
+                and ht.reserve_from = #{userSource}
+            </if>
+            <if test="mobile != null and mobile != '' ">
+                and hc.phone like CONCAT('%',trim(#{mobile}),'%')
+            </if>
+            <if test="stationIds != null and stationIds.size() &gt; 0 ">
+                and ht.station_id in
+                <foreach collection="stationIds" index="index" item="item" open="(" separator="or" close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="ticketType != null and ticketType != '' ">
+                and ht.ticket_type = #{ticketType}
+            </if>
+            <if test="flag==1">
+                <if test="beginTime!=null and beginTime!='' ">
+                    and ht.use_time &gt;= #{beginTime}
+                </if>
+                <if test="endTime != null and endTime != '' ">
+                    and ht.use_time &lt;= #{endTime}
+                </if>
+                <if test="hasUpload != null and hasUpload != '' ">
+                    <if test="hasUpload==1">
+                        and hr.report_pdf is not null
+                    </if>
+                    <if test="hasUpload==0">
+                        and hr.report_pdf is null
+                    </if>
+                </if>
+                and ht.ticket_type!='F'
+                and ht.ticket_status=2 order by ht.use_time desc
+            </if>
+            <if test="flag==2">
+                <if test="beginTime != null and beginTime != '' ">
+                    and ht.reserve_time &gt;= #{beginTime}
+                </if>
+                <if test="endTime != null and endTime != '' ">
+                    and ht.reserve_time &lt;= #{endTime}
+                </if>
+                <if test="reserveStatus != null and reserveStatus != '' ">
+                    <if test="reserveStatus==1">
+                        and ht.reserve_time &gt;DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 DAY), '%Y-%m-%d 23:59:59')
+                    </if>
+                    <if test="reserveStatus==2">
+                        and ht.reserve_time &lt;DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 DAY), '%Y-%m-%d 23:59:59')
+                    </if>
+                </if>
+                and ht.ticket_type!='F' and ht.reserve_time is not null and ht.customer_id is not null and
+                ht.delete_status=0
+                and (ht.ticket_status=1 or ht.ticket_status=3 or ht.ticket_status=4) order by ht.reserve_time desc
+            </if>
+        </trim>
+    </select>
+
+    <!--查询赠送时间超过24小时体检劵-->
+    <select id="listHandselExpiredHraTicket" resultType="com.yimao.cloud.hra.po.HraTicket">
+        SELECT
+        id AS id,
+        user_id AS userId,
+        ticket_no AS ticketNo,
+        card_id AS cardId,
+        handsel_time AS handselTime
+        FROM
+        hra_ticket
+        WHERE
+        handsel_status = 1
+        AND handsel_time &lt;= ADDDATE(now(), INTERVAL -1 DAY)
+    </select>
+    <!--体检卡七天过期的所属用户ID集合-->
+    <select id="ticketPastUserId" resultType="com.yimao.cloud.pojo.dto.hra.HraTicketPastDTO">
+        select
+        ht.user_id as userId,
+        count(1) as counts
+        from hra_ticket ht
+        where
+        ht.ticket_type = #{ticketType} and
+        ht.ticket_status in (1,3) and
+        DATE_FORMAT(ht.valid_end_time, '%Y-%m-%d')= DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL -7 DAY), '%Y-%m-%d') and
+        ht.user_id is not NULL
+        group by ht.user_id
+    </select>
+    <select id="ticketReservePastUserId" resultType="com.yimao.cloud.pojo.dto.hra.HraTicketPastDTO">
+        select
+        ht.user_id as userId,
+        ht.reserve_station_id as stationId,
+        count(1) as counts
+        from hra_ticket ht
+        where
+        ht.station_id is not null and
+        ht.reserve_time is not null and
+        DATE_FORMAT(DATE_SUB(ht.reserve_time, INTERVAL 1 DAY), '%Y-%m-%d') = DATE_FORMAT(CURDATE(), '%Y-%m-%d')
+        group by ht.user_id,ht.reserve_station_id
+    </select>
+
+    <!--查询已过期的评估卡-->
+    <select id="findHasExpired" resultType="java.lang.Integer">
+        SELECT
+        id
+        FROM
+        hra_ticket
+        WHERE
+        valid_end_time &lt;= now() and (ticket_status = 1 or ticket_status = 3)
+    </select>
+
+    <!--查询处于赠送状态但已过期的体检劵-->
+    <select id="listExpiredHraTicket" resultType="com.yimao.cloud.hra.po.HraTicket">
+         SELECT
+        id AS id,
+        user_id AS userId,
+        ticket_no AS ticketNo,
+        card_id AS cardId,
+        handsel_time AS handselTime,
+        handsel_status AS handselStatus
+        FROM
+        hra_ticket
+        WHERE
+        handsel_status = 1
+        AND valid_end_time &lt;= now()
+    </select>
+
+    <select id="exportPhysical" parameterType="com.yimao.cloud.pojo.dto.hra.HraQueryDTO" resultType="com.yimao.cloud.pojo.dto.hra.HraExportPhysicalDTO">
+        SELECT
+        ht.ticket_no AS ticketNo,
+        ht.user_id AS currentUserId,
+        CASE ht.ticket_status
+        WHEN 1 THEN "未使用"
+        WHEN 2 THEN "已用"
+        WHEN 3 THEN "禁用"
+        WHEN 4 THEN "过期"
+        WHEN 5 THEN "已预约"
+        END AS ticketStatus,
+        ht.valid_begin_time AS validBeginTime,
+        DATE_FORMAT(ht.valid_end_time,"%Y-%m-%d %H:%i:%s") AS endTime,
+        DATE_FORMAT(ht.create_time,"%Y-%m-%d %H:%i:%s") AS setTime,
+        ht.station_id AS stationId,
+        CASE ht.reserve_from
+        WHEN 1 THEN "终端用户app"
+        WHEN 2 THEN "微信公众号"
+        WHEN 3 THEN "评估系统"
+        WHEN 4 THEN "经销商APP"
+        WHEN 5 THEN "后台管理系统"
+        END AS reserveFrom,
+        ht.use_count AS userCount,
+        ht.self_station AS selfStation,
+        ht.ticket_type AS cardType,
+        hc.user_id AS createUserId,
+        hc.order_from AS orderFrom,
+        hc.order_id AS orderId,
+        ht.card_id AS cardId
+        FROM
+        hra_ticket ht
+        LEFT JOIN hra_card hc ON ht.card_id = hc.id
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="ticketNo != null and ticketNo != '' ">
+                and ht.ticket_no like CONCAT('%',trim(#{ticketNo}),'%')
+            </if>
+            <if test="cardType != null and cardType != '' ">
+                and ht.ticket_type = #{cardType}
+            </if>
+            <if test="cardType == null or cardType == ''">
+                and ht.ticket_type in ('M','Y')
+            </if>
+            <if test="stationIds != null">
+                <if test="stationIds.size() != 0">
+                    and ht.station_id in
+                    <foreach collection="stationIds" index="index" item="item" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                </if>
+            </if>
+            <if test="ids != null and ids.size() > 0">
+                and ht.user_id in
+                <foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="currentUserId != null and currentUserId != ''">
+                and ht.user_id = #{currentUserId}
+            </if>
+            <if test="minSurplus != null and minSurplus != ''">
+                and ht.use_count &gt;= #{minSurplus}
+            </if>
+            <if test="ticketStatus != null and ticketStatus != ''">
+                and ht.ticket_status = #{ticketStatus}
+            </if>
+            <if test="maxSurplus != null and maxSurplus != ''">
+                and ht.use_count &lt;= #{maxSurplus}
+            </if>
+            <if test="beginTime != null">
+                and ht.create_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and ht.create_time &lt;= #{endTime}
+            </if>
+        </trim>
+        and ht.delete_status=0 order by ht.create_time desc
+    </select>
+    <!--<select id="exportReservation" resultType="com.yimao.cloud.pojo.dto.hra.HraExportReservationDTO">-->
+    <!--SELECT-->
+    <!--ht.ticket_no AS ticketNo,-->
+    <!--ht.ticket_status AS ticketStatus,-->
+    <!--CASE ht.reserve_from-->
+    <!--WHEN 1 THEN "终端用户APP"-->
+    <!--WHEN 2 THEN "微信公众号"-->
+    <!--WHEN 3 THEN "后台录入"-->
+    <!--WHEN 4 THEN "经销商APP"-->
+    <!--END AS reserveFrom,-->
+    <!--ht.user_id AS userId,-->
+    <!--hc.username AS customerUserName,-->
+    <!--hc.idcard,-->
+    <!--hc.sex AS customerSex,-->
+    <!--hc.phone AS customerPhone,-->
+    <!--hc.birthdate AS customerBirthDate,-->
+    <!--hc.idcard AS customerIdCard,-->
+    <!--hc.age AS customerAge,-->
+    <!--hc.height AS customerHeight,-->
+    <!--hc.weight AS customerWeight,-->
+    <!--DATE_FORMAT(ht.reserve_time,"%Y-%m-%d") AS reserveTime,-->
+    <!--ht.station_id AS stationId-->
+    <!--FROM-->
+    <!--hra_ticket ht-->
+    <!--left join hra_customer hc on ht.customer_id = hc.id-->
+    <!--left join hra_report hr on ht.ticket_no = hr.ticket_no-->
+    <!--<trim prefix="where" prefixOverrides="and | or">-->
+    <!--<if test="userId !=null and userId != '' ">-->
+    <!--and ht.user_id = #{userId}-->
+    <!--</if>-->
+    <!--<if test="ticketNo != null and ticketNo != '' ">-->
+    <!--and ht.ticket_no like CONCAT('%',trim(#{ticketNo}),'%')-->
+    <!--</if>-->
+    <!--<if test="name != null and name != '' ">-->
+    <!--and hc.username like CONCAT('%',trim(#{name}),'%')-->
+    <!--</if>-->
+    <!--<if test="userSource != null ">-->
+    <!--and ht.reserve_from = #{userSource}-->
+    <!--</if>-->
+    <!--<if test="mobile != null and mobile != '' ">-->
+    <!--and hc.phone like CONCAT('%',trim(#{mobile}),'%')-->
+    <!--</if>-->
+
+    <!--<if test="ticketType != null and ticketType != '' ">-->
+    <!--and ht.ticket_type = #{ticketType}-->
+    <!--</if>-->
+    <!--<if test="flag==1">-->
+    <!--<if test="beginTime!=null and beginTime!='' ">-->
+    <!--and ht.use_time &gt;= #{beginTime}-->
+    <!--</if>-->
+    <!--<if test="endTime != null and endTime != '' ">-->
+    <!--and ht.use_time &lt;= #{endTime}-->
+    <!--</if>-->
+    <!--<if test="hasUpload != null and hasUpload != '' ">-->
+    <!--<if test="hasUpload==1">-->
+    <!--and hr.report_pdf is not null-->
+    <!--</if>-->
+    <!--<if test="hasUpload==0">-->
+    <!--and hr.report_pdf is null-->
+    <!--</if>-->
+    <!--</if>-->
+    <!--<if test="stationIds != null and stationIds.size() &gt; 0 ">-->
+    <!--and ht.station_id in-->
+    <!--<foreach collection="stationIds" index="index" item="item" open="(" separator="or" close=")">-->
+    <!--#{item}-->
+    <!--</foreach>-->
+    <!--</if>-->
+    <!--and ht.ticket_type!='F'-->
+    <!--and ht.ticket_status=2 order by ht.use_time desc-->
+    <!--</if>-->
+    <!--<if test="flag==2">-->
+    <!--<if test="beginTime != null and beginTime != '' ">-->
+    <!--and ht.reserve_time &gt;= #{beginTime}-->
+    <!--</if>-->
+    <!--<if test="endTime != null and endTime != '' ">-->
+    <!--and ht.reserve_time &lt;= #{endTime}-->
+    <!--</if>-->
+    <!--<if test="reserveStatus != null and reserveStatus != '' ">-->
+    <!--<if test="reserveStatus==1">-->
+    <!--and ht.reserve_time &gt;DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 DAY), '%Y-%m-%d 23:59:59')-->
+    <!--</if>-->
+    <!--<if test="reserveStatus==2">-->
+    <!--and ht.reserve_time &lt;DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 DAY), '%Y-%m-%d 23:59:59')-->
+    <!--</if>-->
+    <!--</if>-->
+    <!--<if test="stationIds != null and stationIds.size() &gt; 0 ">-->
+    <!--and ht.station_id in-->
+    <!--<foreach collection="stationIds" index="index" item="item" open="(" separator="or" close=")">-->
+    <!--#{item}-->
+    <!--</foreach>-->
+    <!--</if>-->
+    <!--and ht.ticket_type!='F' and ht.reserve_time is not null and ht.customer_id is not null and-->
+    <!--ht.delete_status=0-->
+    <!--and (ht.ticket_status=1 or ht.ticket_status=3 or ht.ticket_status=4) order by ht.reserve_time desc-->
+    <!--</if>-->
+    <!--</trim>-->
+    <!--</select>-->
+
+    <!--<select id="exportReservationPage" resultType="com.yimao.cloud.pojo.dto.hra.HraExportReservationDTO">-->
+    <!--SELECT-->
+    <!--ht.ticket_no AS ticketNo,-->
+    <!--ht.ticket_status AS ticketStatus,-->
+    <!--CASE ht.reserve_from-->
+    <!--WHEN 1 THEN "终端用户APP"-->
+    <!--WHEN 2 THEN "微信公众号"-->
+    <!--WHEN 3 THEN "后台录入"-->
+    <!--WHEN 4 THEN "经销商APP"-->
+    <!--END AS reserveFrom,-->
+    <!--ht.user_id AS userId,-->
+    <!--hc.username AS customerUserName,-->
+    <!--hc.idcard,-->
+    <!--hc.sex AS customerSex,-->
+    <!--hc.phone AS customerPhone,-->
+    <!--hc.birthdate AS customerBirthDate,-->
+    <!--hc.idcard AS customerIdCard,-->
+    <!--hc.age AS customerAge,-->
+    <!--hc.height AS customerHeight,-->
+    <!--hc.weight AS customerWeight,-->
+    <!--DATE_FORMAT(ht.reserve_time,"%Y-%m-%d") AS reserveTime,-->
+    <!--ht.station_id AS stationId-->
+    <!--FROM-->
+    <!--hra_ticket ht-->
+    <!--left join hra_customer hc on ht.customer_id = hc.id-->
+    <!--left join hra_report hr on ht.ticket_no = hr.ticket_no-->
+    <!--<trim prefix="where" prefixOverrides="and | or">-->
+    <!--<if test="userId !=null and userId != '' ">-->
+    <!--and ht.user_id = #{userId}-->
+    <!--</if>-->
+    <!--<if test="ticketNo != null and ticketNo != '' ">-->
+    <!--and ht.ticket_no like CONCAT('%',trim(#{ticketNo}),'%')-->
+    <!--</if>-->
+    <!--<if test="name != null and name != '' ">-->
+    <!--and hc.username like CONCAT('%',trim(#{name}),'%')-->
+    <!--</if>-->
+    <!--<if test="userSource != null ">-->
+    <!--and ht.reserve_from = #{userSource}-->
+    <!--</if>-->
+    <!--<if test="mobile != null and mobile != '' ">-->
+    <!--and hc.phone like CONCAT('%',trim(#{mobile}),'%')-->
+    <!--</if>-->
+
+    <!--<if test="ticketType != null and ticketType != '' ">-->
+    <!--and ht.ticket_type = #{ticketType}-->
+    <!--</if>-->
+    <!--<if test="flag==1">-->
+    <!--<if test="beginTime!=null and beginTime!='' ">-->
+    <!--and ht.use_time &gt;= #{beginTime}-->
+    <!--</if>-->
+    <!--<if test="endTime != null and endTime != '' ">-->
+    <!--and ht.use_time &lt;= #{endTime}-->
+    <!--</if>-->
+    <!--<if test="hasUpload != null and hasUpload != '' ">-->
+    <!--<if test="hasUpload==1">-->
+    <!--and hr.report_pdf is not null-->
+    <!--</if>-->
+    <!--<if test="hasUpload==0">-->
+    <!--and hr.report_pdf is null-->
+    <!--</if>-->
+    <!--</if>-->
+    <!--<if test="stationIds != null and stationIds.size() &gt; 0 ">-->
+    <!--and ht.station_id in-->
+    <!--<foreach collection="stationIds" index="index" item="item" open="(" separator="or" close=")">-->
+    <!--#{item}-->
+    <!--</foreach>-->
+    <!--</if>-->
+    <!--and ht.ticket_type!='F'-->
+    <!--and ht.ticket_status=2 order by ht.use_time desc-->
+    <!--</if>-->
+    <!--<if test="flag==2">-->
+    <!--<if test="beginTime != null and beginTime != '' ">-->
+    <!--and ht.reserve_time &gt;= #{beginTime}-->
+    <!--</if>-->
+    <!--<if test="endTime != null and endTime != '' ">-->
+    <!--and ht.reserve_time &lt;= #{endTime}-->
+    <!--</if>-->
+    <!--<if test="reserveStatus != null and reserveStatus != '' ">-->
+    <!--<if test="reserveStatus==1">-->
+    <!--and ht.reserve_time &gt;DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 DAY), '%Y-%m-%d 23:59:59')-->
+    <!--</if>-->
+    <!--<if test="reserveStatus==2">-->
+    <!--and ht.reserve_time &lt;DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 DAY), '%Y-%m-%d 23:59:59')-->
+    <!--</if>-->
+    <!--</if>-->
+    <!--<if test="stationIds != null and stationIds.size() &gt; 0 ">-->
+    <!--and ht.station_id in-->
+    <!--<foreach collection="stationIds" index="index" item="item" open="(" separator="or" close=")">-->
+    <!--#{item}-->
+    <!--</foreach>-->
+    <!--</if>-->
+    <!--and ht.ticket_type!='F' and ht.reserve_time is not null and ht.customer_id is not null and-->
+    <!--ht.delete_status=0-->
+    <!--and (ht.ticket_status=1 or ht.ticket_status=3 or ht.ticket_status=4) order by ht.reserve_time desc-->
+    <!--</if>-->
+    <!--</trim>-->
+    <!--</select>-->
+
+    <select id="hraAllotTicketExport" parameterType="com.yimao.cloud.pojo.dto.hra.HraQueryDTO" resultType="com.yimao.cloud.pojo.dto.hra.HraAllotTicketExportDTO">
+        select
+        ht.ticket_no AS ticketNo,
+        ht.station_name AS stationName,
+        ht.station_province AS stationProvince,
+        ht.station_city AS stationCity,
+        ht.station_region AS stationRegion,
+        DATEDIFF(ht.valid_end_time,ht.valid_begin_time) AS days,
+        DATE_FORMAT(ht.valid_end_time,"%Y-%m-%d %H:%i:%s")AS validEndTime,
+        CASE WHEN ht.valid_end_time &lt; NOW() THEN "已过期" ELSE "未过期" END AS expired,
+        ht.total AS total,
+        ht.use_count AS useCount,
+        CASE WHEN ht.self_station THEN "限制" ELSE "不限制" END AS selfStation,
+        DATE_FORMAT(ht.create_time,"%Y-%m-%d %H:%i:%s") AS createTime,
+        CASE WHEN ht.ticket_status = 3 THEN "禁用" ELSE "不禁用" END AS forbidden
+        from hra_ticket ht
+        where 1=1
+        <if test="ticketNo != null and ticketNo != ''">
+            and ht.ticket_no like CONCAT(trim(#{ticketNo}),'%')
+        </if>
+        <if test="province != null and province != ''">
+            and ht.station_province = #{province}
+            <if test="city != null and city != ''">
+                and ht.station_city = #{city}
+                <if test="region != null and region != ''">
+                    and ht.station_region = #{region}
+                </if>
+            </if>
+        </if>
+        <if test="stationName != null and stationName != ''">
+            and ht.station_name like CONCAT(trim(#{stationName}),'%')
+        </if>
+        <if test="isExpire != null">
+            <if test="isExpire == 0">
+                and ht.valid_end_time &gt;= NOW()
+            </if>
+            <if test="isExpire == 1">
+                and ht.valid_end_time &lt;= NOW()
+            </if>
+        </if>
+        <if test="ticketStatus != null">
+            <if test="ticketStatus == 0">
+                and ht.ticket_status &lt;&gt; 3
+            </if>
+            <if test="ticketStatus == 1">
+                and ht.ticket_status = 3
+            </if>
+        </if>
+        <if test="minSurplus != null">
+            and ht.use_count &gt;= #{minSurplus}
+        </if>
+        <if test="maxSurplus != null">
+            and ht.use_count &lt;= #{maxSurplus}
+        </if>
+        <if test="beginTime != null and beginTime != ''">
+            and ht.create_time &gt;= #{beginTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            and ht.create_time &lt;= #{endTime}
+        </if>
+        and ht.delete_status = 0 and ht.ticket_type = 'F' order by ht.create_time desc
+    </select>
+
+
+    <select id="selectIdAndCardIdByTicketNo" resultType="com.yimao.cloud.hra.po.HraTicket">
+        select
+            id as id,
+            card_id as cardId
+        from
+            hra_ticket
+        where ticket_no = #{ticketNo}
+    </select>
+
+    <!--评估卡分配 只看F卡-->
+    <select id="listTicketBy" resultType="com.yimao.cloud.pojo.vo.hra.HraCardVO">
+        select
+        ht.id AS id,
+        ht.ticket_no AS ticketNo,
+        ht.station_id AS stationId,
+        ht.station_name AS stationName,
+        ht.station_province AS stationProvince,
+        ht.station_city AS stationCity,
+        ht.station_region AS stationRegion,
+        ht.valid_end_time AS validEndTime,
+        CASE WHEN ht.valid_end_time &lt; NOW() THEN 1 ELSE 0 END AS expired,
+        ht.total AS total,
+        ht.use_count AS useCount,
+        ht.self_station AS selfStation,
+        ht.create_time AS createTime,
+        CASE WHEN ht.ticket_status = 3 THEN 1 ELSE 0 END AS forbidden
+        from hra_ticket ht
+        where 1=1
+        <if test="ticketNo != null and ticketNo != ''">
+            and ht.ticket_no like CONCAT(trim(#{ticketNo}),'%')
+        </if>
+        <if test="province != null and province != ''">
+            and ht.station_province = #{province}
+            <if test="city != null and city != ''">
+                and ht.station_city = #{city}
+                <if test="region != null and region != ''">
+                    and ht.station_region = #{region}
+                </if>
+            </if>
+        </if>
+        <if test="stationName != null and stationName != ''">
+            and ht.station_name like CONCAT(trim(#{stationName}),'%')
+        </if>
+        <if test="isExpire != null">
+            <if test="isExpire == 0">
+                and ht.valid_end_time &gt;= NOW()
+            </if>
+            <if test="isExpire == 1">
+                and ht.valid_end_time &lt;= NOW()
+            </if>
+        </if>
+        <if test="state != null">
+            <if test="state == 0">
+                and ht.ticket_status &lt;&gt; 3
+            </if>
+            <if test="state == 1">
+                and ht.ticket_status = 3
+            </if>
+        </if>
+        <if test="minSurplus != null">
+            and ht.use_count &gt;= #{minSurplus}
+        </if>
+        <if test="maxSurplus != null">
+            and ht.use_count &lt;= #{maxSurplus}
+        </if>
+        <if test="beginTime != null and beginTime != ''">
+            and ht.create_time &gt;= #{beginTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            and ht.create_time &lt;= #{endTime}
+        </if>
+        and ht.delete_status = 0 and ht.ticket_type = 'F' order by ht.create_time desc
+    </select>
+
+    <select id="listTicketByQuery" resultType="com.yimao.cloud.pojo.vo.station.StationHraCardVO">
+        select
+        ht.id AS id,
+        ht.ticket_no AS ticketNo,
+        ht.station_name AS stationName,
+        ht.station_province AS stationProvince,
+        ht.station_city AS stationCity,
+        ht.station_region AS stationRegion,
+        ht.valid_end_time AS validEndTime,
+        CASE WHEN ht.valid_end_time &lt; NOW() THEN 1 ELSE 0 END AS expired,
+        ht.total AS total,
+        ht.use_count AS useCount,
+        ht.self_station AS selfStation,
+        ht.create_time AS createTime,
+        ht.ticket_status as ticketStatus,
+        CASE WHEN ht.ticket_status = 3 THEN 1 ELSE 0 END AS forbidden
+        from hra_ticket ht
+        where 1=1
+        <if test="ticketNo != null and ticketNo.trim() != ''">
+            and ht.ticket_no like CONCAT(trim(#{ticketNo}),'%')
+        </if>
+        <if test="ticketStatus != null">
+       	 and ht.ticket_status = #{ticketStatus}
+        <!-- 
+            <if test="ticketStatus == 0">
+                and ht.ticket_status &lt;&gt; 3
+            </if>
+            <if test="ticketStatus == 1">
+                and ht.ticket_status = 3
+            </if>
+             -->
+        </if>
+        <if test="stationId != null">
+            and ht.station_id = #{stationId}
+        </if>
+        <if test="stations != null and stations.size() &gt; 0">
+            and ht.station_id in
+            <foreach collection="stations" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        and ht.delete_status = 0 and ht.ticket_type = 'F' order by ht.create_time desc
+    </select>
+</mapper>

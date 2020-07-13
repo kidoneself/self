@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.user.mapper.UserCompanyApplyMapper">
+
+    <select id="pageQuery" resultType="com.yimao.cloud.pojo.dto.user.UserCompanyApplyDTO">
+        SELECT
+        dbo.id AS orderId,
+        dbo.order_type AS orderType,
+        dbo.distributor_account AS distributorAccount,
+        CASE dbo.role_level
+        WHEN -50 THEN "折机版经销商"
+        WHEN 50 THEN "体验版经销商"
+        WHEN 350 THEN "微创版经销商"
+        WHEN 650 THEN "个人版经销商"
+        WHEN 950 THEN "企业版经销商" ELSE ''
+        END AS roleName,
+        ucp.company_type AS companyType,
+        ucp.industry,
+        ucp.company_name AS companyName,
+        dbo.pay_state AS payState,
+        dbo.enterprise_state AS enterpriseState
+        FROM
+        distributor_order dbo
+        LEFT JOIN user_company_apply ucp ON dbo.id=ucp.order_id
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="orderId!=null">
+                and dbo.id like CONCAT(#{orderId},'%')
+            </if>
+            <if test="orderType!=null">
+                and dbo.order_type = #{orderType}
+            </if>
+            <if test="companyName!=null and companyName!=''">
+                and ucp.company_name = #{companyName}
+            </if>
+            <if test="account!=null and account!=''">
+                and dbo.distributor_account like CONCAT(#{account},'%')
+            </if>
+            <if test="roleLevel!=null">
+                and dbo.`role_level` = #{roleLevel}
+            </if>
+            and dbo.enterprise_state = 0
+            and dbo.order_state not in (3)
+        </trim>
+        ORDER BY dbo.id
+        DESC
+    </select>
+
+    <select id="listCompanyAudit" resultType="com.yimao.cloud.pojo.dto.user.CompanyAuditExportDTO">
+        SELECT
+        dbo.id AS orderId,
+        ud.address AS address,
+        CASE
+        dbo.order_type
+        WHEN 0 THEN
+        '注册'
+        WHEN 1 THEN
+        '升级'
+        WHEN 2 THEN
+        '续费' ELSE ''
+        END AS orderTypeStr,
+        dbo.distributor_account AS distributorAccount,
+        ud.real_name AS realName,
+        CASE
+        dbo.role_level
+        WHEN - 50 THEN
+        "折机版经销商"
+        WHEN 50 THEN
+        "体验版经销商"
+        WHEN 350 THEN
+        "微创版经销商"
+        WHEN 650 THEN
+        "个人版经销商"
+        WHEN 950 THEN
+        "企业版经销商" ELSE ''
+        END AS roleName,
+        CASE
+        dbo.dest_role_level
+        WHEN 50 THEN
+        "体验版经销商"
+        WHEN 350 THEN
+        "微创版经销商"
+        WHEN 650 THEN
+        "个人版经销商"
+        WHEN 950 THEN
+        "企业版经销商" ELSE ''
+        END AS destRoleName,
+        CASE
+        ud.sex
+        WHEN 1 THEN
+        '男'
+        WHEN 2 THEN
+        '女' ELSE ''
+        END AS sexStr,
+        ud.id_card AS idCard,
+        dbo.mobile AS phone,
+        ud.recommend_name AS recommendName,
+        CASE
+        dbo.pay_type
+        WHEN 1 THEN
+        '微信'
+        WHEN 2 THEN
+        '支付宝'
+        WHEN 3 THEN
+        'pos机'
+        WHEN 4 THEN
+        '转账' ELSE ''
+        END AS payTypeStr,
+        CASE
+        dbo.pay_state
+        WHEN 1 THEN
+        '未支付'
+        WHEN 2 THEN
+        '已支付'
+        WHEN 3 THEN
+        '支付失败'
+        WHEN 4 THEN
+        '待审核'
+        WHEN 6 THEN
+        '无需支付' ELSE ''
+        END AS payStateStr,
+        DATE_FORMAT(dbo.pay_time,"%Y-%m-%d %H:%i:%s") AS payTimeStr,
+        dbo.price AS payMoney,
+        CASE
+        dbo.order_state
+        WHEN 0 THEN
+        '待审核'
+        WHEN 1 THEN
+        '已完成'
+        WHEN 2 THEN
+        '待付款'
+        WHEN 3 THEN
+        '已关闭' ELSE ''
+        END AS orderStateStr,
+        CASE
+        ucp.company_type
+        WHEN 1 THEN
+        '有限责任公司'
+        WHEN 2 THEN
+        '股份有限公司'
+        WHEN 3 THEN
+        '个人独资企业'
+        WHEN 4 THEN
+        '合伙企业'
+        WHEN 5 THEN
+        '全民所有制企业'
+        WHEN 6 THEN
+        '集体所有制企业'
+        WHEN 7 THEN
+        '农民专业合作社'
+        WHEN 8 THEN
+        '其它' ELSE ''
+        END AS companyTypeStr,
+        ucp.industry AS industry,
+        ucp.company_name AS companyName,
+        ucp.phone AS companyPhone,
+        ucp.email AS companyEmail,
+        ucp.address AS companyAddress,
+        ucp.credit_code AS creditCode,
+        ucp.tax_information AS taxInformation,
+        ucp.corporate_representative AS corporateRepresentative,
+        ucp.bank_account AS bankAccount,
+        ucp.bank AS bank,
+        ucp.business_license AS businessLicense,
+        CASE
+        dbo.enterprise_state
+        WHEN 0 THEN
+        '未审核'
+        WHEN 1 THEN
+        '审核通过'
+        WHEN 2 THEN
+        '审核不通过'
+        WHEN 3 THEN
+        '无需审核' ELSE ''
+        END AS enterpriseStateStr,
+        dbo.station_company_name AS stationCompanyName
+        FROM
+        distributor_order dbo
+        LEFT JOIN user_distributor ud ON ud.id = dbo.distributor_id
+        LEFT JOIN user_company_apply ucp ON dbo.id = ucp.order_id
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="orderId!=null">
+                and dbo.id like CONCAT(#{orderId},'%')
+            </if>
+            <if test="orderType!=null">
+                and dbo.order_type = #{orderType}
+            </if>
+            <if test="companyName!=null and companyName!=''">
+                and ucp.company_name = #{companyName}
+            </if>
+            <if test="account!=null and account!=''">
+                and dbo.distributor_account like CONCAT(#{account},'%')
+            </if>
+            <if test="roleLevel!=null">
+                and dbo.`role_level` = #{roleLevel}
+            </if>
+            and dbo.enterprise_state = 0
+            and dbo.order_state not in (3)
+        </trim>
+        ORDER BY
+        dbo.id DESC
+    </select>
+
+    <select id="getCompanyNameByOrderId" resultType="java.lang.String">
+        select
+        company_name as companyName
+        from user_company_apply
+        where order_id = #{orderId}
+    </select>
+</mapper>

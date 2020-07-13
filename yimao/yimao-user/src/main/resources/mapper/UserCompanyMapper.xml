@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.user.mapper.UserCompanyMapper">
+
+    <select id="getCompanyAuditById" resultType="com.yimao.cloud.pojo.dto.user.UserCompanyDTO">
+    SELECT
+	d.`status`,
+	d.auditor,
+	d.audit_time AS auditTime
+    FROM
+	distributor_order_audit_record d
+    WHERE
+	audit_type = 1
+	AND distributor_order_id = #{orderId}
+    ORDER BY
+	id DESC
+    </select>
+
+    <!--根据经销商ID查询企业信息-->
+    <select id="getCompanyInfoByDistId" resultType="com.yimao.cloud.user.po.UserCompany">
+        SELECT
+            uc.id,
+            uc.distributor_id AS distributorId, --经销商ID
+            uc.company_type AS companyType, --企业类型
+            uc.industry AS industry, --所属行业
+            uc.company_name AS companyName, --企业名称
+            uc.credit_code AS creditCode, --信用代码
+            uc.tax_information AS taxInformation, --税务信息
+            uc.corporate_representative AS corporateRepresentative, --法人代表
+            uc.bank_account AS bankAccount, --银行账号
+            uc.bank AS bank, --开户银行
+            uc.port_number AS portNumber, --开设端口数量
+            uc.phone AS phone, --联系电话
+            uc.email AS email, --公司邮箱
+            uc.address AS address, --公司地址
+            uc.business_license AS businessLicense, --营业执照
+            uc.introduction AS introduction, --简介
+            uc.creator AS creator,
+            uc.create_time AS createTime,
+            uc.updater AS updater,
+            uc.update_time AS updateTime
+        FROM
+            user_company uc
+        WHERE
+            uc.distributor_id = #{distId}
+    </select>
+
+</mapper>

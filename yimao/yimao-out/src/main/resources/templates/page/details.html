@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:if="${type} == 1">操作指南</title>
+    <title th:if="${type} == 2">公告</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+<body>
+<div th:if="${type} == 1">
+    <div th:utext="${operationNote.operation}"></div>
+</div>
+<div th:if="${type} == 2">
+    <h1 align="center" th:utext="${notice.title}"></h1>
+    <div th:utext=" ${notice.notice}"></div>
+</div>
+</body>
+</html>

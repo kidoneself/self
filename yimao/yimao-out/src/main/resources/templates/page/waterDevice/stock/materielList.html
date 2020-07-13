@@ -1,0 +1,33 @@
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+<div th:if="${not #lists.isEmpty(resultList)}">
+    <div th:each="entry:${resultList}">
+        <span th:text="${entry.materielTypeName}"> </span>
+        <div class="bad-device-list-item">
+            <span class="bad-device-list-item-type" th:text="${entry.materielName}"></span>
+            <span class="bad-device-list-item-no" th:text="'适用机型:'+${entry.fitTypeName}"></span>
+            <span class="bad-device-list-item-time" th:text="'入库时间:'+${entry.engineerPutDate}"></span>
+            <span class="bad-device-list-item-no" th:text="'生产批次码:'+${entry.batchCode}"></span>
+            <div th:if="${isFrozen} == '0'">
+                <div th:if="${fromPageIndex} == '1'">
+                    <div class="bad-device-list-item-btn">
+                        <div th:if="${status} == '0'">
+                            <button class="btn btn-sm" data-toggle="modal" data-target="#backbadmodal" th:attr="data-batchcode=${entry.batchCode}">转<!--服务站-->不良品库</button>
+                        </div>
+                        <div th:unless="${status} == '0'">
+                            <button class="btn btn-sm" data-toggle="modal" data-target="#backgoodmodal" th:attr="data-batchcode=${entry.batchCode}">转良品库</button>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>

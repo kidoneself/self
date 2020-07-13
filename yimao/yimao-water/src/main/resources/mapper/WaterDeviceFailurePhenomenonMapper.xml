@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.water.mapper.WaterDeviceFailurePhenomenonMapper">
+
+    <insert id="batchSave" parameterType="java.util.List">
+        insert into
+        waterdevice_failure_phenomenon
+        (parts_id,parts_name,fault_type_id,fault_type_name,work_code,work_order_index,create_time,create_user,del_status,id_status)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.partsId},
+            #{item.partsName},
+            #{item.faultTypeId},
+            #{item.faultTypeName},
+            #{item.workCode},
+            #{item.workOrderIndex},
+            #{item.createTime},
+            #{item.createUser},
+            'N',
+            'Y'
+            )
+        </foreach>
+    </insert>
+</mapper>

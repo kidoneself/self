@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.system.mapper.BusinessProfileDetailMapper">
+    <insert id="batchInsert" parameterType="java.util.List">
+        insert into t_business_profile_detail (
+        business_profile_id,
+        service_name,
+        sales_total,
+        service_count,
+        create_time
+        )
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.businessProfileId},
+            #{item.serviceName},
+            #{item.salesTotal},
+            #{item.serviceCount},
+            #{item.createTime}
+            )
+        </foreach>
+    </insert>
+    <select id="selectByDate" resultType="com.yimao.cloud.pojo.dto.system.BusinessProfileDetailDTO">
+        SELECT service_name as serviceName ,sum(sales_total) as salesTotal,SUM(service_count) as serviceCount from
+        t_business_profile_detail
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="sign == 1">
+                and create_time > DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+            </if>
+            <if test="sign == 2">
+                and create_time > DATE_SUB(CURDATE(), INTERVAL 1 WEEK)
+            </if>
+            <if test="sign == 3">
+                and create_time > DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
+            </if>
+        </trim>
+        GROUP BY service_name
+    </select>
+</mapper>

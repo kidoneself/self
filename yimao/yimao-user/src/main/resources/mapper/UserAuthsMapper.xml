@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.user.mapper.UserAuthsMapper">
+
+    <update id="updateUserId">
+        update user_auths set user_id = #{newUserId} where user_id = #{oldUserId}
+    </update>
+
+    <select id="listUserIdByUnionid" resultType="java.lang.Integer">
+        select distinct user_id from user_auths where identifier = #{unionid} and identity_type in (1, 2, 4, 5)
+    </select>
+
+    <select id="selectByOpenid" resultType="com.yimao.cloud.user.po.UserAuths">
+        select
+            id,
+            user_id as userId,
+            identifier,
+            identifier_unique as identifierUnique
+        from
+            user_auths
+        where
+            identifier_unique = #{openid} and identity_type = #{identityType}
+        limit 1
+    </select>
+
+    <select id="listByUserId" resultType="com.yimao.cloud.user.po.UserAuths">
+        select
+            id,
+            identity_type as identityType,
+            identifier,
+            identifier_unique as identifierUnique
+        from
+            user_auths
+        where
+            user_id = #{userId}
+        <if test="identityType != null">
+            and identity_type = #{identityType}
+        </if>
+    </select>
+
+    <select id="selectUnionidByUserId" resultType="java.lang.String">
+        select
+            DISTINCT
+            identifier
+        from
+            user_auths
+        where
+            user_id = #{userId} and identity_type in (1, 2, 4, 5)
+    </select>
+
+    <select id="queryUserAuthsByUserId" resultType="com.yimao.cloud.user.po.UserAuths">
+        select
+            id,
+            user_id as userId,
+            identity_type as identityType,
+            identifier,
+            identifier_unique as identifierUnique
+        from
+            user_auths
+        where
+            user_id = #{userId} and identity_type in (1, 2, 4, 5)
+    </select>
+    <select id="selectIdByUserId" resultType="java.lang.Integer">
+        select id from user_auths where user_id = #{userId} and identity_type = #{identityType}
+    </select>
+
+</mapper>

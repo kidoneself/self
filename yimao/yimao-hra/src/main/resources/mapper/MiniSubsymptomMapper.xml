@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.yimao.cloud.hra.mapper.MiniSubsymptomMapper">
+
+    <select id="findSubsymptomList" parameterType="Map" resultType="com.yimao.cloud.hra.po.MiniSubsymptom">
+        SELECT sub.id AS id,
+        sub.result_id AS resultId,
+        sub.symptom_id AS symptomId,
+        sub.subsymptom_name AS subsymptomName,
+        sub.create_time AS createTime
+        FROM
+        healthy_subsymptom sub
+        WHERE
+        sub.symptom_id = #{symptomId}
+    </select>
+
+    <select id="findListByResultId" resultType="com.yimao.cloud.hra.po.MiniSubsymptom">
+        SELECT sub.id AS id,
+        sub.result_id AS resultId,
+        sub.symptom_id AS symptomId,
+        sub.subsymptom_name AS subsymptomName,
+        sub.create_time AS createTime
+        FROM
+        healthy_subsymptom sub
+        WHERE
+        sub.result_id = #{resultId}
+    </select>
+
+    <!--查询热门搜索 -->
+    <select id="findHotList" resultType="com.yimao.cloud.pojo.dto.hra.MiniSubsymptomDTO">
+        SELECT sub.id AS id,
+        sub.result_id AS resultId,
+        sub.hot_flag AS hotFlag,
+        sub.symptom_id AS symptomId,
+        sub.subsymptom_name AS subsymptomName,
+        sub.create_time AS createTime
+        FROM
+        healthy_subsymptom sub
+        WHERE
+        sub.hot_flag = #{flag}
+    </select>
+
+
+    <select id="getSearchResult" parameterType="Map" resultType="com.yimao.cloud.hra.po.MiniSubsymptom">
+          SELECT sub.id AS id,
+            sub.result_id AS resultId,
+            sub.hot_flag AS hotFlag,
+            sub.symptom_id AS symptomId,
+            sub.subsymptom_name AS subsymptomName,
+            sub.create_time AS createTime
+          FROM
+            healthy_subsymptom sub
+          WHERE
+            sub.subsymptom_name = #{keyWords}
+      UNION ALL
+          SELECT sub.id AS id,
+            sub.result_id AS resultId,
+            sub.hot_flag AS hotFlag,
+            sub.symptom_id AS symptomId,
+            sub.subsymptom_name AS subsymptomName,
+            sub.create_time AS createTime
+          FROM
+            healthy_subsymptom sub
+          LIMIT 1
+    </select>
+
+    <select id="findListBySymId" parameterType="Long" resultType="com.yimao.cloud.hra.po.MiniSubsymptom">
+        SELECT sub.id AS id,
+        sub.result_id AS resultId,
+        sub.symptom_id AS symptomId,
+        sub.subsymptom_name AS subsymptomName,
+        sub.create_time AS createTime
+        FROM
+        healthy_subsymptom sub
+        WHERE
+        sub.symptom_id = #{symptomId}
+    </select>
+
+
+</mapper>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.hra.mapper.HraFlowRecordMapper">
+
+    <!--根据设备id和体检卡id查询是否有体检报告,return openId-->
+    <select id="hasReportByDeviceAndTicket" resultType="java.util.HashMap">
+    select
+    identifier_unique as openId
+    from  hra_report hr
+    inner join hra_ticket ht on hr.ticket_no = ht.ticket_no
+    inner join t_user_auths tua on ht.user_id = tua.user_id
+    where hr.device_id = #{deviceId} and
+    hr.ticket_no= #{ticketNo} and
+    tua.identity_type='1'
+    </select>
+</mapper>

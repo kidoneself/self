@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-cn">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="format-detection" content="telephone=no"/>
+    <title>我的申请</title>
+    <!-- zui -->
+    <link rel="stylesheet" href="/css/zui/zui.min.css">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/stock.css">
+    <link rel="stylesheet" href="/css/icon/iconfont.css">
+    <style type="text/css">
+        .font-blod {
+            font-weight: bold;
+        }
+
+        .container {
+            background-color: #f2f2f2;
+        }
+
+        .switch-panel {
+            height: 4rem;
+            background-color: #edf1f4;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .switch-panel li {
+            width: 50%;
+            height: 100%;
+            border: none;
+        }
+
+        .switch-panel li a {
+            color: #707070 !important;
+            font-size: 1.4rem;
+            text-align: center;
+            height: 100%;
+            border: none !important;
+            border-bottom: 1px solid #ddd !important;
+            line-height: 2.8rem;
+        }
+
+        .switch-panel li a, .switch-panel li a:hover, .switch-panel li a:focus {
+            background-color: rgba(0, 0, 0, 0) !important;
+            border: none;
+        }
+
+        .switch-panel li.active a {
+            border-bottom: 1px solid #009fe8 !important;
+        }
+
+        .nohis-tip-con {
+            text-align: center;
+            margin-top: 3.2rem;
+        }
+
+        .nohis-tip {
+            color: #aaa;
+            font-size: 1.4rem;
+        }
+
+        .apply-list {
+            background-color: #f2f2f2;
+            margin-bottom: 2rem;
+            height: 100%;
+        }
+
+        .apply-list-item {
+            background-color: #fafafa;
+            display: flex;
+            color: #707070;
+            justify-content: space-around;
+            flex-direction: column;
+            margin-bottom: 1rem;
+            margin-left: 0px;
+            padding-left: 2rem;
+        }
+
+        .apply-list-item-time {
+            font-size: 1.4rem;
+            color: #707070;
+            padding-top: 1rem;
+            display: flex;
+            justify-content: space-between;
+            padding-right: 2rem;
+        }
+
+        .stock-list {
+            background-color: #fafafa;
+            margin-bottom: 30px;
+            margin-top: 10px;
+            margin-right: 2rem;
+        }
+
+        .stock-list p span {
+            margin-right: 10px;
+            word-wrap: break-word;
+            word-break: break-all;
+        }
+
+        .stock-list-item {
+            height: 4.8rem;
+            background-color: #fafafa;
+            display: flex;
+            vertical-align: middle;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+            color: #707070;
+            justify-content: flex-end;
+            padding-right: 2rem;
+        }
+
+        .stock-list-item span:first-child {
+            flex: 1;
+            font-size: 1.6rem;
+        }
+
+        .stock-list-item span:nth-child(2) {
+            font-size: 1.6rem;
+        }
+
+        .stock-list .stock-list-item:last-child {
+            border-bottom: none;
+        }
+
+        .stock-list p span.apply-num {
+            float: right
+        }
+
+        .stock-result {
+            height: 4.8rem;
+            background-color: #fafafa;
+            display: flex;
+            vertical-align: middle;
+            align-items: center;
+            color: #707070;
+            justify-content: space-between;
+            padding-right: 2rem;
+            font-size: 1.4rem;
+        }
+
+        .badge-green {
+            background-color: #95bd27;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+
+        .badge-red {
+            background-color: #f05a5a;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+
+        .badge-blue {
+            background-color: #3ca4fd;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+
+        .badge-gray {
+            background-color: #999;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+
+        .stock-result .btn {
+            background-color: #0074bc;
+            color: #fff;
+            font-size: 1.4rem;
+            text-shadow: none;
+            height: 2.5rem;
+            line-height: 1.25rem;
+        }
+    </style>
+</head>
+<body>
+<div th:include="header :: header"></div>
+<div class="container pl-0 pr-0">
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs switch-panel">
+        <li class="active"><a href="#device" data-toggle="tab">待审核</a></li>
+        <li><a href="#profile" data-toggle="tab">已审核</a></li>
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+        <div class="tab-pane active" id="device">
+            <div th:if="${#strings.isEmpty(applyInList)}">
+                <div class="nohis-tip-con">
+                    <span class="nohis-tip">暂无待审核记录</span>
+                </div>
+            </div>
+            <div class="apply-list">
+                <div th:if="${not #strings.isEmpty(applyInList)}">
+                    <div th:each="entry:${applyInList}">
+                        <div class="apply-list-item">
+                            <div class="apply-list-item-time">
+                                <span class="font-blod" th:text="'申请时间:'+${entry.applyTime}"></span>
+                                <span th:text="'被申请人:'+${entry.allotFromName}"></span>
+                            </div>
+                            <!--物料类型 0 设备 1耗材-->
+                            <div th:if="${entry.materielType == '0'}">
+                                <div class="stock-list">
+                                    <div class="stock-list-item">
+                                        <!--<c:forEach var="applyDetail" items="${entry.stockList}">-->
+                                            <span th:each="applyDetail:${entry.stockList}">
+                                                <span th:text="${applyDetail.code}"></span>
+                                                <span th:text="${applyDetail.usableNum}+${applyDetail.unitName}"></span>
+                                            </span>
+                                        <!--</c:forEach>-->
+                                    </div>
+                                </div>
+                            </div>
+                            <div th:unless="${entry.materielType == '0'}">
+                                <div class="stock-list">
+                                    <div th:each="applyDetail:${entry.stockList}">
+                                        <p><span th:text="'耗材分类:'+${applyDetail.materielTypeName}"></span></p>
+                                        <p><span th:text="'耗材名称:'+${applyDetail.name}"></span>
+                                            <span class="apply-num"
+                                                  th:text="${applyDetail.usableNum}+${applyDetail.unitName}"></span></p>
+                                        <p><span th:text="'适用机型:'+${applyDetail.fitTypeName}"></span></p>
+                                    </div>
+                                    <!-- <c:forEach var="applyDetail" items="${entry.stockList}">
+
+                                     </c:forEach>-->
+                                </div>
+                            </div>
+                            <!--   <c:choose>
+                                   <c:when test="${entry.materielType == '0'}">
+
+                                   </c:when>
+                                   <c:otherwise>
+
+                                   </c:otherwise>
+                               </c:choose>-->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane" id="profile">
+            <div th:if="${#strings.isEmpty(applyEdList)}">
+                <div class="nohis-tip-con">
+                    <span class="nohis-tip">暂无已审核记录</span>
+                </div>
+            </div>
+            <div class="apply-list">
+                <!-- <c:if test="${!empty applyEdList}">-->
+                <div th:if="${not #strings.isEmpty(applyEdList)}">
+                    <div th:each="entry:${applyEdList}">
+                        <!-- <c:forEach var="entry" items="${applyEdList}">-->
+                        <div class="apply-list-item">
+                            <div class="apply-list-item-time">
+                                <span class="font-blod" th:text="'申请时间:'+${entry.applyTime}"></span>
+                                <span th:text="'被申请人:'+${entry.allotFromName}"></span>
+                            </div>
+                            <!--<c:set value="0" var="count" />-->
+                            <!--<span th:with="count = 0"></span>-->
+                            <!--物料类型 0 设备 1耗材-->
+                            <div th:if="${entry.materielType} == '0'">
+                                <!--<c:choose>-->
+                                <!-- <c:when test="${entry.materielType == '0'}">-->
+                                <div class="stock-list">
+                                    <div class="stock-list-item">
+                                        <span th:each="applyDetail:${entry.stockList}">
+                                            <span th:text="${applyDetail.code}"></span>
+                                            <span th:text="${applyDetail.usableNum}+${applyDetail.unitName}"></span>
+                                            <!--<c:set value="${count +applyDetail.remainingNum}" var="count"/>-->
+                                            <!-- <span th:with="count=${count + applyDetail.remainingNum}"></span>-->
+                                            <!-- </c:forEach>-->
+                                        </span>
+                                    </div>
+                                </div>
+                                <!-- </c:when>-->
+                                <div th:if="${entry.materielType} != '0'">
+                                    <!-- <c:otherwise>-->
+                                    <div class="stock-list">
+                                        <div th:each="applyDetail:${entry.stockList}">
+                                            <!--<c:forEach var="applyDetail" items="${entry.stockList}">-->
+                                            <p><span th:text="'耗材分类:'+${applyDetail.materielTypeName}"></span></p>
+                                            <p>
+                                                <span th:text="'耗材名称:'+${applyDetail.name}"></span>
+                                                <span class="apply-num" th:text="${applyDetail.usableNum}+${applyDetail.unitName}"></span>
+                                                <!--<c:set value="${count +applyDetail.remainingNum}" var="count"/>-->
+                                                <span th:with="count=${count + applyDetail.remainingNum}"></span>
+                                            </p>
+                                            <p><span th:text="'适用机型:'+${applyDetail.fitTypeName}"></span></p>
+                                            <!--</c:forEach>-->
+                                        </div>
+                                    </div>
+                                    <!--</c:otherwise>-->
+                                </div>
+
+                                <!-- </c:choose>-->
+                            </div>
+                            <div class="stock-result">
+                                <!-- 申请/审核 状态  ( 1待审核 2拒绝 3同意 4已入库 5 审核失败)-->
+                                <span>审核结果:
+                                                    <span th:switch="${entry.applyStatus}" >
+                                                        <span th:case="2">
+                                                            <span class="badge badge-red"  th:text="${entry.applyStatusName}" />
+                                                        </span>
+                                                         <span th:case="5">
+                                                            <span class="badge badge-red"  th:text="${entry.applyStatusName}" />
+                                                            <span class="badge badge-green" th:text="${entry.applyStatusName}" />
+                                                        </span>
+                                                        <span th:case="1">
+                                                            <span class="badge badge-green" th:text="${entry.applyStatusName}" />
+                                                        </span>
+                                                        <span th:case="3">
+                                                            <span class="badge badge-green" >同意</span>
+                                                            <button class="btn scan-instock" th:attr="data-id=${entry.id},data-allotFromId=${entry.allotFromId},data-count=${entry.remainingTotal}">扫描入库</button>
+
+                                                        </span>
+                                                        <span th:case="4">
+                                                           <span class="badge badge-green" >同意</span>
+                                                        </span>
+                                                    </span>
+                                 </span>
+                            </div>
+                        </div>
+                        <!-- </c:forEach>-->
+                    </div>
+                </div>
+                <!--  </c:if>-->
+            </div>
+        </div>
+    </div>
+    <form class="hide-form-tranc" method="post" action="./scanInstock">
+        <input name="serielNo" type="text" value="" readonly/>
+        <input name="inputFromId" type="text" value="" readonly/>
+        <input name="count" type="text" value="" readonly/>
+        <input name="token" type="text"  th:attr="value=${token}"  readonly />
+    </form>
+</div>
+
+</body>
+<script type="text/javascript">
+    $(function () {
+        //隐藏form
+        $(".hide-form-tranc").hide();
+        updateTitle($('head title').text());
+        $('.scan-instock').click(function () {
+            $(".hide-form-tranc").find("input[name=serielNo]").val($(this).data("id"));
+            $(".hide-form-tranc").find("input[name=inputFromId]").val($(this).data("allotfromid"));
+            $(".hide-form-tranc").find("input[name=count]").val($(this).data("count"));
+            $(".hide-form-tranc").submit();
+            //window.location.href="./scanInstock"
+        })
+    })
+</script>
+</html>
+

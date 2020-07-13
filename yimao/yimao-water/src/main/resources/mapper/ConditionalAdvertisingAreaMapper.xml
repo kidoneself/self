@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.water.mapper.ConditionalAdvertisingAreaMapper">
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        insert into conditional_advertising__area (
+        advertising_id,
+        area_id,
+        area_level,
+        area_name,
+        pid
+        )
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.advertisingId},
+            #{item.areaId},
+            #{item.areaLevel},
+            #{item.areaName},
+            #{item.pid}
+            )
+        </foreach>
+    </insert>
+
+    <select id="selectListByCondition" parameterType="java.lang.Integer" resultType="com.yimao.cloud.pojo.dto.water.ConditionalAdvertisingAreaDTO">
+        select
+        advertising_id as advertisingId,
+        area_id as areaId,
+        area_level as areaLevel,
+        area_name as areaName,
+        pid
+        from conditional_advertising__area caa
+        <where>
+            <if test="advertisingId != null">
+                caa.advertising_id = #{advertisingId}
+            </if>
+        </where>
+    </select>
+
+</mapper>

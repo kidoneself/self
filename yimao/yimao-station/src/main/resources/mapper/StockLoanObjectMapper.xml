@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.station.mapper.StockLoanObjectMapper">
+	<insert id="batchInsert">
+		insert into stock_loan_object (
+		stock_loan_apply_id, 
+		apply_type, 
+		company_id, 
+		company_name, 
+		station_id,
+		station_name,
+		station_master_name, 
+		station_master_phone
+		)
+		values
+		<foreach collection="list" item="item"
+			index="index" separator=",">
+			(
+			#{item.stockLoanApplyId}, 
+			#{item.applyType},
+			#{item.companyId}, 
+			#{item.companyName},
+			#{item.stationId},
+			#{item.stationName}, 
+			#{item.stationMasterName},
+			#{item.stationMasterPhone}
+			)
+		</foreach>	
+	</insert>
+
+</mapper>

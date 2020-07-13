@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.water.mapper.WaterDeviceReplaceRecordMapper">
+
+    <select id="selectPage" resultType="com.yimao.cloud.pojo.dto.water.WaterDeviceReplaceRecordDTO">
+        SELECT
+        id,
+        old_sn as oldSn,
+        new_sn as newSn,
+        old_iccid as oldIccid,
+        new_iccid as newIccid,
+        old_batch_code as oldBatchCode,
+        new_batch_code as newBatchCode,
+        device_model as deviceModel,
+        province,
+        city,
+        region,
+        creator,
+        create_time as createTime
+        FROM
+        water_device_replace_record
+        where 1=1
+        <if test="oldSn != null and oldSn != ''">
+            and old_sn like CONCAT('%',trim(#{oldSn}),'%')
+        </if>
+        <if test="newSn != null and newSn != ''">
+            and new_sn like CONCAT('%',trim(#{newSn}),'%')
+        </if>
+        <if test="oldIccid != null and oldIccid != ''">
+            and old_iccid like CONCAT('%',trim(#{oldIccid}),'%')
+        </if>
+        <if test="newIccid != null and newIccid != ''">
+            and new_iccid like CONCAT('%',trim(#{newIccid}),'%')
+        </if>
+        <if test="oldBatchCode != null and oldBatchCode != ''">
+            and old_batch_code like CONCAT('%',trim(#{oldBatchCode}),'%')
+        </if>
+        <if test="newBatchCode != null and newBatchCode != ''">
+            and new_batch_code like CONCAT('%',trim(#{newBatchCode}),'%')
+        </if>
+        <if test="deviceModel != null and deviceModel != ''">
+            and device_model = #{deviceModel}
+        </if>
+        <if test="province != null and province != ''">
+            and province = #{province}
+        </if>
+        <if test="city != null and city != ''">
+            and city = #{city}
+        </if>
+        <if test="region != null and region != ''">
+            and region = #{region}
+        </if>
+        order by create_time desc
+    </select>
+    <select id="export" resultType="com.yimao.cloud.pojo.export.water.DeviceReplaceRecordExport">
+        SELECT
+        old_sn as oldSn,
+        new_sn as newSn,
+        old_iccid as oldIccid,
+        new_iccid as newIccid,
+        old_batch_code as oldBatchCode,
+        new_batch_code as newBatchCode,
+        creator,
+        DATE_FORMAT(create_time,'%Y-%m-%d %H:%i:%s') as createTime
+        FROM
+        water_device_replace_record
+        where 1=1
+        <if test="oldSn != null and oldSn != ''">
+            and old_sn like CONCAT('%',trim(#{oldSn}),'%')
+        </if>
+        <if test="newSn != null and newSn != ''">
+            and new_sn like CONCAT('%',trim(#{newSn}),'%')
+        </if>
+        <if test="oldIccid != null and oldIccid != ''">
+            and old_iccid like CONCAT('%',trim(#{oldIccid}),'%')
+        </if>
+        <if test="newIccid != null and newIccid != ''">
+            and new_iccid like CONCAT('%',trim(#{newIccid}),'%')
+        </if>
+        <if test="oldBatchCode != null and oldBatchCode != ''">
+            and old_batch_code like CONCAT('%',trim(#{oldBatchCode}),'%')
+        </if>
+        <if test="newBatchCode != null and newBatchCode != ''">
+            and new_batch_code like CONCAT('%',trim(#{newBatchCode}),'%')
+        </if>
+        <if test="deviceModel != null and deviceModel != ''">
+            and device_model = #{deviceModel}
+        </if>
+        <if test="province != null and province != ''">
+            and province = #{province}
+        </if>
+        <if test="city != null and city != ''">
+            and city = #{city}
+        </if>
+        <if test="region != null and region != ''">
+            and region = #{region}
+        </if>
+        order by create_time desc
+    </select>
+    <select id="selectOneByNewSn" resultType="com.yimao.cloud.water.po.WaterDeviceReplaceRecord">
+        SELECT
+            id,
+            create_time as createTime
+        FROM
+            water_device_replace_record
+        where
+            new_sn = #{newSn}
+        order by create_time desc
+        limit 1
+    </select>
+
+</mapper>

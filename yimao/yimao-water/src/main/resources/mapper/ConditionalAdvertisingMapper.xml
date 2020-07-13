@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.water.mapper.ConditionalAdvertisingMapper">
+
+    <sql id="allColumns">
+        ca.id,
+        ca.platform,
+        ca.own_adslot_id AS ownAdslotId,
+        ca.adslot_id AS adslotId,
+        ca.areas,
+        ca.models,
+        ca.connection_type AS connectionType,
+        ca.after_connection_type AS afterConnectionType,
+        ca.effective_begin_time AS effectiveBeginTime,
+        ca.effective_end_time AS effectiveEndTime,
+        ca.effective,
+        ca.forbidden,
+        ca.screen_location AS screenLocation,
+        ca.advertising_type AS advertisingType,
+        ca.device_count as deviceCount,
+        ca.device_group as deviceGroup,
+        ca.creator,
+        ca.create_time as createTime,
+        ca.updater,
+        ca.update_time as updateTime
+    </sql>
+
+    <select id="pageQueryList" parameterType="java.lang.Integer"
+            resultType="com.yimao.cloud.pojo.dto.water.ConditionalAdvertisingDTO">
+        SELECT
+        <include refid="allColumns"/>
+        FROM
+        conditional_advertising ca
+        <where>
+            ca.deleted = 0 and <![CDATA[ ca.platform <> 0 ]]>
+            <if test="platform != null">
+                and ca.platform = #{platform}
+            </if>
+            order by ca.create_time desc
+        </where>
+    </select>
+
+
+    <select id="pageOwnList"
+            resultType="com.yimao.cloud.pojo.dto.water.ConditionalAdvertisingDTO">
+        SELECT
+        ca.id,
+        ca.platform,
+        ca.screen_location as screenLocation,
+        ca.own_adslot_id AS ownAdslotId,
+        ca.effective_end_time AS effectiveEndTime,
+        ca.effective_begin_time AS effectiveBeginTime,
+        ca.create_time,
+        ca.device_count as deviceCount,
+        ca.device_group as deviceGroup,
+        ca.forbidden,
+        ad.advertisers,
+        ad.name as materialsName,
+        ad.id as materialsId,
+        ca.create_time as createTime
+        FROM
+        conditional_advertising ca left join ad_materials ad on ca.adslot_id=ad.id
+        <where>
+            ca.deleted = 0 and ca.platform = 0
+            <if test="screenLocation != null and screenLocation !='' ">
+                and ca.screen_Location = #{screenLocation}
+            </if>
+            <if test="startTime != null  ">
+                and ca.create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null  ">
+                and ca.create_time &lt;= #{endTime}
+            </if>
+            <if test="invalidTime != null  ">
+                and (ca.effective_end_time &lt; #{invalidTime} or ca.forbidden = 1)
+            </if>
+            <if test="effectiveTime != null  ">
+                and ca.effective_end_time &gt;= #{effectiveTime}
+                and ca.forbidden = 0
+            </if>
+            <if test="name != null and name !='' ">
+                and ad.name like CONCAT('%',trim(#{name}),'%')
+            </if>
+            order by ca.create_time desc
+        </where>
+    </select>
+
+
+    <!--根据水机设备信息查询该水机广告位配置信息集合-->
+    <select id="listByDeviceInfo" resultType="com.yimao.cloud.pojo.dto.water.ConditionalAdvertisingDTO">
+        SELECT
+        DISTINCT
+        ca.id,
+        ca.platform,
+        ca.own_adslot_id AS ownAdslotId,
+        ca.adslot_id AS adslotId,
+        ca.areas,
+        ca.models,
+        ca.connection_type AS connectionType,
+        ca.after_connection_type AS afterConnectionType,
+        ca.effective_begin_time AS effectiveBeginTime,
+        ca.effective_end_time AS effectiveEndTime,
+        ca.screen_location AS screenLocation,
+        ca.advertising_type AS advertisingType,
+        ca.device_count as deviceCount,
+        ad.duration
+        FROM
+        conditional_advertising ca
+        LEFT JOIN conditional_advertising__area caa ON ca.id = caa.advertising_id
+        LEFT JOIN conditional_advertising__model cam ON ca.id = cam.advertising_id
+        LEFT JOIN ad_adslot ad on ca.own_adslot_id= ad.adslot_id
+        WHERE
+        ca.deleted = 0 AND ca.forbidden = 0 AND ca.advertising_type = 1 and ad.forbidden=0 and ad.deleted = 0
+        AND (ca.areas IS NULL OR caa.area_id IN
+        <foreach collection="areaIds" index="index" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>)
+        AND (ca.models IS NULL OR cam.model = #{model})
+        AND (ca.connection_type IS NULL OR ca.connection_type = #{connectionType})
+        AND (ca.device_group IS NULL OR ca.device_group = #{deviceGroup})
+        AND (ca.location_tab IS NULL OR ca.location_tab = #{locationTab})
+        <if test="currentTime != null">
+            AND ca.effective_begin_time &lt;= #{currentTime}
+            AND ca.effective_end_time &gt;= #{currentTime}
+        </if>
+        <if test="adSet != null and adSet.size() > 0">
+            AND ca.own_adslot_id not in
+            <foreach collection="adSet" index="index" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <!--查询本次配置信息和现有配置信息是否有交集。-->
+    <select id="checkAdvertisingExists" resultType="com.yimao.cloud.pojo.dto.water.FilterAdvertisingDTO">
+        SELECT ca.id,
+        ca.platform,
+        ca.own_adslot_id AS ownAdslotId,
+        ca.adslot_id AS adslotId,
+        ca.areas,
+        ca.models,
+        ca.connection_type AS connectionType,
+        ca.after_connection_type AS afterConnectionType,
+        ca.effective_begin_time AS effectiveBeginTime,
+        ca.effective_end_time AS effectiveEndTime,
+        ca.screen_location AS screenLocation,
+        ca.advertising_type AS advertisingType,
+        ca.device_group as deviceGroup,
+        cam.model,
+        caa.area_id as areaId,
+        caa.area_name as areaName
+        FROM
+        conditional_advertising ca
+        LEFT JOIN conditional_advertising__area caa ON ca.id = caa.advertising_id
+        LEFT JOIN conditional_advertising__model cam ON ca.id = cam.advertising_id
+        WHERE
+        ca.deleted = 0 AND ca.forbidden = 0 AND ca.advertising_type = 1
+        AND ca.effective_end_time &gt;= now()
+        <if test="areaIds != null and areaIds.size() > 0">
+            AND
+            CASE WHEN ca.areas IS NOT NULL THEN caa.area_id IN
+            <foreach collection="areaIds" index="index" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+            ELSE
+            1 = 1
+            END
+        </if>
+        <if test="models != null and models.size() > 0">
+            AND
+            CASE WHEN ca.models IS NOT NULL THEN cam.model IN
+            <foreach collection="models" index="index" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+            ELSE
+            1 = 1
+            END
+        </if>
+        <if test="id != null">
+            AND <![CDATA[ ca.id <> #{id} ]]>
+        </if>
+        <if test="ownAdslotId != null and ownAdslotId != ''">
+            AND ca.own_adslot_id = #{ownAdslotId}
+        </if>
+        <if test="deviceGroup != null">
+            AND
+            CASE WHEN ca.device_group IS NOT NULL THEN ca.device_group = #{deviceGroup}
+            ELSE
+            1 = 1
+            END
+        </if>
+        <if test="screenLocation != null">
+            AND ca.screen_location = #{screenLocation}
+        </if>
+        <if test="connectionType != null">
+            AND
+            CASE WHEN ca.connection_type IS NOT NULL THEN ca.connection_type = #{connectionType}
+            ELSE
+            1 = 1
+            END
+        </if>
+        <if test="afterConnectionType != null">
+            AND
+            CASE WHEN ca.after_connection_type IS NOT NULL THEN ca.after_connection_type = #{afterConnectionType}
+            ELSE
+            1 = 1
+            END
+        </if>
+        <if test="locationTab != null and locationTab != ''">
+            AND ca.location_tab = #{locationTab}
+        </if>
+        <if test="effectiveBeginTime != null and effectiveEndTime != null">
+            AND ca.effective_begin_time &lt;= #{effectiveEndTime}
+            AND ca.effective_end_time &gt;= #{effectiveBeginTime}
+        </if>
+    </select>
+
+
+    <select id="selectAdslotId" resultType="java.lang.String">
+        SELECT
+        ca.own_adslot_id AS ownAdslotId
+        FROM
+        conditional_advertising ca
+        LEFT JOIN conditional_advertising__area caa ON ca.id = caa.advertising_id
+        LEFT JOIN conditional_advertising__model cam ON ca.id = cam.advertising_id
+        WHERE
+        ca.deleted = 0 AND ca.forbidden = 0
+        <if test="areaIds != null and areaIds.size() > 0">
+            AND
+            CASE WHEN ca.areas IS NOT NULL THEN caa.area_id IN
+            <foreach collection="areaIds" index="index" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+            ELSE
+            1 = 1
+            END
+        </if>
+        <if test="models != null and models.size() > 0">
+            AND
+            CASE WHEN ca.models IS NOT NULL THEN cam.model IN
+            <foreach collection="models" index="index" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+            ELSE
+            1 = 1
+            END
+        </if>
+        <if test="connectionType != null">
+            AND
+            CASE WHEN ca.connection_type IS NOT NULL THEN ca.connection_type = #{connectionType}
+            ELSE
+            1 = 1
+            END
+        </if>
+        <if test="effectiveBeginTime != null and effectiveEndTime != null">
+            AND ca.effective_begin_time &lt;= #{effectiveEndTime}
+            AND ca.effective_end_time &gt;= #{effectiveBeginTime}
+        </if>
+    </select>
+
+
+    <select id="checkAdvertisingId" resultType="java.lang.Boolean">
+        select exists(
+        SELECT ca.id
+        FROM
+        conditional_advertising ca
+        LEFT JOIN conditional_advertising__area caa ON ca.id = caa.advertising_id
+        LEFT JOIN conditional_advertising__model cam ON ca.id = cam.advertising_id
+        LEFT JOIN precision_advertising pa ON ca.id = pa.advertising_id
+        WHERE
+        ca.deleted = 0 AND ca.forbidden = 0 AND pa.sn_code=#{snCode}
+        AND ca.effective_end_time &gt;= now()
+        <if test="areaIds != null and areaIds.size() > 0">
+            AND
+            CASE WHEN ca.areas IS NOT NULL THEN caa.area_id IN
+            <foreach collection="areaIds" index="index" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+            ELSE
+            1 = 1
+            END
+        </if>
+        <if test="models != null and models.size() > 0">
+            AND
+            CASE WHEN ca.models IS NOT NULL THEN cam.model IN
+            <foreach collection="models" index="index" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+            ELSE
+            1 = 1
+            END
+        </if>
+        <if test="id != null">
+            AND <![CDATA[ ca.id <> #{id} ]]>
+        </if>
+        <if test="ownAdslotId != null and ownAdslotId != ''">
+            AND ca.own_adslot_id = #{ownAdslotId}
+        </if>
+        <if test="screenLocation != null">
+            AND ca.screen_location = #{screenLocation}
+        </if>
+        <if test="deviceGroup != null">
+            AND
+            CASE WHEN ca.device_group IS NOT NULL THEN ca.device_group = #{deviceGroup}
+            ELSE
+            1 = 1
+            END
+        </if>
+        <if test="connectionType != null">
+            AND
+            CASE WHEN ca.connection_type IS NOT NULL THEN ca.connection_type = #{connectionType}
+            ELSE
+            1 = 1
+            END
+        </if>
+        <if test="afterConnectionType != null">
+            AND
+            CASE WHEN ca.after_connection_type IS NOT NULL THEN ca.after_connection_type = #{afterConnectionType}
+            ELSE
+            1 = 1
+            END
+        </if>
+        <if test="locationTab != null and locationTab != ''">
+            AND ca.location_tab = #{locationTab}
+        </if>
+        <if test="effectiveBeginTime != null and effectiveEndTime != null">
+            AND ca.effective_begin_time &lt;= #{effectiveEndTime}
+            AND ca.effective_end_time &gt;= #{effectiveBeginTime}
+        </if>
+        )
+    </select>
+
+    <!--根据水机设备信息查询该水机广告位精准投放配置信息集合-->
+    <select id="listPrecisionByDeviceInfo" resultType="com.yimao.cloud.pojo.dto.water.ConditionalAdvertisingDTO">
+        SELECT
+        distinct
+        ca.id,
+        ca.platform,
+        ca.own_adslot_id AS ownAdslotId,
+        ca.adslot_id AS adslotId,
+        ca.connection_type AS connectionType,
+        ca.after_connection_type AS afterConnectionType,
+        ca.effective_begin_time AS effectiveBeginTime,
+        ca.effective_end_time AS effectiveEndTime,
+        ca.effective,
+        ca.forbidden,
+        ca.screen_location AS screenLocation,
+        ca.advertising_type AS advertisingType,
+        ad.duration
+        FROM
+        conditional_advertising ca
+        LEFT JOIN precision_advertising pa on ca.id= pa.advertising_id
+        LEFT JOIN ad_adslot ad on ca.own_adslot_id= ad.adslot_id
+        WHERE
+        ca.deleted = 0 AND ca.forbidden = 0 AND ca.advertising_type = 2 and ad.forbidden=0 and ad.deleted = 0
+        AND (ca.connection_type IS NULL OR ca.connection_type = #{connectionType})
+        AND (ca.device_group IS NULL OR ca.device_group = #{deviceGroup})
+        AND (ca.location_tab IS NULL OR ca.location_tab = #{locationTab})
+        <if test="snCode != null and snCode != ''">
+            AND pa.sn_code = #{snCode}
+        </if>
+        <if test="currentTime != null">
+            AND ca.effective_begin_time &lt;= #{currentTime}
+            AND ca.effective_end_time &gt;= #{currentTime}
+        </if>
+    </select>
+
+    <!--判断是否有第三方平台是否有绑定投放策略-->
+    <select id="selectAdvertsing" resultType="java.lang.Boolean">
+        SELECT EXISTS (
+        SELECT
+        ca.id
+        FROM
+        conditional_advertising ca
+        WHERE
+        ca.deleted = 0
+        AND ca.forbidden = 0
+        AND ca.effective_end_time &gt;= now()
+        <if test="platformId != null">
+            and ca.platform =#{platformId}
+        </if>
+        <if test="ownAdslotId != null and ownAdslotId != ''">
+            and ca.own_adslot_id =#{ownAdslotId}
+        </if>
+        <if test="adslotId != null and adslotId != ''">
+            and ca.adslot_id =#{adslotId}
+        </if>
+        )
+    </select>
+
+
+    <update id="update" parameterType="com.yimao.cloud.water.po.ConditionalAdvertising">
+        UPDATE conditional_advertising
+        <set>
+            connection_type = #{connectionType},
+            models= #{models},
+            areas= #{areas},
+            device_group = #{deviceGroup},
+            <if test="ownAdslotId != null and ownAdslotId != '' ">
+                own_adslot_id = #{ownAdslotId},
+            </if>
+            <if test="adslotId != null and adslotId != ''">
+                adslot_id = #{adslotId},
+            </if>
+            <if test="deviceCount != null">
+                device_count = #{deviceCount},
+            </if>
+            <if test="screenLocation != null">
+                screen_location = #{screenLocation},
+            </if>
+
+            <if test="platform != null">
+                platform = #{platform},
+            </if>
+            <if test="effectiveBeginTime != null">
+                effective_begin_time = #{effectiveBeginTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="effectiveEndTime != null">
+                effective_end_time = #{effectiveEndTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="afterConnectionType != null">
+                after_connection_type = #{afterConnectionType},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updater != null">
+                updater = #{updater}
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+
+</mapper>

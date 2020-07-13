@@ -1,0 +1,426 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.order.mapper.OrderDeliveryMapper">
+
+    <!-- 批量插入收货单 -->
+    <insert id="insertBatch" parameterType="java.util.List" >
+        insert into order_delivery
+        (order_id,
+		logistics_no,
+		logistics_company,
+		logistics_fee,
+		num,
+		weigh,
+		delivery_time,
+		pay_type,
+		remark,
+		create_time,
+		creator,
+		logistics_company_code,
+		box_num)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.orderId},
+            #{item.logisticsNo},
+            #{item.logisticsCompany},
+            #{item.logisticsFee},
+            #{item.num},
+            #{item.weigh},
+            #{item.deliveryTime},
+            #{item.payType},
+            #{item.remark},
+            #{item.createTime},
+            #{item.creator},
+            #{item.logisticsCompanyCode},
+            #{item.boxNum})
+        </foreach>
+    </insert>
+
+
+    <!--<select id="pageQueryList" parameterType="com.yimao.cloud.pojo.dto.order.DeliveryDTO" resultType="com.yimao.cloud.pojo.dto.order.DeliveryInfoDTO">
+        SELECT
+            os.id AS id,
+            os.main_order_id AS mainOrderId,
+            os.user_id AS userId,
+            os.`status` AS status,
+            os.sub_status AS subStatus,
+            osd.product_category_name AS productCategoryName,
+            osd.product_img AS productImg,
+            od.logistics_no AS logisticsNo,
+            od.num AS deliveryNum,
+            od.box_num AS boxNum,
+            od.delivery_time AS deliveryTime,
+            os.terminal AS terminal,
+            om.order_amount_fee AS orderAmountFee,
+            osd.addressee_name AS addresseeName,
+            osd.addressee_province AS addresseeProvince,
+            osd.addressee_city AS addresseeCity,
+            osd.addressee_region AS addresseeRegion,
+            osd.addressee_street AS addresseeStreet,
+            osd.station_name AS stationName
+        FROM
+            order_delivery od
+            LEFT JOIN order_sub os ON od.order_id = os.id
+            LEFT JOIN order_main om ON os.main_order_id = om.id
+            LEFT JOIN order_sub_detail osd ON osd.sub_order_id = od.order_id
+        <where>
+			os.deleted = 0
+			<if test="userId!=null  ">
+				and os.user_id =#{userId}
+			</if>
+			<if test="orderId != null  ">
+				and (os.id = #{orderId} or os.main_order_id=#{orderId} )
+			</if>
+			<if test="status!=null ">
+				and os.status = #{status}
+			</if>
+			<if test="logisticsNo!=null and logisticsNo!=''">
+				and od.logistics_no = #{logisticsNo}
+			</if>
+			<if test="receiver!=null and receiver!='' ">
+				and osd.addressee_name like CONCAT('%',trim(#{receiver}),'%')
+			</if>
+			<if test="terminal!=null and terminal!=''">
+				and os.terminal = #{terminal}
+			</if>
+			<if test="beginTime!=null ">
+				and od.delivery_time &gt;= #{beginTime}
+			</if>
+			<if test="endTime!=null  ">
+				and od.delivery_time &lt;= #{endTime}
+			</if>
+			 order by od.create_time desc
+		</where>
+    </select>-->
+
+    <select id="pageQueryList" parameterType="com.yimao.cloud.pojo.dto.order.DeliveryDTO" resultType="com.yimao.cloud.pojo.dto.order.DeliveryInfoDTO">
+        SELECT
+            os.id AS id,<!--子订单号 -->
+            os.main_order_id AS mainOrderId,<!--主订单号 -->
+            os.count AS count,<!--商品数量 -->
+            os.`status` AS status,
+            os.user_id AS userId,<!--下单用户id -->
+            os.pay_time AS payTime,<!--支付时间 -->
+            os.pay_terminal AS payTerminal,<!--支付端 -->
+            os.pay_type AS payType,<!--支付方式 -->
+            os.pay_status AS payStatus,<!--支付状态 -->
+            os.create_time AS createTime,<!--下单时间 -->
+            os.complete_time AS completeTime,<!--订单完成时间 -->
+            os.terminal AS terminal,<!--订单来源 -->
+            os.activity_type AS activityType,<!--产品活动类型 -->
+            os.trade_no AS tradeNo,<!--第三方支付流水号 -->
+            os.delivery_time AS deliveryTime,<!--发货时间 -->
+            osd.addressee_name AS addresseeName,<!--收货人 -->
+            osd.addressee_phone AS addresseePhone,<!--联系方式 -->
+            osd.addressee_province AS addresseeProvince,<!--收货人省 -->
+            osd.addressee_city AS addresseeCity,<!--收货人市 -->
+            osd.addressee_region AS addresseeRegion,<!--收货人区 -->
+            osd.addressee_street AS addresseeStreet,<!--收货人街道 -->
+            osd.product_img AS productImg,<!--产品封面图片 -->
+            osd.product_category_name AS productCategoryName,<!--产品类目名称 -->
+            os.fee AS orderAmountFee,<!--总金额 -->
+            od.logistics_no AS logisticsNo,<!--物流单号 -->
+            od.logistics_company AS logisticsCompany,<!--物流公司 -->
+            od.remark
+        FROM
+            order_sub os
+          INNER JOIN order_sub_detail osd ON osd.sub_order_id = os.id
+          LEFT JOIN order_delivery od ON os.id = od.order_id
+        <where>
+            os.deleted = '0'
+            and os.product_type = '1'
+            <if test="productCategoryIdKey != null">
+                and (osd.product_category_id = #{productCategoryIdKey} or osd.product_first_category_id =
+                #{productCategoryIdKey} or
+                osd.product_two_category_id = #{productCategoryIdKey})
+            </if>
+            <if test="orderId != null">
+                AND (os.id LIKE CONCAT('%',#{orderId},'%') OR os.main_order_id LIKE CONCAT('%',#{orderId},'%') )
+            </if>
+            <if test="userId != null and userId != '' ">
+                AND os.user_id =#{userId}
+            </if>
+            <if test="logisticsNo != null and logisticsNo != '' ">
+                AND od.logistics_no LIKE CONCAT('%',TRIM(#{logisticsNo}),'%')
+            </if>
+            <if test="receiver != null and receiver != '' ">
+                AND osd.addressee_name LIKE CONCAT('%',TRIM(#{receiver}),'%')
+            </if>
+            <if test="payBeginTime != null">
+                AND os.pay_time &gt;= #{payBeginTime}
+            </if>
+            <if test="payEndTime != null">
+                AND os.pay_time &lt;= #{payEndTime}
+            </if>
+            <if test="beginTime != null">
+                AND os.delivery_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                AND os.delivery_time &lt;= #{endTime}
+            </if>
+            <if test="deliveryBeginTime != null">
+                AND od.create_time &gt;= #{deliveryBeginTime}
+            </if>
+            <if test="deliveryEndTime != null">
+                AND od.create_time &lt;= #{deliveryEndTime}
+            </if>
+            <if test="addresseeProvince != null and  addresseeProvince != ''">
+                AND osd.addressee_province = #{addresseeProvince}
+            </if>
+            <if test="addresseeCity != null and  addresseeCity != ''">
+                AND osd.addressee_city = #{addresseeCity}
+            </if>
+            <if test="addresseeRegion != null and  addresseeRegion != ''">
+                AND osd.addressee_region = #{addresseeRegion}
+            </if>
+            <if test="status != null">
+                AND os.`status` =#{status}
+                <if test="status == 2">
+                    ORDER BY os.pay_time DESC
+                </if>
+                <if test="status == 3 or status == 4">
+                    ORDER BY os.delivery_time DESC
+                </if>
+            </if>
+        </where>
+    </select>
+
+	<select id="selectOrderDeliveryList" parameterType="com.yimao.cloud.pojo.dto.order.OrderDeliveryDTO" resultType="com.yimao.cloud.pojo.dto.order.OrderDeliveryDTO">
+		SELECT
+		od.id AS id,
+		od.order_id AS orderId,
+		od.remark AS remark,
+		od.logistics_no AS logisticsNo,
+		od.logistics_company AS logisticsCompany,
+		od.logistics_company_code AS logisticsCompanyCode,
+		od.logistics_fee AS logisticsFee,
+		od.num AS deliveryNum,
+		od.box_num AS boxNum,
+		od.weigh AS weigh,
+		od.pay_type AS payType,
+		od.create_time AS createTime,
+		od.creator AS creator,
+		od.delivery_time AS deliveryTime
+		FROM
+		order_delivery od
+		<where> 1=1
+			<if test="id!=null">
+				and od.id = #{id}
+			</if>
+			<if test="orderId != null">
+				and od.order_id = #{orderId}
+			</if>
+			order by od.create_time desc
+		</where>
+	</select>
+
+    <!--查询发货台账 -->
+    <select id="deliveryLedgerExport" parameterType="com.yimao.cloud.pojo.dto.order.DeliveryConditionDTO" resultType="com.yimao.cloud.pojo.dto.order.DeliveryLedgerExportDTO">
+      select
+        DATE_FORMAT(od.delivery_time,'%Y-%m-%d %H:%i:%s') as deliveryTime,
+        od.order_id AS orderId,
+        osd.sales_subject_company_name AS stationCompanyName,
+        od.logistics_company AS logisticsCompany,
+        od.logistics_no AS logisticsNo,
+        osd.addressee_phone AS addresseePhone,
+        osd.addressee_province AS addresseeProvince,
+        osd.addressee_city AS addresseeCity,
+        osd.addressee_region AS addresseeRegion,
+        osd.addressee_street AS addresseeStreet,
+        concat_ws('/', osd.addressee_province, osd.addressee_city, osd.addressee_region,osd.addressee_street) as
+        addressee,<!--收货人地址-->
+        osd.addressee_name AS addresseeName,
+        od.num,
+        od.box_num AS boxNum,
+        od.weigh AS weigh,
+        od.logistics_fee AS logisticsFee,
+        od.remark AS remark,
+        od.pay_type AS payType
+      from order_delivery od
+      inner join order_sub os on os.id = od.order_id
+      inner join order_sub_detail osd on od.order_id = osd.sub_order_id
+      where 1=1 and os.status = '3'
+      <if test="orderId != null and orderId != ''">
+        and od.order_id like concat('%',trim(#{orderId}),'%')
+      </if>
+      <if test="logisticsNo != null and logisticsNo != ''">
+        and od.logistics_no like concat('%',trim(#{logisticsNo}),'%')
+      </if>
+      <if test="startTime != null and startTime != ''">
+        and os.delivery_time &gt;= #{startTime}
+      </if>
+      <if test="endTime != null and endTime != ''">
+        and os.delivery_time &lt;= #{startTime}
+      </if>
+      <if test="addreessName != null and addreessName != ''">
+        and osd.addressee_name like concat(trim(#{addreessName}),'%')
+      </if>
+      order by od.delivery_time desc
+    </select>
+
+
+    <!--发货信息列表 -->
+    <select id="deliveryInfoExport" parameterType="com.yimao.cloud.pojo.dto.order.DeliveryConditionDTO" resultType="com.yimao.cloud.pojo.dto.order.DeliveryInfoExportDTO">
+      select
+        osd.sub_order_id as orderId,
+        osd.product_category_name as productCategoryName,
+        os.count,
+        osd.addressee_province AS addresseeProvince,
+        osd.addressee_city AS addresseeCity,
+        osd.addressee_region AS addresseeRegion,
+        osd.addressee_street AS addresseeStreet,
+        osd.addressee_name AS addresseeName,
+        osd.addressee_phone AS addresseePhone,
+        /*osd.station_company_name AS stationCompanyName,*/
+        osd.sales_subject_company_name AS stationCompanyName,
+        os.remark
+      from order_sub_detail osd
+      inner join order_sub os on osd.sub_order_id = os.id
+      where 1=1
+      and os.status = '3'
+      <if test="orderId != null and orderId != ''">
+        and osd.sub_order_id like concat('%',trim(#{orderId}),'%')
+      </if>
+      <if test="addreessName != null and addreessName != ''">
+        and osd.addressee_name like concat(trim(#{addreessName}),'%')
+      </if>
+      order by osd.create_time desc
+    </select>
+
+
+    <select id="queryDeliveryList" parameterType="com.yimao.cloud.pojo.dto.order.DeliveryConditionDTO" resultType="com.yimao.cloud.pojo.dto.order.ExpressExportDTO">
+        select
+          od.logistics_no as logisticsNo,
+          od.order_id as orderId,
+          osd.product_name as productName,
+          os.count,
+          od.num,
+          od.weigh,
+          od.pay_type as payType,
+          od.logistics_fee as logisticsFee,
+          osd.addressee_company_name as receiveCompany,
+          osd.addressee_province as addressProvince,
+          osd.addressee_city as addressCity,
+          osd.addressee_region as addressRegion,
+          osd.addressee_street as addressStreet,
+          concat_ws('/', osd.addressee_province, osd.addressee_city, osd.addressee_region,osd.addressee_street) as
+          address,
+          osd.addressee_name as addressName,
+          osd.addressee_phone as addressPhone,
+          os.remark,
+          od.sender,
+          od.sending_company as sendCompany,
+          concat_ws('/', od.sender_province, od.sender_city, od.sender_region,od.sender_street) as
+          senderAddress,
+          od.delivery_phone as phone
+        from order_delivery od
+        inner join order_sub os on os.id = od.order_id
+        inner join order_sub_detail osd on osd.sub_order_id = od.order_id
+        where 1=1 and os.status = '3'
+        <if test="orderId != null and orderId != ''">
+            and od.order_id like concat('%',trim(#{orderId}),'%')
+        </if>
+        <if test="logisticsNo != null and logisticsNo != ''">
+            and od.logistics_no like concat('%',trim(#{logisticsNo}),'%')
+        </if>
+        <if test="addreessName != null and addreessName != ''">
+            and osd.addressee_name like concat(trim(#{addreessName}),'%')
+        </if>
+    </select>
+
+
+    <!--发货记录-发货台账表导出 -->
+    <select id="deliveryRecordLedgerExport" parameterType="com.yimao.cloud.pojo.dto.order.DeliveryConditionDTO"
+            resultType="com.yimao.cloud.pojo.dto.order.DeliveryInfoExportDTO">
+        select
+        DATE_FORMAT(odr.create_time,'%Y-%m-%d %H:%i:%s') as deliveryTime,
+        odr.order_id AS orderId,
+        /*osd.station_company_name AS stationCompanyName,*/
+        osd.sales_subject_company_name AS stationCompanyName,
+        odr.product_category_name as productCategoryName,
+        odr.logistics_company AS logisticsCompany,
+        odr.logistics_no AS logisticsNo,
+        osd.addressee_phone AS addresseePhone,
+        osd.addressee_province AS addresseeProvince,
+        osd.addressee_city AS addresseeCity,
+        osd.addressee_region AS addresseeRegion,
+        osd.addressee_street AS addresseeStreet,
+        concat_ws('/', osd.addressee_province, osd.addressee_city, osd.addressee_region,osd.addressee_street) as
+        addressee,<!--收货人地址-->
+        osd.addressee_name AS addresseeName,
+        odr.num as count,
+        odr.box_num AS boxNum,
+        odr.weigh AS weigh,
+        odr.logistics_fee AS logisticsFee,
+        odr.remark AS remark,
+        odr.pay_type AS payType
+        from order_delivery_record odr
+        inner join order_sub_detail osd on odr.order_id = osd.sub_order_id
+        where 1=1
+        <if test="orderId != null and orderId != ''">
+            and odr.order_id like concat('%',trim(#{orderId}),'%')
+        </if>
+        <if test="logisticsNo != null and logisticsNo != ''">
+            and odr.logistics_no like concat('%',trim(#{logisticsNo}),'%')
+        </if>
+        <if test="startTime != null and startTime != ''">
+            and odr.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            and odr.create_time &lt;= #{startTime}
+        </if>
+        <if test="addreessName != null and addreessName != ''">
+            and osd.addressee_name like concat(trim(#{addreessName}),'%')
+        </if>
+        <if test="terminal != null">
+            and odr.terminal = #{terminal}
+        </if>
+        <if test="userId != null">
+            and odr.user_id = #{userId}
+        </if>
+        order by odr.create_time desc
+    </select>
+
+
+    <!--发货记录-发货信息表导出 -->
+    <select id="deliveryRecordInfoExport" parameterType="com.yimao.cloud.pojo.dto.order.DeliveryConditionDTO" resultType="com.yimao.cloud.pojo.dto.order.DeliveryInfoExportDTO">
+        select
+        odr.order_id as orderId,
+        odr.product_category_name as productCategoryName,
+        os.count as count,
+        odr.address_province as addresseeProvince,
+        odr.address_city as addresseeCity,
+        odr.address_region as addresseeRegion,
+        odr.address_street as addresseeStreet,
+        odr.address_name as addresseeName,
+        odr.address_phone as addresseePhone,
+        /*osd.station_company_name as stationCompanyName,*/
+        osd.sales_subject_company_name as stationCompanyName,
+        odr.remark
+        from order_delivery_record odr
+        inner join order_sub os on odr.order_id = os.id
+        inner join order_sub_detail osd on odr.order_id = osd.sub_order_id
+        where 1=1
+        <if test="orderId != null and orderId != ''">
+            and odr.order_id like concat('%',trim(#{orderId}),'%')
+        </if>
+        <if test="logisticsNo != null and logisticsNo != ''">
+            and odr.logistics_no like concat('%',trim(#{logisticsNo}),'%')
+        </if>
+        <if test="terminal != null">
+            and odr.terminal = #{terminal}
+        </if>
+        <if test="startTime != null and startTime != ''">
+            and odr.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            and odr.create_time &lt;= #{startTime}
+        </if>
+        <if test="addreessName != null and addreessName != ''">
+            and osd.addressee_name like concat(trim(#{addreessName}),'%')
+        </if>
+        order by odr.create_time desc
+    </select>
+
+</mapper>

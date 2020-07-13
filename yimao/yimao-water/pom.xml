@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>yimao-water</artifactId>
+    <packaging>jar</packaging>
+
+    <parent>
+        <groupId>com.yimao.cloud</groupId>
+        <artifactId>yimao</artifactId>
+        <version>2.0</version>
+    </parent>
+
+    <properties>
+        <protobuf.version>3.4.0</protobuf.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.yimao.cloud</groupId>
+            <artifactId>framework-mysql</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yimao.cloud</groupId>
+            <artifactId>framework-aop</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-quartz</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>${protobuf.version}</version>
+        </dependency>
+        <!--sim相关接口使用到-->
+        <dependency>
+            <groupId>com.sun.xml.wss</groupId>
+            <artifactId>xws-security</artifactId>
+            <version>3.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.activation</groupId>
+                    <artifactId>activation</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.xml.crypto</groupId>
+                    <artifactId>xmldsig</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>yimao-water</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

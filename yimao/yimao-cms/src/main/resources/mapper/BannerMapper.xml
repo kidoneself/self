@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.cms.mapper.BannerMapper">
+    <select id="findBannerPage" resultType="com.yimao.cloud.pojo.dto.cms.BannerDTO">
+        SELECT
+        id,
+        `name`,
+        terminal,
+        position_code as positionCode,
+        title,
+        content,
+        url,
+        ad_img as adImg,
+        `status`,
+        sorts,
+        create_time as createTime,
+        creator,
+        update_time as updateTime,
+        updater
+        FROM
+        t_banner
+        WHERE 1 = 1
+        <choose>
+            <when test="null!=status">
+                and status=#{status}
+            </when>
+            <otherwise>
+                and status != 4
+            </otherwise>
+        </choose>
+
+        <if test="title!=null">
+            and title LIKE CONCAT('%',#{title},'%')
+        </if>
+        <if test="positionCode!=null and positionCode!=''">
+            and position_code = #{positionCode}
+        </if>
+        <if test="terminal!=null">
+            and terminal = #{terminal}
+        </if>
+        order by sorts desc
+    </select>
+</mapper>

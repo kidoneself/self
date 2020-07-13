@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.cms.mapper.VideoTypeMapper">
+
+
+    <select id="videoTypeList" resultType="com.yimao.cloud.pojo.dto.cms.VideoTypeDTO">
+        select
+        tl.id,
+        tl.`name`,
+        tl.parent_id as parentId,
+        tl.platform,
+        tl.`level`,
+        tl.sorts,
+        tl.image,
+        tl.remark,
+        tl.delete_flag as deleteFlag,
+        tl.create_time as createTime,
+        tl.update_time as updateTime
+        from t_video_type tl
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="typeId!=null">
+                and tl.parent_id = #{typeId}
+            </if>
+            <if test="typeId ==null">
+                and tl.parent_id = 0
+            </if>
+            <if test="platform !=null">
+                and tl.platform = #{platform}
+            </if>
+            <if test="level !=null">
+                and tl.level = #{level}
+            </if>
+            order by tl.sorts desc
+        </trim>
+
+    </select>
+    <select id="getAllVideoType" resultType="com.yimao.cloud.pojo.dto.cms.VideoTypeDTO">
+      SELECT
+            id,
+        NAME
+        FROM
+            t_video_type
+        WHERE
+            LEVEL = 1
+            AND platform = 3
+        ORDER BY
+	sorts
+    </select>
+</mapper>

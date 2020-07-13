@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.order.mapper.InvestmentIncomeRecordMapper">
+
+    <select id="queryInvestmentIncomeList" resultType="com.yimao.cloud.pojo.vo.order.InvestmentIncomeVO">
+        SELECT
+        r1.id,
+        r1.order_id AS orderId,
+        r1.user_id AS userId,
+        r1.distributor_id AS distributorId,
+        r1.distributor_order_type AS distributorOrderType,
+        r1.distributor_level AS distributorLevel,
+        r1.dest_distributor_level AS destDistributorLevel,
+        /*r2.distributor_type AS distributorType,*/
+        r1.real_payment AS realPayment,
+        r1.receivable_money as receivableMoney,
+        r1.more_money as moreMoney,
+        r1.order_complete_time AS orderCompleteTime,
+        DATE_FORMAT(r1.settlement_time ,'%Y-%m') as settlementTime,
+        r1.pay_subject AS paySubject,
+        r1.distributor_name AS distributorName,
+        r1.distributor_account AS distributorAccount,
+        r1.province AS distributorProvince,
+        r1.city AS distributorCity,
+        r1.region AS distributorRegion,
+        r1.referee_name AS refereeName,
+        r1.referee_account AS refereeAccount
+        FROM
+        investment_income_record AS r1
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="userId!=null">
+                and r1.user_id like CONCAT('%',trim(#{userId}),'%')
+            </if>
+            <if test="distributorId!=null">
+                and r1.distributor_id like CONCAT('%',trim(#{distributorId}),'%')
+            </if>
+            <if test="distributorOrderType!=null">
+                and r1.distributor_order_type = #{distributorOrderType}
+            </if>
+            <if test="orderId!=null">
+                and r1.order_id like CONCAT('%',trim(#{orderId}),'%')
+            </if>
+            <if test="distributorIds!=null and distributorIds.size() &gt; 0 ">
+                and r1.distributor_id in
+                <foreach collection="distributorIds" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="startTime!=null and startTime!='' ">
+                and r1.order_complete_time &gt;= #{startTime}
+            </if>
+            <if test="endTime!=null and endTime!='' ">
+                and r1.order_complete_time &lt;= #{endTime}
+            </if>
+            <if test="distributorLevel!=null">
+                and r1.distributor_level = #{distributorLevel}
+            </if>
+            <if test="distributorName!=null and distributorName!='' ">
+                and r1.distributor_name = #{distributorName}
+            </if>
+            <if test="distributorAccount!=null and distributorAccount!='' ">
+                and r1.distributor_account like CONCAT(#{distributorAccount},'%')
+            </if>
+            <if test="province!=null and province!='' ">
+                and r1.province = #{province}
+            </if>
+            <if test="city!=null and city!='' ">
+                and r1.city = #{city}
+            </if>
+            <if test="region!=null and region!='' ">
+                and r1.region = #{region}
+            </if>
+            <if test="refereeName!=null and refereeName!='' ">
+                and r1.referee_name = #{refereeName}
+            </if>
+            <if test="refereeAccount!=null and refereeAccount!='' ">
+                and r1.referee_account = #{refereeAccount}
+            </if>
+            <if test="settlementMonth!=null and settlementMonth!='' ">
+                and r1.settlement_time like CONCAT('%',trim(#{settlementMonth}),'%')
+            </if>
+        </trim>
+        order by r1.create_time desc
+    </select>
+
+    <select id="selectIncomeRecordByPrimaryKey" resultType="com.yimao.cloud.pojo.dto.order.IncomeRecordResultDTO">
+        SELECT
+        id,
+        order_id as orderId,
+        real_payment as realFee,
+        more_money as allocationMoney
+        FROM
+        investment_income_record
+       where
+            id = #{id}
+    </select>
+
+    <select id="getInvestmentIncomeRecordByPid"
+            resultType="com.yimao.cloud.pojo.dto.order.InvestmentIncomeRecordPartDTO">
+        SELECT
+        id,
+        income_record_id as incomeRecordId,
+        subject_code as subjectCode,
+        subject_id as subjectId,
+        subject_name as subjectName,
+        subject_phone as subjectPhone,
+        subject_ratio as subjectRatio,
+        subject_money as subjectMoney,
+        subject_province as subjectProvince,
+        subject_city as subjectCity,
+        subject_region as subjectRegion,
+        distributor_type as distributorType,
+        user_id as userId,
+        has_withdraw as hasWithdraw,
+        partner_trade_no as partnerTradeNo,
+        audit_status as auditStatus
+        FROM
+        investment_income_record_part
+        <where>
+            <if test="incomeRecordId != null and incomeRecordId != ''">
+                income_record_id = #{incomeRecordId}
+            </if>
+        </where>
+    </select>
+
+    <select id="exportInvestmentIncome"
+            resultType="com.yimao.cloud.pojo.export.order.InvestmentIncomeExportDTO">
+        SELECT
+        r1.id AS incomeRecordId,
+        r1.order_id AS orderId,
+        r1.distributor_order_type AS distributorOrderType,
+        CASE
+        r1.distributor_order_type
+        WHEN 0 THEN
+        '注册'
+        WHEN 1 THEN
+        '升级'
+        WHEN 2 THEN
+        '续费'
+        END AS distributorOrderTypeStr,
+        CASE
+        r1.distributor_level
+        WHEN 50 THEN
+        '体验版'
+        WHEN 350 THEN
+        '微创版'
+        WHEN 650 THEN
+        '个人版'
+        WHEN 950 THEN
+        '企业版（主）'
+        WHEN 1000 THEN
+        '企业版（子）'
+        END AS distributorTypeStr,
+        r1.real_payment AS realPayment,
+        r1.receivable_money AS receivableMoney,
+        r1.more_money AS moreMoney,
+        DATE_FORMAT( r1.settlement_time, '%Y-%m' ) AS settlementMonth,
+        CASE
+        r1.dest_distributor_level
+        WHEN 350 THEN
+        '微创版'
+        WHEN 650 THEN
+        '个人版'
+        WHEN 950 THEN
+        '企业版'
+        END AS destDistributorTypeStr,
+        r1.distributor_name AS distributorName,
+        r1.distributor_account AS distributorAccount,
+        r1.province AS distributorProvince,
+        r1.city AS distributorCity,
+        r1.region AS distributorRegion,
+        r1.referee_name AS refereeName,
+        r1.referee_account AS refereeAccount,
+        DATE_FORMAT( r1.order_complete_time, '%Y-%m-%d %H:%i:%s' ) AS orderCompletionTimeStr,
+        r1.distributor_id AS distributorId,
+        ( SELECT p2.subject_money FROM investment_income_record_part p2 WHERE p2.subject_code = 'MAIN_COMPANY' AND p2.income_record_id = r1.id ) AS yiMaoHQIncome,
+        ( SELECT p3.subject_money FROM investment_income_record_part p3 WHERE p3.subject_code = 'RECOMMEND_STATION_COMPANY' AND p3.income_record_id = r1.id ) AS refereeStationCompanyIncome,
+        ( SELECT p4.subject_money FROM investment_income_record_part p4 WHERE p4.subject_code = 'ASSISTANT' AND p4.income_record_id = r1.id ) AS wisdomAssistantIncome,
+        ( SELECT p5.subject_money FROM investment_income_record_part p5 WHERE p5.subject_code = 'REGION_SHAREHOLDER' AND p5.income_record_id = r1.id ) AS refereeIncome,
+        r1.pay_subject AS refereeStationCompany,
+        r1.pay_subject AS paySubject,
+        CASE
+        r1.pay_type
+        WHEN 1 THEN
+        '微信'
+        WHEN 2 THEN
+        '支付宝'
+        WHEN 3 THEN
+        'POS机'
+        WHEN 4 THEN
+        '转账'
+        END AS payTypeStr,
+        DATE_FORMAT( r1.pay_time, '%Y-%m-%d %H:%i:%s' ) AS payTime,
+        r1.trade_no AS trade,
+        (
+        SELECT
+        concat( iirp.subject_province, iirp.subject_city, iirp.subject_region )
+        FROM
+        investment_income_record_part iirp
+        WHERE
+        iirp.income_record_id = r1.id
+        AND iirp.subject_code = 'RECOMMEND_STATION_COMPANY'
+        ) AS refereeDistrict
+        FROM
+        investment_income_record AS r1
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="userId!=null">
+                and r1.user_id like CONCAT('%',trim(#{userId}),'%')
+            </if>
+            <if test="distributorId!=null">
+                and r1.distributor_id like CONCAT('%',trim(#{distributorId}),'%')
+            </if>
+            <if test="distributorOrderType!=null">
+                and r1.distributor_order_type = #{distributorOrderType}
+            </if>
+            <if test="orderId!=null">
+                and r1.order_id like CONCAT('%',trim(#{orderId}),'%')
+            </if>
+            <if test="startTime!=null and startTime!='' ">
+                and r1.order_complete_time &gt;= #{startTime}
+            </if>
+            <if test="endTime!=null and endTime!='' ">
+                and r1.order_complete_time &lt;= #{endTime}
+            </if>
+            <if test="distributorLevel!=null">
+                and r1.distributor_level = #{distributorLevel}
+            </if>
+            <if test="distributorName!=null and distributorName!='' ">
+                and r1.distributor_name = #{distributorName}
+            </if>
+            <if test="distributorAccount!=null and distributorAccount!='' ">
+                and r1.distributor_account like CONCAT(#{distributorAccount},'%')
+            </if>
+            <if test="province!=null and province!='' ">
+                and r1.province = #{province}
+            </if>
+            <if test="city!=null and city!='' ">
+                and r1.city = #{city}
+            </if>
+            <if test="region!=null and region!='' ">
+                and r1.region = #{region}
+            </if>
+            <if test="refereeName!=null and refereeName!='' ">
+                and r1.referee_name = #{refereeName}
+            </if>
+            <if test="refereeAccount!=null and refereeAccount!='' ">
+                and r1.referee_account = #{refereeAccount}
+            </if>
+            <if test="settlementMonth!=null and settlementMonth!='' ">
+                and r1.settlement_time like CONCAT(#{settlementMonth},'%')
+            </if>
+        </trim>
+        order by r1.create_time desc
+    </select>
+
+</mapper>

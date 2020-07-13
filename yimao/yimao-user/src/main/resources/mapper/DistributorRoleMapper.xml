@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.user.mapper.DistributorRoleMapper">
+
+    <select id="listAll" resultType="com.yimao.cloud.pojo.dto.user.DistributorRoleDTO">
+		SELECT
+		id,
+		`name`,
+		`level`,
+		price,
+		water_device_quota as waterDeviceQuota,
+		upgrade,
+		upgrade_limit_days as upgradeLimitDays,
+		renew_limit as  renewLimit,
+		renew_limit_times as renewLimitTimes
+		FROM
+		distributor_role
+		where forbidden=0
+		order by `level`
+	</select>
+
+</mapper>

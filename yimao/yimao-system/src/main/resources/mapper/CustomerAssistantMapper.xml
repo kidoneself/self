@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.system.mapper.CustomerAssistantMapper">
+	<resultMap type="com.yimao.cloud.pojo.dto.station.StationHelperDataDTO" id="stationHelperCenter">
+		<id property="id" column="id"></id>
+		<result property="typeName" column="typeName"></result>
+		<result property="typeCode" column="typeCode"></result>
+		<result property="sorts" column="sorts"></result>
+		<collection property="recommendQuestionList" ofType="com.yimao.cloud.pojo.dto.system.CustomerAssistantDTO" select="helpCenterQuestionListByTypeCode" column="typeCode"></collection>
+	</resultMap>
+
+    <select id="listCustomerAssistant" resultType="com.yimao.cloud.pojo.dto.system.CustomerAssistantDTO">
+        SELECT
+        tca.id,
+        tca.type_code AS returnTypeCode,
+        tcat.type_name AS typeName,
+        tca.questions,
+        tca.answers,
+        tca.delete_flag AS deleteFlag,
+        tca.recommend,
+        tca.terminal,
+        tca.sorts ,
+        tca.publish,
+        tca.attachment
+        FROM
+        t_customer_assistant tca,
+        t_customer_assistant_type tcat
+        WHERE
+        tca.type_code = tcat.type_code
+        AND tca.delete_flag = 0
+        <if test="typeCode!=null">
+            and tca.type_code = #{typeCode}
+        </if>
+        <if test="questions!=null and questions!='' ">
+            and tca.questions like CONCAT('%' , #{questions},'%')
+        </if>
+        <if test="typeName!=null and typeName!='' ">
+            and tca.type_name like CONCAT('%' ,#{typeName},'%')
+        </if>
+        <if test="publish!=null">
+            and tca.publish = #{publish}
+        </if>
+        <if test="recommend!=null">
+            and tca.recommend = #{recommend}
+        </if>
+        <if test="terminal!=null">
+            and tca.terminal = #{terminal}
+        </if>
+        order by tca.sorts desc
+    </select>
+
+    <select id="listRecommend" resultType="com.yimao.cloud.pojo.dto.system.CustomerAssistantDTO">
+        select
+        tca.id,
+        tca.type_code as typeCode,
+        tca.questions,
+        tca.answers,
+        tca.delete_flag as deleteFlag,
+        tca.publish,
+        tca.recommend,
+        tca.sorts,
+        tca.attachment
+        from t_customer_assistant tca
+        where tca.recommend = 1 and tca.delete_flag= 0 and tca.publish = 1
+        <if test="terminal !=null">
+            and tca.terminal = #{terminal}
+        </if>
+        order by tca.sorts desc
+    </select>
+    
+    <select id="helpCenterMoreByTypeCode" resultType="com.yimao.cloud.pojo.dto.system.CustomerAssistantDTO">
+    	
+		(select
+			tca.id,
+			tca.create_time as createTime,
+			tca.sorts,
+			tca.terminal,
+			tca.questions,
+			tca.answers,
+			tca.recommend,
+			tca.attachment
+		from
+			t_customer_assistant tca
+		where
+			tca.recommend = 1
+		and tca.delete_flag = 0
+		and tca.publish = 1
+		and tca.terminal = 1
+		and tca.type_code=#{typeCode}
+		order by
+			tca.sorts asc)
+	 	union all
+		(select
+			tca.id,
+			tca.create_time as createTime,
+			tca.sorts,
+			tca.terminal,
+			tca.questions,
+			tca.answers,
+			tca.recommend,
+			tca.attachment
+		from
+			t_customer_assistant tca
+		where
+			tca.recommend = 0
+		and tca.delete_flag = 0
+		and tca.publish = 1
+		and tca.terminal = 1
+		and tca.type_code=#{typeCode}
+		order by
+			tca.sorts asc
+		) 
+    	
+    </select>
+    
+    <select id="helpCenterData" resultMap="stationHelperCenter">
+   		select
+			tcat.type_name as typeName,
+			tcat.type_code as typeCode,
+			tcat.id as id,
+			tcat.sorts as sorts
+		from
+			t_customer_assistant_type tcat
+		where
+			tcat.delete_flag=0
+			and tcat.terminal=1
+		order by
+			tcat.sorts asc
+    </select>
+    
+    <select id="helpCenterQuestionListByTypeCode" resultType="com.yimao.cloud.pojo.dto.system.CustomerAssistantDTO">
+    	select
+			tca.id,
+			tca.create_time as createTime,
+			tca.sorts,
+			tca.terminal,
+			tca.questions,
+			tca.answers,
+			tca.recommend,
+			tca.attachment
+		from
+			t_customer_assistant tca
+		where
+			tca.recommend = 1
+		and tca.delete_flag = 0
+		and tca.publish = 1
+		and tca.terminal = 1
+		and tca.type_code=#{typeCode}
+		order by
+			tca.sorts asc
+		limit 3  
+    </select>
+    
+    <select id="helpCenterQuestionSearchList" resultType="com.yimao.cloud.pojo.dto.system.CustomerAssistantDTO">
+    	select
+			tca.id,
+			tca.create_time as createTime,
+			tca.sorts,
+			tca.terminal,
+			tca.questions,
+			tca.answers,
+			tca.recommend,
+			tca.attachment
+		from
+			t_customer_assistant tca
+		where
+		tca.delete_flag = 0
+		and tca.publish = 1
+		and tca.terminal = 1
+		and tca.questions like CONCAT('%',#{keywords},'%')
+		order by
+			tca.create_time desc
+    </select>
+    
+    <select id="getHelpAndServiceList" resultType="com.yimao.cloud.pojo.dto.system.CustomerAssistantDTO">
+ 		select
+			tca.id,
+			tca.create_time as createTime,
+			tca.sorts,
+			tca.terminal,
+			tca.questions,
+			tca.answers,
+			tca.recommend,
+			tca.attachment
+		from
+			t_customer_assistant tca
+		where
+			tca.recommend = 1
+		and tca.delete_flag = 0
+		and tca.publish = 1
+		and tca.terminal = 1
+		and tca.type_code=#{typeCode}
+		order by
+			tca.sorts asc
+		limit 5
+    
+    </select>
+</mapper>

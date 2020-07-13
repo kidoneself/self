@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.order.mapper.PayAccountMapper">
+
+    <select id="selectPayAccount" resultType="com.yimao.cloud.order.po.PayAccount">
+        select
+        id,
+        company_id as companyId,
+        platform,
+        client_type as clientType,
+        receive_type as receiveType,
+        appid as appid,
+        account_detail as accountDetail
+        from
+        finance_pay_account
+        where deleted = 0
+        <if test="companyId != null">
+            and company_id = #{companyId}
+        </if>
+        <if test="platform != null">
+            and platform = #{platform}
+        </if>
+        <if test="clientType != null">
+            and client_type = #{clientType}
+        </if>
+        <if test="receiveType != null">
+            and receive_type = #{receiveType}
+        </if>
+    </select>
+
+    <select id="selectPayAccountByAppid" resultType="com.yimao.cloud.order.po.PayAccount">
+        select
+        id,
+        company_id as companyId,
+        platform,
+        client_type as clientType,
+        receive_type as receiveType,
+        appid as appid,
+        account_detail as accountDetail
+        from
+        finance_pay_account
+        where deleted = 0
+        <if test="appid != null and appid != ''">
+            and appid = #{appid}
+        </if>
+        <if test="platform != null">
+            and platform = #{platform}
+        </if>
+        limit 1
+    </select>
+
+</mapper>

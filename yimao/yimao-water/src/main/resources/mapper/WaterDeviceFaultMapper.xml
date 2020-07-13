@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.water.mapper.WaterDeviceFaultMapper">
+
+    <select id="existsWith" resultType="java.lang.Boolean">
+        SELECT
+            CASE WHEN COUNT(*)  > 0 THEN 1 ELSE 0 END AS result
+        from
+            water_device_fault
+        where
+            sn = #{sn} and type = #{type} and state = #{state}
+        <if test="deviceId != null">
+            and device_id = #{deviceId}
+        </if>
+        <if test="filterType != null and filterType != ''">
+            and filter_type = #{filterType}
+        </if>
+    </select>
+    <select id="selectPage" resultType="com.yimao.cloud.pojo.vo.water.WaterDeviceFaultVO">
+        SELECT
+            id,
+            sn,
+            CASE `type`
+            WHEN 1 THEN '余额不足'
+            WHEN 2 THEN '制水故障'
+            WHEN 3 THEN 'TDS异常'
+            WHEN 4 THEN '滤芯报警'
+            WHEN 5 THEN '阀值提醒'
+            WHEN 6 THEN '续费超期' END AS typeText,
+            CASE `state`
+            WHEN 1 THEN '故障'
+            WHEN 2 THEN '故障已解除' END AS stateText,
+            filter_type as filterType,
+            fault,
+            amount,
+            min_time_interval as minTimeInterval,
+            max_time_interval as maxTimeInterval,
+            DATE_FORMAT(create_time,'%Y-%m-%d %H:%i:%s') as createTime,
+            DATE_FORMAT(update_time,'%Y-%m-%d %H:%i:%s') as updateTime
+        from
+            water_device_fault
+        <where>
+            <if test="sn != null and sn != ''">
+                sn = #{sn}
+            </if>
+        </where>
+        order by create_time desc
+    </select>
+    <select id="selectByDeviceIdAndSn" resultType="com.yimao.cloud.pojo.dto.water.WaterDeviceFaultDTO">
+        SELECT
+        id,
+        fault
+        from
+        water_device_fault
+        <where>
+            <if test="deviceId != null">
+                device_id = #{deviceId}
+            </if>
+            <if test="sn != null and sn != ''">
+                and sn = #{sn}
+            </if>
+            <if test="state != null">
+                and `state` = #{state}
+            </if>
+        </where>
+        order by create_time desc limit 1
+    </select>
+
+</mapper>

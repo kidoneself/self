@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.water.mapper.FilterSettingMapper">
+
+    <select id="selectPage" resultType="com.yimao.cloud.pojo.dto.water.FilterSettingDTO">
+        select
+        id,
+        province,
+        city,
+        region,
+        device_model as deviceModel,
+        k,
+        t,
+        creator,
+        create_time as createTime,
+        updater,
+        update_time as updateTime
+        from filter_setting
+        where 1=1
+        <if test="province != null and province != ''">
+            and province = #{province}
+        </if>
+        <if test="city != null and city != ''">
+            and city = #{city}
+        </if>
+        <if test="region != null and region != ''">
+            and region = #{region}
+        </if>
+        <if test="deviceModel != null and deviceModel != ''">
+            and device_model = #{deviceModel}
+        </if>
+        <if test="startTime != null">
+            and create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and create_time &lt;= #{endTime}
+        </if>
+        order by create_time desc
+    </select>
+
+    <select id="selectByPCR" resultType="com.yimao.cloud.water.po.FilterSetting">
+        select
+        id,
+        province,
+        city,
+        region,
+        device_model as deviceModel,
+        k,
+        t
+        from filter_setting
+        where 1=1
+        <if test="province != null and province != ''">
+            and province = #{province}
+        </if>
+        <if test="city != null and city != ''">
+            and city = #{city}
+        </if>
+        <if test="region != null and region != ''">
+            and region = #{region}
+        </if>
+        <if test="deviceModel != null and deviceModel != ''">
+            and device_model = #{deviceModel}
+        </if>
+        order by create_time desc limit 1
+    </select>
+
+</mapper>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.order.mapper.ProductIncomeRuleMapper">
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        insert into product__income_rule (
+        product_id,
+        income_rule_id
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.productId},
+            #{item.incomeRuleId}
+            )
+        </foreach>
+    </insert>
+
+    <!--根据产品ID查询收益分配规则ID-->
+    <select id="listIncomeRuleIdByProductId" resultType="java.lang.Integer">
+        select distinct
+        income_rule_id
+        from product__income_rule
+        where product_id = #{productId}
+    </select>
+    <select id="getIncomeValue" resultType="com.yimao.cloud.pojo.dto.order.IncomeRuleDTO">
+        select
+               ir.id,
+               ir.name,
+               ir.allot_type as allotType
+        from income_rule ir
+                 left join product__income_rule pir on (pir.income_rule_id = ir.id)
+        where product_id = #{id}
+          and ir.income_type = 1
+    </select>
+
+</mapper>

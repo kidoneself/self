@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.water.mapper.PrecisionAdvertisingMapper">
+
+    <select id="selectBySnCode" resultType="com.yimao.cloud.water.po.PrecisionAdvertising">
+        select
+            id,
+            sn_code as snCode,
+            advertising_id as advertisingId
+        from
+            precision_advertising
+        where
+            sn_code = #{snCode}
+    </select>
+
+    <insert id="batchInsert" >
+        insert into precision_advertising (
+        sn_code,
+        advertising_id
+        )
+        values
+        <foreach collection="list" item="sn" index="index" separator=",">
+            (
+            #{sn},
+            #{advertisingId}
+            )
+        </foreach>
+    </insert>
+
+    <!--查询本次配置信息和现有配置信息是否有交集。-->
+    <select id="checkPrecisionAdvertising" resultType="java.lang.Boolean">
+      select exists(
+        SELECT id
+        FROM
+        precision_advertising
+        WHERE
+        sn_code =#{snCode} and
+        advertising_id in (
+        <foreach collection="list" item="advertisingId" index="index" separator=",">
+            #{advertisingId}
+        </foreach>
+        )
+      )
+    </select>
+
+</mapper>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="format-detection" content="telephone=no"/>
+    <title>设备耗材信息查询</title>
+    <!-- zui -->
+    <link rel="stylesheet" href="/css/zui/zui.min.css">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/stock.css">
+    <link rel="stylesheet" href="/css/icon/iconfont.css">
+    <style type="text/css">
+        .container{background-color: #fafafa;}
+        .scan-btn{height: 4.4rem;margin-left: 2rem;margin-right: 2rem;width:-webkit-fill-available;color: #aaa;background-color: #fff;border:1px solid #ddd;font-size: 1.6rem;margin-top: 3rem;display: flex;vertical-align: middle;align-items: center;justify-content: space-between;}
+        .scan-input{height: 100%;width: -webkit-fill-available;margin-right: 20px;border: none;color: #aaa;font-size: 1.6rem;}
+        .scan-img{width: 2.4rem;height: 2.4rem;}
+
+        .query-result{color: #707070;font-size: 1.4rem;font-weight: bold;margin-left:2rem;margin-right:2rem;}
+        .query-result-con{margin-top: 3rem;height: 4rem;background-color: #f2f2f2;display: flex;align-items: center;justify-content: space-between;}
+
+        .no-result-con{text-align: center;margin-top: 3.2rem;}
+        .no-result-tip{color: #999;font-size: 1.4rem;}
+
+        .result{margin-bottom:2rem; height: 100%;}
+        .result-item{height: 15rem;background-color: #fafafa;display: flex;color: #707070;margin-left: 1.9rem;flex-direction: column;padding-bottom: 1rem;font-size: 1.6rem;font-size: 1.6rem;padding-top: 1rem;    justify-content: space-between;}
+        .badge-green{background-color: #95bd27;color: #fff;font-size: 0.9rem;}
+        .badge-red{background-color: #f05a5a;color: #fff;font-size: 0.9rem;}
+        .badge-blue{background-color: #3ca4fd;color: #fff;font-size: 0.9rem;}
+        .badge-gray{background-color: #999;color: #fff;font-size: 0.9rem;}
+    </style>
+</head>
+<body>
+<div th:include="header :: header"></div>
+<div class="container pl-0 pr-0">
+    <div class="scan-btn btn">
+        <input class="scan-input" type="text" name="" placeholder="请输入或扫描设备批次码">
+        <img class="scan-img" src="/images/stock/scan_normal.png" onclick="applyQrCode(1)">
+    </div>
+    <div>
+        <div class="query-result-con">
+            <span class="query-result">扫描结果</span>
+        </div>
+        <div class="scan-result-html">
+
+        </div>
+    </div>
+</div>
+</body>
+<script type="text/javascript" th:inline="javascript">
+    var token=[[${token}]];
+    $(function () {
+        //getStockInfo("YMB1201SBA0212");
+        updateTitle($('head title').text());
+        $("input[class=scan-input]").change(function () {
+            getStockInfo($(this).val().trim());
+        })
+    })
+
+    var applyQrCode=function(index){
+        var u = navigator.userAgent;
+        var isAndroid = u.indexOf('Android') > -1 || u.indexOf('Adr') > -1; //android终端
+        var isiOS = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/); //ios终端
+        if (isAndroid && !isiOS) {
+            webviewInstance.applyAndroidScanQr(-1);
+        }else if(!isAndroid && isiOS){
+            applyIosScanQr(-1);
+        }
+    }
+    function getQrCallback(data,index){
+        getStockInfo(data);
+
+    }
+
+
+
+    /**
+     * 通过设备批次码获取设备信息
+     */
+    function getStockInfo(batchCode) {
+        $.ajax({
+            url:"./getMaterielStatus",
+            method:"POST",
+            data:{batchCodes:batchCode,token:token},
+            success:function (response) {
+                $(".scan-result-html").html(response);
+            }
+        })
+    }
+</script>
+</html>
+

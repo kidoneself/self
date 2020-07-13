@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.yimao.cloud.water.mapper.MessagePushFilterMapper">
+
+    <select id="selectFilter" resultType="com.yimao.cloud.water.po.MessagePushFilter">
+        SELECT
+            id,
+            device_model as deviceModel,
+            province,
+            city,
+            region,
+            hours,
+            `type`
+        FROM
+            message_push_filter
+        WHERE 1=1
+        <if test="province != null and province != ''">
+            and province = #{province}
+        </if>
+        <if test="city != null and city != ''">
+            and city = #{city}
+        </if>
+        <if test="region != null and region != ''">
+            and region = #{region}
+        </if>
+        <if test="deviceModel != null and deviceModel != ''">
+            and device_model = #{deviceModel}
+        </if>
+        <if test="faultType != null">
+            and `type` = #{faultType}
+        </if>
+        limit 1
+    </select>
+
+</mapper>

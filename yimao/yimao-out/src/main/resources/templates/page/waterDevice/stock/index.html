@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="format-detection" content="telephone=no"/>
+    <title>库存管理</title>
+    <!-- zui -->
+    <link rel="stylesheet" href="/css/zui/zui.min.css">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/stock.css">
+    <link rel="stylesheet" href="/css/icon/iconfont.css">
+    <style type="text/css">
+        html{font-size:62.5%; }
+        html,body{height: 100%}
+        .container{background-color: #f0f0f0;height: 100%;}
+        .list-item{height: 6rem;background-color: #fafafa;display: flex;vertical-align: middle;align-items: center;margin-bottom: 20px}
+        .list-item:focus,.list-item:hover,.list-item{text-decoration: none;cursor: pointer;}
+        .list-item img{width: 2.4rem;height: 2.4rem;margin-left: 2rem;}
+        .list-item span{font-size: 1.8rem;margin-left: 0.8rem;color: #707070;flex: 1;}
+        .list-item i{text-align: right;width: 1.2rem;height: 1.2rem;display: inline-block;margin-right: 2rem;color: #ccc;}
+    </style>
+</head>
+
+<body>
+<header th:fragment="header">
+    <div class="header" >
+        <i class="fa fa-angle-left" onclick="loadHistory()"></i>
+        <span class="headertitle">库存管理</span>
+        <span class="headerback" onclick=""></span>
+    </div>
+    <style>
+        .header{    height: 60px;
+            background-color: #0075bd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #fff;
+            position: fixed;
+            top: 0px;
+            width: 100%;
+            z-index: 999;
+        }
+        .header i{margin-left: 20px;font-size: 30px;}
+        .header .headerback{margin-right: 20px;}
+        .header .headertitle{font-size: 16px;font-weight: bold; margin-left: 30px;}
+    </style>
+    <input name="token" id="token" type="text" th:value="${token}" />
+    <script type="text/javascript">
+        /**
+         * 返回前一页（或关闭本页面）
+         * <li>如果没有前一页历史，则返回地址添加个标记</li>
+         */
+        function loadHistory() {
+            if (typeof(entrance) != "undefined" && entrance == "index") {
+                window.location.href = '/jumpApp?returnTag = ' + new Date();
+            } else {
+                window.history.go(-1);
+            }
+        }
+
+        /**
+         * 回到首页
+         */
+        function loadIndex() {
+            var token=document.getElementById("token").value;
+            window.location.href="./index?token="+token;
+        }
+
+        /**
+         * 更新标题的文本
+         */
+        function updateTitle(titleName) {
+            $('.header').find('.headertitle').text(titleName);
+        }
+    </script>
+    <script src="/javascript/jslib/jquery/jquery2.min.js"></script>
+    <script type="text/javascript" src="/javascript/jslib/jquery/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/javascript/jslib/jquery/global.js"></script>
+</header>
+<include page="common/middle.html"></include>
+<div class="container pl-0 pr-0">
+    <a class="list-item mt-20" th:attr="href='./inventory?token='+${token}">
+        <img src="/images/stock/my_stock.png">
+        <span>我的库存</span>
+        <i class="icon icon-chevron-right"></i>
+    </a>
+    <a class="list-item"  th:attr="href='./stockQuery?token='+${token}">
+        <img src="/images/stock/stock_search.png">
+        <span>库存查询</span>
+        <i class="icon icon-chevron-right"></i>
+    </a>
+    <a class="list-item" th:attr="href='./myApply?token='+${token}">
+        <img src="/images/stock/my_apply.png">
+        <span>借调申请</span>
+        <i class="icon icon-chevron-right"></i>
+    </a>
+    <a class="list-item" th:attr="href='./myCheck?token='+${token}">
+        <img src="/images/stock/my_ review.png">
+        <span>借调审核</span>
+        <i class="icon icon-chevron-right"></i>
+    </a>
+    <a class="list-item" th:attr="href='./deviceScan?token='+${token}">
+        <img src="/images/stock/scanning_warehousing.png">
+        <span>服务站扫描入库</span>
+        <i class="icon icon-chevron-right"></i>
+    </a>
+    <a class="list-item" th:attr="href='./stateQuery?token='+${token}">
+        <img src="/images/stock/information_search.png">
+        <span>设备/耗材信息查询</span>
+        <i class="icon icon-chevron-right"></i>
+    </a>
+
+
+
+
+
+
+    <!-- demo start-->
+
+    <!-- demo 判断-->
+    <div th:if="${not #strings.isEmpty(productResult)}">
+        <div class="good">
+            <span class="stock-title">良品库</span>
+            <div class="stock-list">
+                <!-- demo 遍历-->
+                <div th:each="entry:${productResult}">
+                    <div class="material-list">
+                        <div class="material-list-item" data-toggle="collapse"
+                             data-target="'#hqdemo'+${status.count}">
+                            <div>
+                                <!-- demo 设置标签属性-->
+                                <span class="material-list-item-name" th:attr="data-id=${entry.realName}" th:text="${entry.realName}"></span>
+                                <i class="icon icon-chevron-down downshow"></i>
+                                <i class="icon icon-chevron-up downshow" style="display: none;"></i>
+                            </div>
+                            <!--初始化统计数量-->
+                            <!--<c:set value="0" var="count"/>-->
+                            <span th:with="count = 0"></span>
+                            <span class="material-list-item-num" th:text="${entry.mobile}+'支'"><!--10只--></span>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+<script src="/javascript/jslib/jquery/jquery2.min.js"></script>
+<script type="text/javascript" src="/javascript/jslib/jquery/bootstrap.min.js"></script>
+<script type="text/javascript" th:inline="javascript">
+    var entrance = "index";
+    $(function () {
+        updateTitle($('head title').text());
+        $('.headerback').html('&nbsp;&nbsp;&nbsp;&nbsp;')
+        /*$(".headerback").hide();*/
+    })
+</script>
+</html>

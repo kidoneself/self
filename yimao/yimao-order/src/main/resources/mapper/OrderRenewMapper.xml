@@ -1,0 +1,636 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.order.mapper.OrderRenewMapper">
+
+    <update id="updateRenewOrderSn">
+        update order_renew set sn_code = #{newSn} where device_id = #{deviceId} and sn_code = #{oldSn}
+    </update>
+
+    <select id="orderRenewFinanceList" parameterType="com.yimao.cloud.pojo.query.order.RenewOrderQuery"
+            resultType="com.yimao.cloud.pojo.vo.order.OrderRenewVO">
+        select
+        ore.id,
+        ore.sn_code as snCode,
+        ore.status_name as statusName,
+        ore.product_company_name as productCompanyName,
+        CONCAT_WS("/",ore.product_first_category_name,ore.product_second_category_name,ore.product_category_name) as
+        productCategoryName,
+        ore.amount_fee as amountFee,
+        ore.pay_type_name as payTypeName,
+        ore.pay_time as payTime,
+        ore.trade_no as tradeNo,
+        ore.water_user_phone as waterUserPhone
+        from order_renew ore
+        where ore.status = 2 and ore.deleted = 0
+        <if test="renewId != null and renewId != ''">
+            and ore.id like CONCAT('%',trim(#{renewId}),'%')
+        </if>
+        <if test="snCode != null and snCode != ''">
+            and ore.sn_code like CONCAT('%',trim(#{snCode}),'%')
+        </if>
+        <if test="productCategoryId != null">
+            and (ore.product_first_category_id = #{productCategoryId} or ore.product_second_category_id =
+            #{productCategoryId} or ore.product_category_id = #{productCategoryId})
+        </if>
+        <if test="waterUserPhone != null and waterUserPhone != ''">
+            and ore.water_user_phone like CONCAT('%',trim(#{waterUserPhone}),'%')
+        </if>
+        <if test="terminal != null">
+            and ore.terminal = #{terminal}
+        </if>
+        <if test="tradeNo != null and tradeNo != ''">
+            and ore.trade_no like CONCAT('%',trim(#{tradeNo}),'%')
+        </if>
+        <if test="payType != null">
+            and ore.pay_type = #{payType}
+        </if>
+        <if test="startPayTime != null">
+            and ore.pay_time &gt;= #{startPayTime}
+        </if>
+        <if test="endPayTime != null">
+            and ore.pay_time &lt;= #{endPayTime}
+        </if>
+        order by ore.create_time desc
+    </select>
+
+    <select id="selectOrderRenewDetail" parameterType="java.lang.String"
+            resultType="com.yimao.cloud.pojo.vo.order.OrderRenewVO">
+        select
+        ore.id,
+        ore.trade_no as tradeNo,
+        ore.pay_type_name as payTypeName,
+        ore.create_time as createTime,
+        ore.pay_time as payTime,
+        ore.cost_type_name as costTypeName,
+        ore.cost_name as costName,
+        ore.amount_fee as amountFee,
+        ore.status_name as statusName,
+        ore.water_user_name as waterUserName,
+        ore.water_user_phone as waterUserPhone,
+        ore.times,
+        ore.last_cost_name as lastCostName,
+        ore.distributor_name as distributorName,
+        ore.distributor_account as distributorAccount,
+        ore.engineer_name as engineerName,
+        ore.engineer_station_name as engineerStationName,
+        ore.province as province,
+        ore.city as city,
+        ore.region as region,
+        ore.sn_code as snCode,
+        ore.device_model as deviceModel,
+        ore.device_installation_time as deviceInstallationTime,
+        ore.device_address as deviceAddress,
+        ore.pay_credential as payCredential,
+        (select opc.reason from order_pay_check opc where opc.order_id = ore.id order by opc.create_time desc limit 1) as reason
+        from order_renew ore
+        where ore.id = #{id}
+    </select>
+
+    <select id="countRenewOrder4Audit" resultType="java.lang.Long">
+        SELECT count(1) from order_renew where status = 1 and pay_type in (3, 4) and deleted = 0
+    </select>
+
+    <select id="getOrderRenewList" parameterType="com.yimao.cloud.pojo.query.order.RenewOrderQuery"
+            resultType="com.yimao.cloud.pojo.vo.order.OrderRenewVO">
+        select
+        ore.id,
+        ore.sn_code as snCode,
+        ore.province,
+        ore.city,
+        ore.region,
+        ore.create_time as createTime,
+        ore.pay_type as payType,
+        ore.pay_type_name as payTypeName,
+        ore.pay_credential as payCredential,
+        ore.cost_id as costId,
+        ore.cost_name as costName,
+        ore.distributor_name as distributorName,
+        ore.status_name as statusName,
+        ore.pay_time as payTime
+        from order_renew ore
+        where ore.deleted = 0
+        and ore.status != 0
+        <if test="renewId != null and renewId != ''">
+            and ore.id like CONCAT('%',trim(#{renewId}),'%')
+        </if>
+        <if test="snCode != null and snCode != ''">
+            and ore.sn_code like CONCAT('%',trim(#{snCode}),'%')
+        </if>
+        <if test="province != null and province != ''">
+            and ore.province = #{province}
+        </if>
+        <if test="city != null and city != ''">
+            and ore.city = #{city}
+        </if>
+        <if test="region != null and region != ''">
+            and ore.region = #{region}
+        </if>
+        <if test="payType != null">
+            and ore.pay_type = #{payType}
+        </if>
+        <if test="status != null">
+            and ore.status = #{status}
+        </if>
+        <if test="startRenewTime != null">
+            and ore.create_time &gt;= #{startRenewTime}
+        </if>
+        <if test="endRenewTime != null">
+            and ore.create_time &lt;= #{endRenewTime}
+        </if>
+        <if test="startPayTime != null">
+            and ore.pay_time &gt;= #{startPayTime}
+        </if>
+        <if test="endPayTime != null">
+            and ore.pay_time &lt;= #{endPayTime}
+        </if>
+        <if test="distributorName != null and distributorName != ''">
+            and ore.distributor_name = #{distributorName}
+        </if>
+        <if test="isValidRenewOrderNum != null and isValidRenewOrderNum">
+            and (ore.`status` = 1 OR ore.`status` = 2)
+        </if>
+         <!-- 经销商集合与安装工集合只能传一个 -->
+        <if test="engineerIds != null and engineerIds.size >0">
+            and ore.engineer_id in (
+            <foreach collection="engineerIds" item="item" index="index"
+                     separator=",">
+                #{item}
+            </foreach>
+            )
+        </if>
+        <!-- 经销商集合与安装工集合只能传一个 -->
+        <if test="distributorIds != null and distributorIds.size >0">
+            and ore.distributor_id in (
+            <foreach collection="distributorIds" item="distributorId" index="index"
+                     separator=",">
+                #{distributorId}
+            </foreach>
+            )
+        </if>
+        order by ore.create_time desc
+    </select>
+
+    <select id="orderRenewExport" resultType="com.yimao.cloud.pojo.export.order.OrderRenewExport">
+        select
+        ore.id as id,
+        ore.work_order_id as workOrderId,
+        ore.sn_code as snCode,
+        ore.device_model as deviceModel,
+        DATE_FORMAT(ore.create_time,"%Y-%m-%d %H:%i:%s") as createTime,
+        ore.pay_type_name as payTypeName,
+        DATE_FORMAT(ore.pay_time,"%Y-%m-%d %H:%i:%s") as payTime,
+        ore.trade_no as tradeNo,
+        ore.last_cost_name as lastCostName,
+        ore.cost_name as costName,
+        ore.cost_type_name as costTypeName,
+        ore.amount_fee as amountFee,
+        ore.times as times,
+        ore.terminal_name as terminalName,
+        ore.province as province,
+        ore.city as city,
+        ore.region as region,
+        ore.water_user_name as waterUserName,
+        ore.water_user_phone as waterUserPhone,
+        ore.distributor_name as distributorName,
+        ore.distributor_phone as distributorPhone,
+        ore.distributor_account as distributorAccount,
+        ore.distributor_id_card as distributorIdCard,
+        CONCAT_WS("/",ore.distributor_province,ore.distributor_city,ore.distributor_region) as distributorArea,
+        ore.distributor_station_name as distributorStationName,
+        ore.distributor_recommend_name as distributorRecommendName,
+        CONCAT_WS("/",ore.distributor_recommend_province,ore.distributor_recommend_city,ore.distributor_recommend_region)
+        as distributorRecommendArea,
+        ore.distributor_recommend_station_name as distributorRecommendStationName,
+        ore.engineer_name as engineerName,
+        ore.engineer_phone as engineerPhone,
+        ore.engineer_station_name as engineerStationName
+        from order_renew ore
+        where ore.deleted = 0
+        and ore.status != 0
+        <if test="renewId != null and renewId != ''">
+            and ore.id like CONCAT('%',trim(#{renewId}),'%')
+        </if>
+        <if test="status != null">
+            and ore.status = #{status}
+        </if>
+        <if test="snCode != null and snCode != ''">
+            and ore.sn_code like CONCAT('%',trim(#{snCode}),'%')
+        </if>
+        <if test="productCategoryId != null">
+            and (ore.product_first_category_id = #{productCategoryId} or ore.product_second_category_id =
+            #{productCategoryId} or ore.product_category_id = #{productCategoryId})
+        </if>
+        <if test="waterUserPhone != null and waterUserPhone != ''">
+            and ore.water_user_phone like CONCAT('%',trim(#{waterUserPhone}),'%')
+        </if>
+        <if test="terminal != null">
+            and ore.terminal = #{terminal}
+        </if>
+        <if test="tradeNo != null and tradeNo != ''">
+            and ore.trade_no like CONCAT('%',trim(#{tradeNo}),'%')
+        </if>
+        <if test="payType != null">
+            and ore.pay_type = #{payType}
+        </if>
+        <if test="startPayTime != null">
+            and ore.pay_time &gt;= #{startPayTime}
+        </if>
+        <if test="endPayTime != null">
+            and ore.pay_time &lt;= #{endPayTime}
+        </if>
+        <if test="startRenewTime != null">
+            and ore.create_time &gt;= #{startRenewTime}
+        </if>
+        <if test="endRenewTime != null">
+            and ore.create_time &lt;= #{endRenewTime}
+        </if>
+        
+        <if test="province != null and province != ''">
+            and ore.province = #{province}
+        </if>
+        <if test="city != null and city != ''">
+            and ore.city = #{city}
+        </if>
+        <if test="region != null and region != ''">
+            and ore.region = #{region}
+        </if>
+		<if test="distributorName != null and distributorName != ''">
+            and ore.distributor_name = #{distributorName}
+        </if>
+        
+        order by ore.create_time desc
+    </select>
+
+    <select id="selectOrderRenewFinanceDetail" resultType="com.yimao.cloud.pojo.vo.order.OrderRenewVO">
+        select
+        ore.id,
+        ore.work_order_id as workOrderId,
+        ore.sn_code as snCode,
+        ore.status_name as statusName,
+        ore.terminal_name as terminalName,
+        ore.water_user_phone as waterUserPhone,
+        ore.product_company_name as productCompanyName,
+        CONCAT_WS("/",ore.product_first_category_name,ore.product_second_category_name,ore.product_category_name) as productCategoryName,
+        ore.amount_fee as amountFee,
+        ore.create_time as createTime,
+        ore.trade_no as tradeNo,
+        ore.pay_type_name as payTypeName,
+        ore.pay_time as payTime
+        from order_renew ore
+        where ore.id = #{id}
+    </select>
+
+    <select id="orderRenewPayCheckList" resultType="com.yimao.cloud.pojo.vo.order.OrderRenewVO">
+        select
+        ore.id,
+        CONCAT_WS("/",ore.product_first_category_name,ore.product_second_category_name,ore.product_category_name) as
+        productCategoryName,
+        ore.amount_fee as amountFee,
+        ore.status_name as statusName,
+        ore.pay_type_name as payTypeName,
+        DATE_FORMAT(ore.pay_credential_submit_time,'%Y-%m-%d %H:%i:%s') as payCredentialSubmitTime,
+        ore.pay_credential as payCredential
+        from order_renew ore
+        where ore.status = 1 and ore.pay_type in (3, 4) and ore.deleted = 0
+        <if test="renewId != null and renewId != ''">
+            and ore.id like CONCAT('%',trim(#{renewId}),'%')
+        </if>
+        <if test="payType != null">
+            and ore.pay_type = #{payType}
+        </if>
+        <if test="startCredentialSubmitTime != null">
+            and ore.pay_credential_submit_time &gt;= #{startCredentialSubmitTime}
+        </if>
+        <if test="endCredentialSubmitTime != null">
+            and ore.pay_credential_submit_time &lt;= #{endCredentialSubmitTime}
+        </if>
+        order by ore.pay_credential_submit_time desc
+    </select>
+
+    <!--翼猫APP-我的-水机续费-续费记录-->
+    <select id="selectRenewOrderRecordBySnCodeForApp" resultType="com.yimao.cloud.pojo.vo.order.OrderRenewVO">
+        select
+        ore.id,
+        ore.create_time as createTime,
+        ore.cost_name as costName,
+        ore.amount_fee as amountFee,
+        ore.water_user_name as waterUserName,
+        ore.water_user_phone as waterUserPhone,
+        ore.engineer_name as engineerName,
+        ore.engineer_phone as engineerPhone,
+        ore.times,
+        ore.sn_code as snCode,
+        ore.device_model as deviceModel,
+        ore.device_address as deviceAddress
+        from order_renew ore
+        where ore.sn_code = #{snCode} and ore.distributor_id = #{distributorId} and ore.`status`= 2 and ore.deleted = 0
+        order by ore.times desc, ore.create_time desc
+    </select>
+
+    <select id="selectPayInfoById" resultType="com.yimao.cloud.order.po.OrderRenew">
+        select
+        id,
+        pay,
+        amount_fee as amountFee,
+        cost_id as costId,
+        cost_type as costType,
+        cost_name as costName,
+        sn_code as snCode,
+        device_id as deviceId
+        from order_renew
+        where id = #{id}
+    </select>
+    <select id="countRenewTimes" resultType="java.lang.Integer">
+        SELECT count(1) from order_renew where pay = 1 and device_id = #{deviceId} and deleted = 0
+    </select>
+
+    <!--经营报表:统计-->
+    <select id="getRenewOrderListById" resultType="com.yimao.cloud.pojo.dto.order.RenewDTO">
+        SELECT
+            count( * ) as orderNum,
+            ore.cost_type_name AS costNameType,
+	        ore.product_second_category_name as categoryName
+        FROM
+            order_renew ore
+        where
+            ore.distributor_id = #{distributorId} and ore.deleted = 0
+        GROUP BY
+            ore.cost_type_name,
+	        ore.product_second_category_name
+    </select>
+
+    <select id="getRenewOrderCount" resultType="java.lang.Integer">
+        select count(*) from order_renew where distributor_id = #{distributorId} and deleted = 0
+    </select>
+
+    <select id="orderRenewPayCheckListExport" resultType="com.yimao.cloud.pojo.vo.order.OrderRenewVO">
+        select
+        ore.id,
+        CONCAT_WS("/",ore.product_first_category_name,ore.product_second_category_name,ore.product_category_name) as
+        productCategoryName,
+        ore.amount_fee as amountFee,
+        ore.status_name as statusName,
+        ore.pay_type_name as payTypeName,
+        DATE_FORMAT(ore.pay_credential_submit_time,'%Y-%m-%d %H:%i:%s') as payCredentialSubmitTime,
+        ore.pay_credential as payCredential
+        from order_renew ore
+        where ore.status = 1 and ore.pay_type in (3, 4) and ore.deleted = 0
+        <if test="renewId != null and renewId != ''">
+            and ore.id like CONCAT('%',trim(#{renewId}),'%')
+        </if>
+        <if test="payType != null">
+            and ore.pay_type = #{payType}
+        </if>
+        <if test="startCredentialSubmitTime != null">
+            and ore.pay_credential_submit_time &gt;= #{startCredentialSubmitTime}
+        </if>
+        <if test="endCredentialSubmitTime != null">
+            and ore.pay_credential_submit_time &lt;= #{endCredentialSubmitTime}
+        </if>
+        order by ore.pay_credential_submit_time desc
+    </select>
+
+    <select id="getIsRenewPicData" parameterType="com.yimao.cloud.pojo.query.station.StationWaterDeviceQuery"
+            resultType="com.yimao.cloud.pojo.dto.station.RenewStatisticsDTO">
+        select
+        a.time,
+        ifnull(count(a.id),0) as isRenewNum
+        from
+        (select
+        o.id,
+        date_format(o.create_time, '%Y%m%d') as time
+        from order_renew o
+        <where>
+            o.status=2
+            and o.create_time is not null
+            <if test="startTime != null">
+                and o.create_time <![CDATA[>=]]> #{startTime}
+            </if>
+            <if test="endTime !=null">
+                and o.create_time <![CDATA[<=]]> #{endTime}
+            </if>
+            <if test="engineerIds != null and engineerIds.size >0">
+                and o.engineer_id in (
+                <foreach collection="engineerIds" item="item" index="index"
+                         separator=",">
+                    #{item}
+                </foreach>
+                )
+            </if>
+        </where>
+        ) a
+        group by a.time
+        order by time asc
+    </select>
+
+    <select id="getStationRenewNum" resultType="java.lang.Integer">
+        select
+        ifnull(count(o.id),0) as isRenewNum
+        from order_renew o
+        <where>
+            o.status=2
+            <choose>
+                <when test="engineerIds != null and engineerIds.size >0">
+                    and o.engineer_id in (
+                    <foreach collection="engineerIds" item="item" index="index"
+                             separator=",">
+                        #{item}
+                    </foreach>
+                    )
+                </when>
+                <otherwise>
+                    and 0 = 1
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+    <select id="getStationYesterdayRenewNum" resultType="java.lang.Integer">
+        select
+        ifnull(count(o.id),0) as yesterdayRenewNum
+        from order_renew o
+        <where>
+            o.status=2
+            and o.pay_time <![CDATA[>]]> DATE_SUB(CURDATE(), INTERVAL 1 day)
+            and o.pay_time <![CDATA[<]]> CURDATE()
+            <choose>
+                <when test="engineerIds != null and engineerIds.size >0">
+                    and o.engineer_id in (
+                    <foreach collection="engineerIds" item="item" index="index"
+                             separator=",">
+                        #{item}
+                    </foreach>
+                    )
+                </when>
+                <otherwise>
+                    and 0 = 1
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+    <select id="getSalesReturnOrderNum" resultType="java.lang.Integer">
+        SELECT
+        ifnull(count(id),0) as validRenewOrderNum
+        FROM
+        order_renew
+        WHERE
+        (`status` = 1 OR `status` = 2)
+        <choose>
+            <when test="engineerIds != null and engineerIds.size >0">
+                and engineer_id in (
+                <foreach collection="engineerIds" item="item" index="index"
+                         separator=",">
+                    #{item}
+                </foreach>
+                )
+            </when>
+            <otherwise>
+                and 0 = 1
+            </otherwise>
+        </choose>
+    </select>
+	
+	<!-- 统计公司续费总金额 -->
+	<select  id="getRenewSaleStats" parameterType="com.yimao.cloud.pojo.dto.order.SalesStatsQueryDTO"
+            resultType="com.yimao.cloud.pojo.dto.order.SalesStatsDTO">
+		SELECT
+			<if test="timeType != null and timeType == 1">
+           		DATE_FORMAT(oo.pay_time,'%Y-%m-%d')
+        	</if>
+        	<if test="timeType != null and timeType == 2">
+            	DATE_FORMAT(oo.pay_time,'%Y-%m')
+        	</if>
+        	<if test="timeType != null and timeType == 3">
+            	DATE_FORMAT(oo.pay_time,'%Y')
+        	</if>
+         	as completeTime,
+			ifnull(sum(oo.amount_fee),0) as saleAmount
+		FROM
+			order_renew oo
+		INNER JOIN order_sub_detail osd ON oo.order_id = osd.sub_order_id
+		WHERE
+            oo.status = 2
+            AND oo.pay_time IS NOT NULL
+            <if test="areaIds !=null and areaIds.size()>0 and type==2">
+                and osd.distributor_area_id  in (
+                <foreach collection="areaIds" item="id" index="index" separator=",">
+                    #{id}
+                </foreach>
+                )
+            </if>
+            <!-- 按日统计取传入日期前7天数据 -->
+            <if test="timeType != null and timeType == 1">
+                and DATE_FORMAT(oo.pay_time,'%Y-%m-%d') BETWEEN DATE_SUB(#{completeTime},INTERVAL #{day} day) and
+                #{completeTime}
+            </if>
+            <!-- 按月统计取传入日期前6个月数据 -->
+            <if test="timeType != null and timeType == 2">
+                and DATE_FORMAT(oo.pay_time,'%Y-%m') BETWEEN DATE_FORMAT(DATE_SUB(CONCAT(#{completeTime},'-01'),
+                interval 11 MONTH),'%Y-%m') and #{completeTime}
+            </if>
+            <!-- 按年统计 -->
+            <if test="timeType != null and timeType == 3">
+                and DATE_FORMAT(oo.pay_time,'%Y') &lt;=#{completeTime}
+            </if>
+		GROUP BY
+            <if test="timeType != null and timeType == 1">
+                DATE_FORMAT(oo.pay_time,'%Y-%m-%d')
+            </if>
+            <if test="timeType != null and timeType == 2">
+                DATE_FORMAT(oo.pay_time,'%Y-%m')
+            </if>
+            <if test="timeType != null and timeType == 3">
+                DATE_FORMAT(oo.pay_time,'%Y')
+            </if>
+	</select>
+
+    <select id="getOrderSalesHomeReport" resultType="com.yimao.cloud.pojo.dto.order.AgentSalesOverviewDTO">
+        SELECT
+        ifnull( sum( CASE WHEN r.cost_type = 1 AND r.product_second_category_name = '商用' THEN r.amount_fee END ), 0 ) AS
+        syllSaleFee,
+        ifnull( sum( CASE WHEN r.cost_type = 1 AND r.product_second_category_name = '家用' THEN r.amount_fee END ), 0 ) AS
+        jyllSaleFee,
+        ifnull( sum( CASE WHEN r.cost_type = 2 AND r.product_second_category_name = '商用' THEN r.amount_fee END ), 0 ) AS
+        sybnSaleFee,
+        ifnull( sum( CASE WHEN r.cost_type = 2 AND r.product_second_category_name = '家用' THEN r.amount_fee END ), 0 ) AS
+        jybnSaleFee
+        FROM
+        order_renew r
+        INNER JOIN order_sub_detail osd ON r.order_id = osd.sub_order_id
+        WHERE
+        r.status = 2
+        AND r.pay_time IS NOT NULL
+        <if test="areaIds !=null and areaIds.size()>0 and type==2">
+            and osd.distributor_area_id  in (
+            <foreach collection="areaIds" item="id" index="index" separator=",">
+                #{id}
+            </foreach>
+            )
+        </if>
+
+    </select>
+
+
+    <select id="getCostTypeName" resultType="com.yimao.cloud.pojo.dto.order.RenewDTO">
+        SELECT
+            ore.product_second_category_name AS categoryName,
+            CASE
+            WHEN ore.cost_type = 1 THEN '(包流量)'
+            WHEN ore.cost_type = 2 THEN '(包时长)'
+            END AS costNameType
+        FROM
+            `order_renew` ore
+        WHERE
+            product_second_category_name IS NOT NULL
+        GROUP BY
+            ore.product_second_category_name,
+            ore.cost_type
+    </select>
+
+    <select id="getSalesReturnOrderNumByDistributorIds" resultType="java.lang.Integer">
+        SELECT
+        ifnull(count(id),0) as validRenewOrderNum
+        FROM
+        order_renew
+        WHERE
+        (`status` = 1 OR `status` = 2)
+        <choose>
+            <when test="distributorIds != null and distributorIds.size >0">
+                and distributor_id in (
+                <foreach collection="distributorIds" item="item" index="index"
+                         separator=",">
+                    #{item}
+                </foreach>
+                )
+            </when>
+            <otherwise>
+                and 0 = 1
+            </otherwise>
+        </choose>
+    </select>
+
+    <update id="updateRenewOrderForEngineer" parameterType="com.yimao.cloud.pojo.dto.order.OrderRenewDTO">
+    	UPDATE order_renew
+		SET engineer_id = #{engineerId},
+		engineer_name = #{engineerName},
+		engineer_phone = #{engineerPhone},
+		engineer_station_name = #{engineerStationName}
+		WHERE
+			STATUS = 1
+		AND pay_type IN (3, 4)
+		<if test="oldEngineerId !=null">
+                AND engineer_id = #{oldEngineerId}
+        </if>
+		<if test="province !=null and province!=''">
+                AND province = #{province}
+        </if>
+        <if test="city !=null and city!=''">
+                AND city = #{city}
+        </if>
+        <if test="region !=null and region!=''">
+                AND region = #{region}
+        </if>
+    </update>
+
+</mapper>

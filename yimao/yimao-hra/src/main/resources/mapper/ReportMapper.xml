@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.hra.mapper.ReportMapper">
+    <select id="listReport" resultType="com.yimao.cloud.pojo.dto.hra.ReportDTO">
+        SELECT
+            hcu.username AS username,
+            hcu.sex AS sex,
+            hre.exam_date AS examDate,
+            hre.ticket_no AS ticketNo,
+            hde.station_name AS stationName,
+            hre.report_pdf AS reportPDF
+        FROM
+            hra_report hre
+        LEFT JOIN hra_customer hcu ON hre.customer_id = hcu.id
+        LEFT JOIN hra_device hde ON hre.device_id = hde.device_id
+        WHERE
+            hcu.phone = #{phone} AND  hre.show_flag = 1
+    </select>
+
+    <select id="listReportRecord" resultType="com.yimao.cloud.pojo.dto.hra.ReportDTO">
+         SELECT
+            hrr.id as id,
+            hcu.username AS username,
+            hcu.sex AS sex,
+            hre.exam_date AS examDate,
+            hde.station_name AS stationName,
+            hre.report_pdf AS reportPDF,
+            hre.ticket_no as ticketNo
+        FROM
+            hra_report_record hrr
+        LEFT JOIN hra_report hre ON hrr.report_id=hre.id
+        LEFT JOIN hra_customer hcu ON hre.customer_id = hcu.id
+        LEFT JOIN hra_device hde ON hre.device_id = hde.device_id
+        WHERE
+            hrr.user_id = #{userId} AND  hrr.delete_status = 0
+    </select>
+
+    <!--查询已完成，且存在体检报告的 -->
+    <select id="listByNoSaveRecord" resultType="com.yimao.cloud.pojo.dto.hra.ReportDTO">
+        select
+        hr.id AS id,
+        hr.ticket_no as ticketNo
+        from hra_ticket ht
+        left join hra_report hr on ht.ticket_no = hr.ticket_no
+        where ht.ticket_status = 2
+        and ht.user_id = #{userId}
+        and ht.device_id is not null
+        and  hr.id is not null
+    </select>
+</mapper>

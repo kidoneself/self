@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.order.mapper.SubOrderDetailMapper">
+
+    <select id="selectProductInfoById" resultType="com.yimao.cloud.order.po.SubOrderDetail">
+        select
+            sub_order_id as subOrderId,
+            product_id as productId,
+            product_name as productName,
+            product_img as productImg,
+            product_company_id as productCompanyId,
+            product_company_name as productCompanyName,
+            product_first_category_id as productFirstCategoryId,
+            product_first_category_name as productFirstCategoryName,
+            product_two_category_id as productTwoCategoryId,
+            product_two_category_name as productTwoCategoryName,
+            product_category_id as productCategoryId,
+            product_category_name as productCategoryName
+        from
+            order_sub_detail
+        where
+            sub_order_id = #{id}
+    </select>
+	
+	<update id="updateEngineerInfo" parameterType="com.yimao.cloud.pojo.dto.order.SubOrderDetailDTO">
+		UPDATE order_sub_detail osd
+		INNER JOIN order_sub os ON osd.sub_order_id = os.id
+		SET os.engineer_id = #{engineerId},
+		 os.update_time = NOW(),
+		 osd.engineer_id = #{engineerId},
+		 osd.engineer_name = #{engineerName},
+		 osd.engineer_phone = #{engineerPhone},
+		 osd.engineer_id_card = #{engineerIdCard},
+		 osd.engineer_province = #{engineerProvince},
+		 osd.engineer_city = #{engineerCity},
+		 osd.engineer_region = #{engineerRegion},
+		 osd.update_time = NOW()
+		WHERE
+			(os.status &lt; 5 or os.status=6)
+		AND os.product_type = 3
+		<if test="oldEngineerId !=null">
+			   AND osd.engineer_id = #{oldEngineerId}
+        </if>
+        <if test="addresseeProvince !=null and addresseeProvince!=''">
+			   AND osd.addressee_province = #{addresseeProvince}
+        </if>
+        <if test="addresseeCity !=null and addresseeCity!=''">
+			   AND osd.addressee_city = #{addresseeCity}
+        </if>
+        <if test="addresseeRegion !=null and addresseeRegion!=''">
+			   AND osd.addressee_region = #{addresseeRegion}
+        </if>
+	</update>
+</mapper>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.yimao.cloud.water.mapper.WaterDeviceRenewConfigMapper">
+
+    <select id="selectByType" resultType="com.yimao.cloud.water.po.WaterDeviceRenewConfig">
+        SELECT
+            id,
+            `type`,
+            type_name as typeName,
+            postpone_day as postponeDay,
+            balance_before as balanceBefore,
+            balance_after as balanceAfter,
+            color_value as colorValue
+        FROM
+            water_device_renew_config
+        WHERE
+            `type` = #{type}
+    </select>
+
+</mapper>

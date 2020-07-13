@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.product.mapper.ProductMapper">
+
+    <sql id="allColumns">
+        p.id,
+        p.name,
+        p.code,
+        p.mode,
+        p.hot,
+        p.category_id as categoryId,
+        p.company_id as companyId,
+        p.company_name as companyName,
+        p.supply_code as supplyCode,
+        p.new_product as newProduct,
+        p.img,
+        p.cover_img as coverImg,
+        p.cover_video as coverVideo,
+        p.price,
+        p.market_price as marketPrice,
+        p.stock,
+        p.status,
+        p.on_shelf_type as onShelfType,
+        p.will_on_shelf_time as willOnShelfTime,
+        p.on_shelf_time as onShelfTime,
+        p.off_shelf_time as offShelfTime,
+        p.logistics_fee as logisticsFee,
+        p.description,
+        p.sorts,
+        p.min_moq as minMoq,
+        p.max_moq as maxMoq,
+        p.transport_type as transportType,
+        p.take_type as takeType,
+        p.activity_type as activityType,
+        p.sale_count as saleCount,
+        p.creator,
+        p.create_time as createTime,
+        p.updater,
+        p.update_time as updateTime,
+        p.buy_permission as buyPermission
+    </sql>
+
+    <!--查询产品（分页）-->
+    <select id="listProduct" resultType="com.yimao.cloud.pojo.dto.product.ProductDTO">
+        SELECT distinct
+        <include refid="allColumns"/>
+        FROM
+        product p
+        inner join product__product_front_category ppfc on p.id = ppfc.product_id
+        inner join product_category pc on ppfc.front_category_id = pc.id
+        WHERE 1=1
+        <if test="status != null">
+            and p.status in
+            <foreach collection="status" item="state" index="index" open="(" close=")" separator=",">
+                #{state}
+            </foreach>
+        </if>
+        <if test="name != null and name != ''">
+            and (p.name like CONCAT('%', #{name}, '%') or p.code like CONCAT('%', #{name}, '%'))
+        </if>
+        <if test="categoryId != null">
+            <if test="ids != null and ids.size() > 0">
+                AND p.category_id in
+                <foreach collection="ids" item="categoryIds" index="index" open="(" close=")" separator=",">
+                    #{categoryIds}
+                </foreach>
+            </if>
+        </if>
+        <if test="hot != null">
+            and p.hot = #{hot}
+        </if>
+        <if test="companyId != null">
+            and p.company_id = #{companyId}
+        </if>
+        <if test="startTime != null">
+            and p.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and p.create_time &lt;= #{endTime}
+        </if>
+        <if test="onShelfStartTime != null">
+            and p.on_shelf_time &gt;= #{onShelfStartTime}
+        </if>
+        <if test="onShelfEndTime != null">
+            and p.on_shelf_time &lt;= #{onShelfEndTime}
+        </if>
+        <if test="terminal != null">
+            and pc.type = 2 and pc.terminal = #{terminal} and (p.activity_type is null or p.activity_type in (1,2))
+        </if>
+        order by p.sorts desc
+    </select>
+
+    <!--客户端查询产品（经销商APP、公众号等）-->
+    <select id="listProductForClient" resultType="com.yimao.cloud.pojo.dto.product.ProductDTO">
+        SELECT DISTINCT
+        <include refid="allColumns"/>
+        FROM
+        product p
+        inner join product__product_front_category ppfc on p.id = ppfc.product_id
+        inner join product_category pc on ppfc.front_category_id = pc.id
+        <if test="supplyCode != null and supplyCode =='PTPSJ'">
+            inner join product__distributor pd on p.id = pd.product_id and pd.distributor_id = #{distributorId}
+        </if>
+        WHERE p.status = 2 and (p.activity_type is null or p.activity_type in (1,2))
+        <if test="supplyCode != null and supplyCode != ''">
+            and p.supply_code = #{supplyCode}
+        </if>
+        <if test="frontCategoryId != null">
+            and ppfc.front_category_id = #{frontCategoryId}
+        </if>
+        <if test="terminal != null">
+            and pc.type = 2 and pc.terminal = #{terminal}
+        </if>
+        order by p.sorts desc
+    </select>
+
+    <!--产品状态统计-->
+    <select id="findProductStatistics" resultType="com.yimao.cloud.pojo.vo.product.ProductStatusStatisticVO">
+        select
+        (select count(1) from product p where p.`status` != 4) as allStatus,
+        (select count(1) from product p where p.`status` = 2) as upStatus,
+        (select count(1) from product p where p.`status` = 1 or p.`status` = 3) as downStatus;
+    </select>
+
+    <select id="findMYCardProductList" resultType="com.yimao.cloud.pojo.dto.product.ProductDTO">
+        SELECT
+        p.id,
+        p.`name`,
+        p.supply_code as supplyCode,
+        p.`status`,
+        pc.`name` as backCategoryName,
+        pc.id as categoryId
+        FROM
+        product p
+        LEFT JOIN product_category pc ON ( p.category_id = pc.id )
+        WHERE
+        pc.`level` = 3
+        AND pc.type = 1
+        <if test="categoryName != null and categoryName != ''">
+            and pc.NAME = #{categoryName}
+        </if>
+    </select>
+
+    <select id="findFCardProductList" resultType="com.yimao.cloud.pojo.dto.product.ProductDTO">
+        SELECT
+        p.id,
+        p.`name`,
+        p.supply_code as supplyCode,
+        p.`status`,
+        pc.`name` as backCategoryName,
+        pc.id as categoryId
+        FROM
+        product p
+        LEFT JOIN product_category pc ON ( p.category_id = pc.id )
+        WHERE
+        pc.`level` = 3
+        AND pc.type = 1
+        AND p.`status` in (1,3)
+        AND ( pc.NAME = 'F' )
+    </select>
+
+
+    <!--根据产品分类名称获取产品ID集合-->
+    <select id="listProductIdsByCategoryName" resultType="java.lang.Integer">
+        select distinct
+        p.id
+        from
+        product p
+        <if test="categoryLevel != null and categoryLevel == 1">
+            inner join product_category pc3 on (p.category_id = pc3.id and pc3.level = 3)
+            inner join product_category pc2 on (pc3.pid = pc2.id and pc2.level = 2)
+            inner join product_category pc1 on (pc2.pid = pc1.id and pc1.level = 1)
+            where pc1.name = #{categoryName}
+        </if>
+        <if test="categoryLevel != null and categoryLevel == 2">
+            inner join product_category pc3 on (p.category_id = pc3.id and pc3.level = 3)
+            inner join product_category pc2 on (pc3.pid = pc2.id and pc2.level = 2)
+            where pc2.name = #{categoryName}
+        </if>
+        <if test="categoryLevel != null and categoryLevel == 3">
+            inner join product_category pc3 on (p.category_id = pc3.id and pc3.level = 3)
+            where pc3.name = #{categoryName}
+        </if>
+    </select>
+    <select id="findMCardProductList" resultType="com.yimao.cloud.pojo.dto.product.ProductDTO">
+        SELECT
+        p.id,
+        p.`name`,
+        p.category_name AS categoryName,
+        p.supply_code AS supplyCode,
+        p.`status`,
+        p.price,
+        p.mode as mode,
+        pc.`name` AS backCategoryName,
+        pc.id AS categoryId
+        FROM
+        product p
+        LEFT JOIN product_category pc ON ( p.category_id = pc.id )
+        WHERE
+        pc.`level` = 3
+        AND pc.type = 1
+        AND p.`status` != 4
+        AND pc.NAME = 'M'
+        AND p.mode = 2
+    </select>
+
+    <!--后台修改订单产品型号时查询同类产品列表（二级类目一致，价格一致）-->
+    <select id="listProductForModifyOrder" resultType="com.yimao.cloud.pojo.dto.product.ProductDTO">
+        SELECT
+        distinct
+        p.id,
+        p.`name`,
+        p.`cover_img` as coverImg,
+        p.category_name as categoryName,
+        fpc.name AS frontFirstCategoryName
+        FROM
+        product p
+        inner join product_category pc3 on (pc3.id = p.category_id and pc3.level = 3)
+        inner join product_category pc2 on (pc2.id = pc3.pid and pc2.level = 2)
+        <if test="costId != null">
+            inner join product__product_cost ppc on ppc.product_id = p.id
+        </if>
+        inner join product__product_front_category ppfc on ppfc.product_id = p.id
+        inner join product_category fpc on (fpc.id = ppfc.front_category_id and fpc.level = 1)
+        WHERE
+        p.`status` = 2 and (p.activity_type is null or p.activity_type in (1,2))
+        <if test="costId != null">
+            and ppc.cost_id = #{costId}
+        </if>
+        <if test="price != null">
+            and p.price = #{price}
+        </if>
+        <if test="secondCategoryId != null">
+            AND pc2.id = #{secondCategoryId}
+        </if>
+        <if test="fcidList != null">
+            AND ppfc.front_category_id in
+            <foreach collection="fcidList" item="fcid" index="index" open="(" close=")" separator=",">
+                #{fcid}
+            </foreach>
+        </if>
+    </select>
+    <select id="getProductByFrontId" resultType="com.yimao.cloud.pojo.dto.product.ProductDTO">
+    select
+        p.id,
+        p.name,
+        p.mode,
+        p.cover_img AS coverImg,
+        p.price,
+        p.supply_code AS supplyCode,
+        p.market_price as marketPrice
+    from product p
+    left join product__product_front_category ppfc on(p.id=ppfc.product_id)
+    where ppfc.front_category_id = #{id}
+    and p.status = 2 and (p.activity_type is null or p.activity_type in (1,2))
+    </select>
+
+    <!--更新购买数量-->
+    <select id="updateSaleCountById" resultType="com.yimao.cloud.product.po.Product">
+        update product set sale_count = case when sale_count is null then #{count} else sale_count + #{count} end where id = #{id}
+    </select>
+
+    <select id="selectIdByCategoryId" resultType="java.lang.Integer">
+        select id from product where mode = 3 and status = 2 and category_id = #{categoryId}
+    </select>
+    <select id="selectIdByCategoryName" resultType="java.lang.Integer">
+        select id from product where mode = 3 and status = 2 and supply_code = 'PJXCP' and category_name = #{categoryName}
+    </select>
+    <select id="getWaterProduct" resultType="com.yimao.cloud.pojo.dto.product.ProductDTO">
+        select
+        <include refid="allColumns"/>
+        from product p where mode = 3 and supply_code = 'PJXCP' and status = 2
+    </select>
+
+
+    <!-- 折机经销商可跟换的产品列表 -->
+    <select id="listProductByActivityTypeAndDistributor" resultType="com.yimao.cloud.pojo.dto.product.ProductDTO">
+     SELECT
+        p.id,
+        p.`name`,
+        p.`cover_img` as coverImg,
+        p.category_name as categoryName,
+		p.price
+        FROM
+        product p
+        inner join product__distributor pd on p.id = pd.product_id
+        where  p.activity_type = #{activityType}
+        and pd.distributor_id = #{distributorId}
+        and p.price = #{price}
+    </select>
+
+    <!--数据迁移用（业务不准调用）-->
+    <select id="selectIdByOldId" resultType="java.lang.Integer">
+        SELECT id from product where old_id = #{oldId} limit 1
+    </select>
+    
+    <select  id="findNotListedProduct" resultType="com.yimao.cloud.pojo.dto.product.ProductDTO" parameterType="java.util.List">
+    	SELECT
+        p.id,
+        p.name
+        from 
+        product p        
+        where mode = 1
+        <if test="statusList != null and statusList.size >0">
+            and status in
+            <foreach collection="statusList" item="item" index="index" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="getProductBySupplyCode" resultType="java.lang.Integer"
+            parameterType="java.lang.String">
+        SELECT
+        p.id
+        from
+        product p
+        where
+        <if test="supplyCode != null and supplyCode != ''">
+            p.supply_code=#{supplyCode}
+        </if>
+    </select>
+    
+    <select id="getOnlineProductThreeCategory" resultType="com.yimao.cloud.pojo.dto.product.ProductDTO">
+    	SELECT
+    		p.id,
+			p.category_id as categoryId,
+			p.category_name as categoryName,
+			p.price
+		FROM
+			product_category pc
+		INNER JOIN product p ON pc.id = p.category_id
+		WHERE
+			pc.`level` = 3
+		AND p. STATUS = 2
+		AND p. MODE = 3
+		<if test="price != null">
+            AND p.price = #{price}
+        </if>
+    </select>
+
+</mapper>

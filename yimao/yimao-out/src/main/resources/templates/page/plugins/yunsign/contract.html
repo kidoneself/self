@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="format-detection" content="telephone=no"/>
+    <title>正在预览合同...</title>
+    <title>签署合同</title>
+</head>
+<body style="background: #FAFAFA;">
+
+<form method="post" id="form" enctype="application/x-www-form-urlencoded" action="https://www.yunsign.com/mmecserver3.0/sign.do"  >
+    <input name="appId" type="hidden" th:value="${appId}"/>
+    <input name="signType" type="hidden"  th:value="${signType}" />
+    <input name="isHandWrite" type="hidden" th:value="${isHandWrite}">
+    <input name="isForceSeal" type="hidden" th:value="${isForceSeal}">
+    <input name="isSignFirst" type="hidden" th:value="${isSignFirst}">
+    <input name="isSeal" type="hidden" th:value="${isSeal}">
+    <input name="orderId" type="hidden" th:value="${codeId}"/>
+    <input name="time" type="hidden" th:value="${time}" />
+    <input name="userId" type="hidden" th:value="${userId}" /><br/>
+    <input name="validType" type="hidden" th:value="${validType}">
+    <input name="sign" type="hidden" th:value="${sign}" />
+    <input type="submit"  th:value="OK " style="display: none;" />
+</form>
+ <br/>
+<br/>
+
+<script type="text/javascript" th:inline="javascript">
+    document.getElementById('form').submit();
+    // $("#form").submit();
+</script>
+
+</body>
+</html>

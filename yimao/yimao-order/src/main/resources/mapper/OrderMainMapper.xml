@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.order.mapper.OrderMainMapper">
+	<select id="selectPayCheckList" resultType="com.yimao.cloud.pojo.dto.order.OrderMainDTO" parameterType="com.yimao.cloud.pojo.dto.order.OrderMainDTO">
+	select
+	om.id,
+	om.count,
+	om.order_amount_fee as orderAmountFee,
+	max(osd.product_company_name) as productCompanyName,
+	os.pay_status as payStatus,
+	om.pay_type as payType,
+	om.pay_time as payTime,
+	om.pay_credential_submit_time as payCredentialSubmitTime,
+	om.pay_credential as payCredential,
+	os.pay_terminal as payTerminal,
+	max(osd.user_phone) as userPhone
+	from
+	order_main om
+	left join order_sub os on om.id=os.main_order_id
+	left join order_sub_detail osd on os.id=osd.sub_order_id
+	where
+	om.deleted = 0
+	/*and om.pay = 1*/
+	and os.pay_status = 2
+	and os.pay_terminal =1
+	<if test="id != null">
+		and om.id like concat("%",#{id},"%")
+	</if>
+	<if test="productCompanyId != null ">
+		and osd.product_company_id = #{productCompanyId}
+	</if>
+	<if test="startCredentialSubmitTime != null">
+        and om.pay_credential_submit_time &gt;= #{startCredentialSubmitTime}
+    </if>
+    <if test="endCredentialSubmitTime != null">
+        and om.pay_credential_submit_time &lt;= #{endCredentialSubmitTime}
+    </if>
+    <if test="payType == null">
+    	and om.pay_type in (3, 4)
+    </if>
+	<if test="payType != null">
+		and om.pay_type = #{payType}
+	</if>	
+	group by om.id order by payCredentialSubmitTime desc
+		
+	</select>
+	
+	<select id="selectPayCheckCount" resultType="java.lang.Integer">
+	select
+	count(DISTINCT om.id)
+	from
+	order_main om
+	left join order_sub os on om.id=os.main_order_id
+	left join order_sub_detail osd on os.id=osd.sub_order_id
+	where
+	om.deleted = 0
+	/*and om.pay = 1*/
+	and os.pay_status = 2
+	and os.pay_terminal =1
+	and om.pay_type in (3, 4)
+	</select>
+	
+
+	<select id="selectPayCheckListExport" resultType="com.yimao.cloud.pojo.dto.order.OrderMainDTO" parameterType="com.yimao.cloud.pojo.dto.order.OrderMainDTO">
+	select
+	om.id,
+	om.count,
+	om.order_amount_fee as orderAmountFee,
+	max(osd.product_company_name) as productCompanyName,
+	os.pay_status as payStatus,
+	om.pay_type as payType,
+	om.pay_time as payTime,
+	om.pay_credential_submit_time as payCredentialSubmitTime,
+	om.pay_credential as payCredential,
+	os.pay_terminal as payTerminal
+	from
+	order_main om
+	left join order_sub os on om.id=os.main_order_id
+	left join order_sub_detail osd on os.id=osd.sub_order_id
+	where
+	om.deleted = 0
+	and os.pay_status = 2
+	and os.pay_terminal =1
+	<if test="id != null">
+		and om.id like concat("%",#{id},"%")
+	</if>
+	<if test="productCompanyId != null ">
+		and osd.product_company_id = #{productCompanyId}
+	</if>
+	<if test="startCredentialSubmitTime != null">
+        and om.pay_credential_submit_time &gt;= #{startCredentialSubmitTime}
+    </if>
+    <if test="endCredentialSubmitTime != null">
+        and om.pay_credential_submit_time &lt;= #{endCredentialSubmitTime}
+    </if>
+    <if test="payType == null">
+    	and om.pay_type in (3, 4)
+    </if>
+	<if test="payType != null">
+		and om.pay_type = #{payType}
+	</if>	
+	group by om.id order by payCredentialSubmitTime desc
+		
+	</select>
+
+
+	<select id="ProductCompanyIdByOutTradeNo" resultType="java.lang.Integer">
+		select
+			osd.product_company_id
+		from
+			order_main om
+		inner join order_sub os on om.id = os.main_order_id
+		inner join order_sub_detail osd on os.id = osd.sub_order_id
+		where
+			om.id = #{id}
+		limit 1
+	</select>
+
+	<!--查询用户是否下过订单-->
+    <select id="existsWithUserId" resultType="java.lang.Boolean">
+		SELECT
+            CASE WHEN COUNT(*)  > 0 THEN 1 ELSE 0 END AS result
+        from
+            `order_main`
+        where
+            user_id = #{userId}
+	</select>
+
+</mapper>

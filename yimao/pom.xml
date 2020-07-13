@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>yimao</artifactId>
+    <packaging>pom</packaging>
+
+    <parent>
+        <groupId>com.yimao.cloud</groupId>
+        <artifactId>cloud-root</artifactId>
+        <version>2.0</version>
+    </parent>
+
+    <modules>
+        <module>yimao-app</module>
+        <module>yimao-cat</module>
+        <module>yimao-cms</module>
+        <module>yimao-engineer</module>
+        <module>yimao-hra</module>
+        <module>yimao-openapi</module>
+        <module>yimao-order</module>
+        <module>yimao-out</module>
+        <module>yimao-product</module>
+        <module>yimao-station</module>
+        <module>yimao-system</module>
+        <module>yimao-task</module>
+        <module>yimao-user</module>
+        <module>yimao-water</module>
+        <module>yimao-wechat</module>
+    </modules>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.yimao.cloud</groupId>
+            <artifactId>component-base</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yimao.cloud</groupId>
+            <artifactId>component-pojo</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!--spring boot admin log level JMX-beans-->
+        <dependency>
+            <groupId>org.jolokia</groupId>
+            <artifactId>jolokia-core</artifactId>
+        </dependency>
+        <!--<dependency>-->
+        <!--<groupId>org.springframework.boot</groupId>-->
+        <!--<artifactId>spring-boot-starter-amqp</artifactId>-->
+        <!--</dependency>-->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
+        </dependency>
+
+        <!--hystrix-stream turbine等用到-->
+        <!--<dependency>-->
+            <!--<groupId>org.springframework.cloud</groupId>-->
+            <!--<artifactId>spring-cloud-netflix-hystrix-stream</artifactId>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+            <!--<groupId>org.springframework.cloud</groupId>-->
+            <!--<artifactId>spring-cloud-starter-stream-rabbit</artifactId>-->
+        <!--</dependency>-->
+
+        <!--spring cloud config-->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-config</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-bus-amqp</artifactId>
+        </dependency>
+
+        <!--zipkin-->
+        <!--<dependency>-->
+            <!--<groupId>org.springframework.cloud</groupId>-->
+            <!--<artifactId>spring-cloud-starter-zipkin</artifactId>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+            <!--<groupId>org.springframework.amqp</groupId>-->
+            <!--<artifactId>spring-rabbit</artifactId>-->
+        <!--</dependency>-->
+
+        <!--Feign在默认情况下使用的是JDK原生的URLConnection发送HTTP请求，没有连接池。-->
+        <!--但是对每个地址会保持一个长连接，即利用HTTP的persistence connection 。-->
+        <!--我们可以用Apache的HTTP Client替换Feign原始的http client, 从而获取连接池、超时时间等与性能息息相关的控制能力。-->
+        <!--Spring Cloud从Brixtion.SR5版本开始支持这种替换。-->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.netflix.feign</groupId>
+            <artifactId>feign-httpclient</artifactId>
+            <version>8.15.1</version>
+        </dependency>
+
+    </dependencies>
+
+</project>

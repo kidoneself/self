@@ -1,0 +1,8 @@
+server:
+  port: 16007
+  tomcat:
+    uri-encoding: utf-8
+    max-connections: 2000
+    max-threads: 500
+    accept-count: 200
+  connection-timeout: 30000ms

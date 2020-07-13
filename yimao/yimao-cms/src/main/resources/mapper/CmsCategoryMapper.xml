@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.cms.mapper.CmsCategoryMapper">
+    <insert id="batchAdd" parameterType="java.util.List">
+        INSERT INTO `t_category` (
+            `name`,
+            `parent_id`,
+            `level`,
+            `type`,
+            `platform`,
+            `location`,
+            `sorts`,
+            `status`,
+            `create_time`,
+            `update_time`
+        )
+        VALUES
+        (
+            #{cmsCategory.name},
+            #{cmsCategory.parentId},
+            #{cmsCategory.level},
+            #{cmsCategory.type},
+            #{cmsCategory.platform},
+            #{cmsCategory.location},
+            #{cmsCategory.sorts},
+            #{cmsCategory.status},
+            #{cmsCategory.createTime},
+            #{cmsCategory.updateTime}
+        )
+    </insert>
+
+    <select id="findPage" resultType="com.yimao.cloud.pojo.dto.cms.CmsCategoryDTO">
+        select distinct
+        id,
+        name,
+        parent_id as parentId,
+        platform,
+        location,
+        `level`,
+        `type`,
+        sorts,
+        `status`,
+        create_time as createTime,
+        update_time as updateTime
+        from t_category where 1=1
+        <if test="parentId!=null">
+            and parent_id = #{parentId}
+        </if>
+        <if test="type != null">
+            and type = #{type}
+        </if>
+        <if test="platform != null">
+            and platform = #{platform}
+        </if>
+        <if test="location != null">
+            and location = #{location}
+        </if>
+        <if test="level != null">
+            and `level` = #{level}
+        </if>
+        <if test="status != null">
+            and `status` = #{status}
+        </if>
+        order by sorts desc
+    </select>
+    <select id="checkout" resultType="java.lang.Integer">
+       SELECT
+	  count(0)
+    FROM
+	t_content__category tcc
+    LEFT JOIN t_content tc ON (tcc.content_id = tc.id)
+    WHERE
+	tc.`status` != 4
+    AND tcc.category_id = #{id}
+    </select>
+
+    <select id="getCategory" resultType="com.yimao.cloud.pojo.dto.cms.CmsCategoryDTO">
+        select distinct
+            id,
+            `name`
+        from
+            t_category
+        where
+            `level` = 1 and `status` = 1
+        <if test="platform != null">
+            and platform = #{platform}
+        </if>
+        <if test="location != null">
+            and location = #{location}
+        </if>
+        <if test="type != null">
+            and type = #{type}
+        </if>
+    </select>
+
+	<select id="getHeadOfficeMessageType" resultType="com.yimao.cloud.pojo.dto.cms.CmsCategoryDTO">
+	 	select distinct
+            id,
+            name,
+            sorts
+        from
+            t_category
+        where
+		platform=4
+		and location=2
+		and status=1 
+		and level=1
+		order by sorts asc
+	</select>
+</mapper>

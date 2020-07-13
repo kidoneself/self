@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.system.mapper.StoreHouseOperationLogMapper">
+
+    <select id="page" resultType="com.yimao.cloud.pojo.dto.system.StoreHouseOperationLogDTO">
+        SELECT
+        id,
+        orig_object_name AS origObjectName,
+        orig_province AS origProvince,
+        orig_city AS origCity,
+        orig_region AS origRegion,
+        object_name AS objectName,
+        province,
+        city,
+        region,
+        goods_name AS goodsName,
+        orig_count AS origCount,
+        dest_count AS destCount,
+        `count`,
+        object_type AS objectType,
+        operation_type AS operationType,
+        operator,
+        create_time AS createTime
+        FROM
+        store_house_operation_log
+        where 1 = 1
+        <if test="operationType != null">
+            and operation_type = #{operationType}
+        </if>
+        <if test="objectType != null">
+            and object_type = #{objectType}
+        </if>
+        <if test="areaId != null">
+            and (area_id = #{areaId} or orig_area_id = #{areaId})
+        </if>
+        <if test="startTime!=null">
+            and create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime!=null">
+            and create_time &lt;= #{endTime}
+        </if>
+        order by create_time desc
+    </select>
+</mapper>

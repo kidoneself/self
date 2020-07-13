@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.hra.mapper.HraBodyElementMapper">
+
+    <select id="selectBodyElements" resultType="com.yimao.cloud.hra.po.HraBodyElement">
+        SELECT
+            hbe.`id` AS id,
+            hbe.`element_name` AS elementName,
+            hbe.`element_context` AS elementContext,
+            hbe.`element_img` AS elementImg
+        FROM
+            hra_body_element hbe
+    </select>
+
+</mapper>

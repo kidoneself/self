@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.order.mapper.DeliveryAddressMapper">
+    <select id="getOtherId" resultType="java.lang.Integer">
+    SELECT
+	id
+    FROM
+	delivery_address
+    WHERE
+	id != #{id}
+    </select>
+    <select id="selectAllAddress" resultType="com.yimao.cloud.pojo.dto.order.DeliveryAddressDTO">
+        SELECT
+    `id`,
+    `contact`,
+    `operator_id` as operatorId,
+    `mobile`,
+    `province`,
+    `city`,
+    `region`,
+    `street`,
+    `company`,
+    `has_delivery` as hasDelivery,
+    `has_refund` as hasRefund,
+    `remark`,
+    updater
+    FROM delivery_address
+    where
+    operator_id = #{operatorId}
+    </select>
+
+    <select id="queryDeliveryAddressList" resultType="com.yimao.cloud.pojo.dto.order.ExpressExportDTO">
+        select
+          da.company as sendCompany,
+          da.contact as sender,
+          da.mobile as senderPhone,
+          concat_ws('/', da.province, da.city, da.region,da.street) as senderAddress
+        from delivery_address da
+        where 1=1
+        <if test="id != null">
+          and da.operator_id = #{id}
+        </if>
+        and da.has_delivery = '1'
+    </select>
+
+    <update id="batchUpdateDevilieryAddress" parameterType="java.util.Map">
+        update delivery_address da
+        set
+        <if test="hasRefund ! = null">
+            da.has_refund = #{hasRefund},
+        </if>
+        <if test="hasDelivery != null">
+            da.has_delivery = #{hasDelivery},
+        </if>
+        da.updater = #{updater},
+        da.update_time = #{updateTime}
+        where 1=1
+        <if test="otherIds != null and otherIds.size >0">
+            and id in
+            <foreach collection="otherIds" item="item" index="index" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </update>
+
+</mapper>

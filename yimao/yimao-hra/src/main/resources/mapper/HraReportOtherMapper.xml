@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.hra.mapper.HraReportOtherMapper">
+
+    <select id="getOtherReportList" resultType="com.yimao.cloud.pojo.dto.hra.HraReportOtherDTO">
+        SELECT
+            ot.`id` AS id,
+            ot.`user_id` AS userId,
+            ot.`share_user_id` AS shareUserId,
+            ot.`ticket_no` AS ticketNo,
+            ot.`mobile` AS mobile,
+            ot.`create_time` AS createTime
+        FROM hra_report_other ot
+        WHERE ot.`user_id` = #{uid}
+    </select>
+
+
+    <select id="getOtherReportByNo" resultType="com.yimao.cloud.hra.po.HraReportOther">
+        SELECT
+            ot.`id` AS id,
+            ot.`user_id` AS userId,
+            ot.`ticket_no` AS ticketNo,
+            ot.`mobile` AS mobile,
+            ot.`create_time` AS createTime
+        FROM hra_report_other ot
+        WHERE ot.`ticket_no` = #{ticketNo}
+    </select>
+
+
+    <select id="selectReportByNo" resultType="com.yimao.cloud.hra.po.HraReportOther">
+        SELECT
+            ot.`id` AS id,
+            ot.`user_id` AS userId,
+            ot.`ticket_no` AS ticketNo,
+            ot.`mobile` AS mobile,
+            ot.`create_time` AS createTime
+        FROM hra_report_other ot
+        WHERE ot.`ticket_no` = #{ticketNo}
+    </select>
+
+
+    <select id="getShareUserReportList" resultType="com.yimao.cloud.hra.po.HraReportOther">
+        SELECT
+            ot.`id` AS id,
+            ot.`user_id` AS userId,
+            ot.`share_user_id` AS shareUserId,
+            ot.`ticket_no` AS ticketNo,
+            ot.`mobile` AS mobile,
+            ot.`create_time` AS createTime
+        FROM hra_report_other ot
+        WHERE ot.`share_user_id` = #{id}
+    </select>
+
+    <select id="findReportByNoAndsharedUserId" parameterType="Map" resultType="com.yimao.cloud.hra.po.HraReportOther">
+        SELECT
+            ot.`id` AS id,
+            ot.`user_id` AS userId,
+            ot.`share_user_id` AS shareUserId,
+            ot.`ticket_no` AS ticketNo,
+            ot.`mobile` AS mobile,
+            ot.`create_time` AS createTime
+        FROM hra_report_other ot
+        WHERE ot.`user_id` = #{sharedUserId}
+        AND ot.`ticket_no` = #{ticketNo}
+    </select>
+
+    <select id="getOtherReportByNoAndUid" parameterType="Map" resultType="com.yimao.cloud.hra.po.HraReportOther">
+        SELECT
+            ot.`id` AS id,
+            ot.`user_id` AS userId,
+            ot.`share_user_id` AS shareUserId,
+            ot.`ticket_no` AS ticketNo,
+            ot.`mobile` AS mobile,
+            ot.`create_time` AS createTime
+        FROM hra_report_other ot
+        WHERE ot.`user_id` = #{userId}
+        AND ot.`ticket_no` = #{ticketNo}
+    </select>
+
+</mapper>

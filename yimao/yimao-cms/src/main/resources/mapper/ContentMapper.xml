@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.cms.mapper.ContentMapper">
+    <update id="addWatchCount">
+    UPDATE t_content
+    SET view_count = #{viewCount}
+    WHERE
+	id = #{id}
+    </update>
+    <select id="findPage" resultType="com.yimao.cloud.pojo.dto.cms.ContentDTO">
+        SELECT distinct
+        tc.id,
+        tc.title,
+        tc.text,
+        tc.summary,
+        tc.link_to AS linkTo,
+        tc.like_count AS likeCount,
+        tc.share_count AS shareCount,
+        tc.thumbnail,
+        tc.module,
+        tc.style,
+        tc.user_id AS userId,
+        tc.author,
+        tc.order_number AS orderNumber,
+        tc. STATUS,
+        tc.vote_up AS voteUp,
+        tc.vote_down AS voteDown,
+        tc.rate,
+        tc.rate_count AS rateCount,
+        tc.top,
+        tc.comment_status AS commentStatus,
+        tc.comment_count AS commentCount,
+        tc.comment_time AS commentTime,
+        tc.view_count AS viewCount,
+        tc.create_time AS createTime,
+        tc.update_time AS updateTime,
+        tc.push_role AS pushRole,
+        tc.meta_keywords AS metaKeywords,
+        tc.meta_description AS metaDescription,
+        tc.remarks,
+        tc.service_station_id AS serviceStationId,
+        tc.content_mode AS contentMode,
+        tc.annex_url AS annexUrl,
+        tc.sorts,
+        tc.tag,
+        tc.type,
+        tc.img_url AS imgUrl,
+        tc.release_time as releaseTime,
+        tc.location
+        FROM
+        t_content tc
+        LEFT JOIN t_content__category tcg ON (tc.id = tcg.content_id)
+        LEFT JOIN t_category tcy ON (tcy.id = tcg.category_id)
+        WHERE
+        1 = 1
+        <if test="null!=serviceStationId">
+            and tc.service_station_id = #{serviceStationId}
+        </if>
+        <if test="null != title and title.trim() != ''">
+            and tc.title like CONCAT('%', #{title}, '%')
+        </if>
+        <if test="ids != null and ids.size() > 0">
+            and tcy.id in
+            <foreach collection="ids" item="id" index="index" separator="," open="(" close=")">
+                #{id}
+            </foreach>
+        </if>
+
+        <if test="null!=platform">
+            and tcy.platform = #{platform}
+        </if>
+        <if test="null!=contentMode">
+            and tcy.location = #{contentMode}
+        </if>
+        <if test="null!=location">
+            and tcy.location = #{location}
+        </if>
+        <if test="null!=top">
+            and tc.top=#{top}
+        </if>
+        <if test="null!=type">
+            and tc.type=#{type}
+        </if>
+        <if test="startReleaseTime!=null">
+            AND tc.release_time &gt;= #{startReleaseTime}
+        </if>
+        <if test="endReleaseTime!=null">
+            AND tc.release_time &lt;= #{endReleaseTime}
+        </if>
+        <choose>
+            <when test="null!=status">
+                and tc.status=#{status}
+            </when>
+            <otherwise>
+                and tc.status!=4
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="sort != null and sort == 2">
+                order by tc.top asc ,tc.release_time desc
+            </when>
+            <when test="sort != null and sort == 1">
+                order by tc.release_time desc
+            </when>
+            <otherwise>
+                order by tc.sorts desc
+            </otherwise>
+        </choose>
+        /* order by tc.sorts desc*/
+    </select>
+    <select id="getArticleNum" resultType="java.lang.Integer">
+    SELECT
+	count(id)
+    FROM
+	t_content
+	WHERE DATE(create_time) = DATE(NOW())
+    </select>
+    <select id="getContentArticleTendency" resultType="java.util.Map">
+        SELECT
+        td.`day` AS cday,
+        count( ts.id ) AS ccount
+        FROM
+        t_day td
+        LEFT JOIN t_content ts ON td.`day` = DATE_FORMAT( ts.create_time, '%Y-%m-%d' )
+        WHERE
+        td.`day` > date_sub( now( ), INTERVAL 7 DAY )
+        AND td.`day` &lt;= NOW( )
+        GROUP BY
+        cday
+    </select>
+
+    <select id="countAllNotice" resultType="java.lang.Integer">
+        select
+            count(0)
+        from
+            t_content tc
+            LEFT JOIN t_content__category tcg ON (tc.id = tcg.content_id)
+            LEFT JOIN t_category tcy ON (tcy.id = tcg.category_id)
+        where
+            tc.`status` = 1
+            and tcy.status = 1
+            and tcy.platform = 1
+            and tcy.location = 2
+    </select>
+
+    <select id="getInformationByTop" resultType="com.yimao.cloud.pojo.dto.cms.ContentDTO">
+             SELECT distinct
+        tc.id,
+        tc.title,
+        tc.text,
+        tc.summary,
+        tc.link_to AS linkTo,
+        tc.like_count AS likeCount,
+        tc.share_count AS shareCount,
+        tc.thumbnail,
+        tc.module,
+        tc.style,
+        tc.user_id AS userId,
+        tc.author,
+        tc.order_number AS orderNumber,
+        tc. STATUS,
+        tc.vote_up AS voteUp,
+        tc.vote_down AS voteDown,
+        tc.rate,
+        tc.rate_count AS rateCount,
+        tc.top,
+        tc.comment_status AS commentStatus,
+        tc.comment_count AS commentCount,
+        tc.comment_time AS commentTime,
+        tc.view_count AS viewCount,
+        tc.create_time AS createTime,
+        tc.update_time AS updateTime,
+        tc.push_role AS pushRole,
+        tc.meta_keywords AS metaKeywords,
+        tc.meta_description AS metaDescription,
+        tc.remarks,
+        tc.service_station_id AS serviceStationId,
+        tc.content_mode AS contentMode,
+        tc.annex_url AS annexUrl,
+        tc.sorts,
+        tc.tag,
+        tc.type,
+        tc.img_url AS imgUrl,
+        tc.release_time as releaseTime,
+        tc.location
+        FROM
+            t_content tc
+        LEFT JOIN t_content__category tcg ON (tc.id = tcg.content_id)
+        LEFT JOIN t_category tcy ON (tcy.id = tcg.category_id)
+        WHERE
+            tcy.platform = 4
+        AND tcy.location = 1
+        AND tc.`status` = 1
+        ORDER BY
+            tc.top ASC,
+            tc.release_time DESC
+        LIMIT 3
+    </select>
+
+    <select id="getHeadOfficeMessageList" parameterType="com.yimao.cloud.pojo.query.station.HeadOfficeMessageQuery"
+            resultType="com.yimao.cloud.pojo.dto.cms.ContentDTO">
+        select distinct
+        tc.id,
+        tc.title,
+        tc.text,
+        tc. status,
+        tc.top,
+        tc.create_time as createtime,
+        tc.update_time as updatetime,
+        tc.push_role as pushrole,
+        tc.content_mode as contentmode,
+        tc.annex_url as annexurl,
+        tc.sorts,
+        tc.tag,
+        tc.type,
+        tc.img_url as imgurl,
+        tc.release_time as releasetime,
+        tcy.name as categoryName,
+        tcy.id as categoryId
+        from
+        t_content tc
+        left join t_content__category tcg on (tc.id = tcg.content_id)
+        left join t_category tcy on (tcy.id = tcg.category_id)
+        <where>
+            tcy.location=2
+            and tcy.platform=4
+            and tc.status=1
+            and (tc.tag like CONCAT('%',#{tag},'%'))
+            <if test="categoryId != null">
+                and tcy.id=#{categoryId}
+            </if>
+            <if test="title !=null and title != ''">
+                and tc.title like CONCAT('%',#{title},'%')
+            </if>
+            <if test="startTime != null">
+                and tc.create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and tc.create_time &lt;= #{endTime}
+            </if>
+        </where>
+        order by tc.create_time ${sort}
+    </select>
+
+
+    <select id="getNoticeMessage" resultType="com.yimao.cloud.pojo.dto.cms.ContentDTO">
+        select distinct
+        tc.id,
+        tc.title,
+        tc.text,
+        tc. status,
+        tc.top,
+        tc.create_time as createtime,
+        tc.update_time as updatetime,
+        tc.push_role as pushrole,
+        tc.content_mode as contentmode,
+        tc.annex_url as annexurl,
+        tc.sorts,
+        tc.tag,
+        tc.type,
+        tc.img_url as imgurl,
+        tcu.has_read as hasRead,
+        tc.release_time as releasetime,
+        tcy.name as categoryName,
+        tcy.id as categoryId
+        from
+        t_content tc
+        left join t_content__category tcg on (tc.id = tcg.content_id)
+        left join t_category tcy on (tcy.id = tcg.category_id)
+        left join t_content_user tcu on (tc.id = tcu.content_id)
+        where
+            tcy.location=2
+            and tcy.platform=5
+            and tc.status=1
+            and tcu.deleted = 0
+        order by tc.create_time
+    </select>
+
+</mapper>

@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.system.mapper.GoodsMaterialsMapper">
+	<resultMap type="com.yimao.cloud.pojo.dto.system.GoodsMaterialsDTO" id="goodsMaterialDetail" autoMapping="true">
+		<id column="id" property="id"/>
+		<collection property="materialsAdaptationList" ofType="com.yimao.cloud.pojo.dto.system.MaterialsAdaptationModelDTO" 
+		select="selectMaterialsAdaptationById" column="{goodsMaterialsId=id}"/>
+	</resultMap>
+	
+	<select id="selectMaterialsAdaptationById" resultType="com.yimao.cloud.pojo.dto.system.MaterialsAdaptationModelDTO">
+		select
+		device_model_name as deviceModelName,
+		product_category_id as productCategoryId	
+		from materials_adaptation_model
+		where goods_materials_id=#{goodsMaterialsId}
+	</select>
+
+  	<select id="listMaterials" parameterType="com.yimao.cloud.pojo.query.system.GoodsMaterialsQuery" resultType="com.yimao.cloud.pojo.dto.system.GoodsMaterialsDTO">
+ 		select 
+		gm.id,
+		gm.name,
+		gc.name as secondLevelCategoryName,
+		gc1.name as firstLevelCategoryName,
+		group_concat(mam.device_model_name) as adaptationModel,
+		gm.creator,
+		gm.create_time as createTime,
+		gm.updater,
+		gm.update_time as updateTime
+		from goods_materials gm
+		left join goods_category gc on gm.goods_category_id=gc.id
+		left join goods_category gc1 on gc1.id=gc.pid
+		left join materials_adaptation_model mam on gm.id=mam.goods_materials_id
+		<where>
+		<if test="type != null">
+            and gm.type = #{type}
+        </if>
+		<if test="name != null and name != ''">
+            and gm.name like CONCAT('%', #{name}, '%')
+        </if>
+        <if test="goodsCategoryLevel != null">
+            and gc.level = #{goodsCategoryLevel}
+        </if>
+        <if test="goodsCategoryFirstName != null and goodsCategoryFirstName != ''">
+            and gc1.name like CONCAT('%', #{name}, '%')
+        </if>
+        <if test="goodsCategorySecondName != null and goodsCategorySecondName != ''">
+            and gc.name like CONCAT('%', #{name}, '%')
+        </if>
+        <if test="deviceModelName != null and deviceModelName != ''">
+            and mam.device_model_name like CONCAT('%', #{deviceModelName}, '%')
+        </if>
+        <if test="productCategoryId != null">
+            and mam.product_category_id =#{productCategoryId}
+        </if>
+        <if test="createStartTime != null">
+            and gm.create_time <![CDATA[>=]]> #{startTime}
+        </if>
+        <if test="createEndTime != null">
+            and gm.create_time <![CDATA[<=]]> #{endTime}
+        </if>
+        <if test="updateStartTime != null">
+            and gm.create_time <![CDATA[>=]]> #{startTime}
+        </if>
+        <if test="updateEndTime != null">
+            and gm.create_time <![CDATA[<=]]> #{endTime}
+        </if>        
+		</where>
+		group by gm.id
+		order by gm.create_time desc
+  	</select>
+  	
+  	<select id="listGoods" parameterType="com.yimao.cloud.pojo.query.system.GoodsMaterialsQuery" resultType="com.yimao.cloud.pojo.dto.system.GoodsMaterialsDTO">
+  		select 
+		gm.id,
+		gm.name,
+		gc.name as secondLevelCategoryName,
+		gc1.name as firstLevelCategoryName,
+		gm.creator,
+		gm.create_time as createTime,
+		gm.updater,
+		gm.update_time as updateTime
+		from goods_materials gm
+		left join goods_category gc on gm.goods_category_id=gc.id
+		left join goods_category gc1 on gc1.id=gc.pid
+		<where>
+			<if test="type != null">
+	            and gm.type = #{type}
+	        </if>
+			<if test="name != null and name != ''">
+	            and gm.name like CONCAT('%', #{name}, '%')
+	        </if>
+	        <if test="goodsCategoryLevel != null">
+	            and gc.level = #{goodsCategoryLevel}
+	        </if>
+	        <if test="goodsCategoryFirstName != null and goodsCategoryFirstName != ''">
+	            and gc1.name like CONCAT('%', #{name}, '%')
+	        </if>
+	        <if test="goodsCategorySecondName != null and goodsCategorySecondName != ''">
+	            and gc.name like CONCAT('%', #{name}, '%')
+	        </if>
+	        <if test="createStartTime != null">
+	            and gm.create_time <![CDATA[>=]]> #{startTime}
+	        </if>
+	        <if test="createEndTime != null">
+	            and gm.create_time <![CDATA[<=]]> #{endTime}
+	        </if>
+	        <if test="updateStartTime != null">
+	            and gm.create_time <![CDATA[>=]]> #{startTime}
+	        </if>
+	        <if test="updateEndTime != null">
+	            and gm.create_time <![CDATA[<=]]> #{endTime}
+	        </if>        
+		</where>
+		order by gm.create_time desc
+  	</select>
+  	
+  	<select id="checkRename" resultType="java.lang.Integer">
+  		select 
+  		count(*)
+  		from goods_materials
+  		<where>
+  			<if test="type != null">
+	            and type = #{type}
+	        </if>
+  			<if test="name != null and name != ''">
+            	and name = #{name}
+        	</if>
+        	<if test="id != null">
+            	and id != #{id}
+        	</if>
+  		</where> 	
+  	</select>
+  	
+  	<select id="selectGoodsById" resultMap="goodsMaterialDetail">
+  		select 
+		gm.id,
+		gm.name,
+		gm.type,
+		gc.name as secondLevelCategoryName,
+		gc1.name as firstLevelCategoryName,
+		gm.creator,
+		gm.create_time as createTime,
+		gm.updater,
+		gm.update_time as updateTime
+		from goods_materials gm
+		left join goods_category gc on gm.goods_category_id=gc.id
+		left join goods_category gc1 on gc1.id=gc.pid
+		where 
+		gm.id=#{id}  	
+  	</select>
+  	
+  	<select id="getMaterialListByCategoryId" resultType="com.yimao.cloud.pojo.dto.system.GoodsMaterialsDTO">
+  		select
+		gm.id as id,
+		gm.name as name,
+		gc.id as goodsCategoryId,
+		gc.name as secondLevelCategoryName,
+		gc1.name as firstLevelCategoryName,
+		gc1.id as firstCategoryId,
+		gc.sorts as categorySorts
+		from 
+		goods_materials gm 
+		left join goods_category gc on gm.goods_category_id = gc.id
+		left join goods_category gc1 on gc.pid = gc1.id
+		left join materials_adaptation_model mam on gm.id = mam.goods_materials_id
+		where 
+		gm.type=2
+		and mam.product_category_id=#{productCategoryId}
+		group by gm.id 	
+  	</select>
+  	
+  	<select id="getGoodsByCategoryId" resultType="com.yimao.cloud.pojo.dto.system.GoodsMaterialsDTO">
+  		select
+		gm.id as id,
+		gm.name as name,
+		gm.type
+  		from 
+		goods_materials gm
+  		where
+  		gm.goods_category_id=#{goodCategoryId}
+  		order by gm.create_time desc
+  	</select>
+  	
+</mapper>

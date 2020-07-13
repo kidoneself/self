@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="format-detection" content="telephone=no"/>
+    <title>良品库详情</title>
+    <!-- zui -->
+    <link rel="stylesheet" href="/css/zui/zui.min.css">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/stock.css">
+    <link rel="stylesheet" href="/css/icon/iconfont.css">
+    <style type="text/css">
+        .good-device{height: 100%;}
+        .good-device-title{font-size: 1.4rem;color: #707070;display: inline-block;margin-left: 2rem;margin-top: 1.3rem;margin-bottom: 1.3rem;font-weight: bold;}
+        .good-device-list{background-color: #fafafa;margin-bottom:2rem; height: 100%;}
+        .good-device-list .good-device-list-item:last-child{border-bottom: none;}
+        .good-device-list-item{height: 9rem;background-color: #fafafa;display: flex;color: #707070;margin-left: 1.9rem;justify-content: space-around;flex-direction: column;border-bottom: 1px solid #ddd;padding-bottom: 1rem;}
+        .good-device-list-item-type{font-size: 1.6rem;color: #707070;padding-top: 1rem;}
+        .good-device-list-item-time,.good-device-list-item-no{font-size: 1.4rem;color: #aaa;}
+    </style>
+</head>
+<body>
+<div th:include="header :: header"></div>
+<div class="container pl-0 pr-0">
+    <div class="good-device">
+        <span class="good-device-title">净水设备</span>
+        <div class="good-device-list">
+
+        </div>
+    </div>
+</div>
+</body>
+<script type="text/javascript">
+    $(function(){
+        updateTitle($('head title').text());
+        var page = 1, //分页码
+            timers = null; //定时器(滚动加载方法 2 中用的)
+
+        //加载数据
+        var LoadingDataFn = function() {
+            var dom = '';
+            for (var i = 0; i < 8; i++) {
+                dom += '<div class="good-device-list-item"><span class="good-device-list-item-type">1601(家用)</span><span class="good-device-list-item-time">入库时间:2017-09-23</span><span class="good-device-list-item-no">生产批次码:YIM123245980898</span></div>'
+            }
+            $('.good-device-list').append(dom);
+        };
+
+        //初始化， 第一次加载
+        $(document).ready(function() {
+            LoadingDataFn();
+        });
+
+        $(window).scroll(function() {
+            //当时滚动条离底部60px时开始加载下一页的内容
+            if (($(window).height() + $(window).scrollTop() + 60) >= $(document).height()) {
+                clearTimeout(timers);
+                timers = setTimeout(function() {
+                    page++;
+                    console.log("第" + page + "页");
+                    LoadingDataFn();
+                }, 300);
+            }
+        });
+
+    })
+</script>
+</html>

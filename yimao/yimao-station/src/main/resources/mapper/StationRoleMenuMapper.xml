@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.station.mapper.StationRoleMenuMapper">
+    <resultMap id="BaseResultMap" type="com.yimao.cloud.station.po.StationRoleMenu">
+        <result column="role_id" jdbcType="INTEGER" property="roleId"/>
+        <result column="menu_id" jdbcType="INTEGER" property="menuId"/>
+    </resultMap>
+
+    <insert id="batchInsert">
+        insert into station_role__menu (
+        role_id,
+        menu_id
+        )
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.roleId},
+            #{item.menuId}
+            )
+        </foreach>
+    </insert>
+
+</mapper>

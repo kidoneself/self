@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.order.mapper.OrderStatusRecordMapper">
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" parameterType="java.util.List" >
+        insert into order_status_record (id,orig_status,dest_status,create_time,creator,remark) values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.id,jdbcType=BIGINT},
+            #{item.origStatus,jdbcType=BIGINT},
+            #{item.destStatus,jdbcType=BIGINT},
+            #{item.createTime,jdbcType=TIMESTAMP},
+            #{item.creator,jdbcType=VARCHAR},
+            #{item.remark,jdbcType=VARCHAR})
+        </foreach>
+    </insert>
+	<select id="selectUptodateOrderStatusByOrderSubId" resultType="com.yimao.cloud.order.po.OrderStatusRecord">
+	select 
+	id,
+	orig_status as origStatus,
+	dest_status as destStatus 
+	from
+	order_status_record 
+	where id=#{id} 
+	order by create_time desc 
+	limit 1
+	</select>
+</mapper>

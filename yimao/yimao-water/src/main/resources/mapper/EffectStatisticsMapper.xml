@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.water.mapper.EffectStatisticsMapper">
+
+    <select id="queryEffectDetail" resultType="com.yimao.cloud.pojo.dto.water.EffectStatisticsDTO">
+        SELECT
+        ad.sn_code as snCode,
+        ad.clicks ,
+        ad.play_amount as playAmount
+        FROM
+        effect_statistics ad
+        <trim prefix="WHERE (" suffix=")" prefixOverrides="AND">
+            <if test="adslotId != null and adslotId !='' ">
+                and ad.adslot_id = #{adslotId}
+            </if>
+            <if test="advertisingId != null  ">
+                and ad.advertising_id = #{advertisingId}
+            </if>
+            <if test="materielId != null  ">
+                and ad.materiel_id = #{materielId}
+            </if>
+            <if test="snCode != null and snCode !='' ">
+                and ad.sn_code = #{snCode}
+            </if>
+            <if test="time != null  ">
+                and Date(ad.play_time) = #{time}
+            </if>
+        </trim>
+            order by ad.play_time desc
+    </select>
+
+
+    <select id="queryDetail" resultType="com.yimao.cloud.pojo.dto.water.EffectStatisticsDTO">
+        SELECT
+        COUNT(DISTINCT ad.sn_code) as deviceDayAmount,
+        SUM(ad.play_amount) as playDayAmount,
+        SUM(ad.clicks) as clicksDayCount,
+        Date(ad.play_time) as playTime
+        FROM
+        effect_statistics ad
+        <trim prefix="WHERE (" suffix=")" prefixOverrides="AND">
+            <if test="adslotId != null and adslotId !='' ">
+                and ad.adslot_id = #{adslotId}
+            </if>
+            <if test="advertisingId != null  ">
+                and ad.advertising_id = #{advertisingId}
+            </if>
+            <if test="materielId != null  ">
+                and ad.materiel_id = #{materielId}
+            </if>
+            <if test="beginTime != null and  endTime != null ">
+                and ad.begin_time &lt;= #{endTime}
+                and ad.end_time >= #{beginTime}
+            </if>
+        </trim>
+        GROUP BY Date(ad.play_time)
+        ORDER BY Date(ad.play_time) DESC
+    </select>
+
+    <select id="queryEffectListBySn" resultType="com.yimao.cloud.pojo.dto.water.EffectStatisticsDTO">
+        SELECT
+        es.begin_time as beginTime,
+        es.end_time as endTime,
+        es.advertising_id AS advertisingId,
+        es.platform,
+        es.screen_location AS screenLocation,
+        es.adslot_id AS adslotid,
+        es.sn_code AS snCode,
+        es.play_time AS playTime,
+        es.advertisers,
+        es.create_time AS createTime
+        FROM
+        effect_statistics es
+        <trim prefix="WHERE (" suffix=")" prefixOverrides="AND">
+            <if test="snCode != null">
+                and es.sn_code = #{snCode}
+            </if>
+            <if test="beginTime != null">
+                and es.create_time &lt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and es.create_time >= #{endTime}
+            </if>
+        </trim>
+        ORDER BY es.create_time DESC
+    </select>
+
+    <select id="queryEffectCountBySn"  resultType="com.yimao.cloud.pojo.dto.water.EffectStatisticsDTO">
+        SELECT
+        SUM(es.clicks) AS clicksSum,
+        SUM(es.play_amount) AS playAmountSum,
+        es.device_group AS deviceGroup,
+        es.sn_code AS snCode
+        FROM
+        effect_statistics es
+        <trim prefix="WHERE (" suffix=")" prefixOverrides="AND">
+            <if test="snCode != null">
+                and es.sn_code = #{snCode}
+            </if>
+            <if test="beginTime != null">
+                and es.create_time &lt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and es.create_time >= #{endTime}
+            </if>
+        </trim>
+        GROUP BY es.device_group
+    </select>
+
+    <select id="queryEffectListByCondition" resultType="com.yimao.cloud.pojo.dto.water.EffectStatisticsDTO">
+        SELECT
+        COUNT(DISTINCT es.sn_code) as snCodeSum,
+        SUM(es.clicks) as clicksSum,
+        SUM(es.play_amount) as playAmountSum,
+        es.advertising_id as advertisingId,
+        es.screen_location AS screenLocation,
+        es.begin_time as beginTime,
+        es.end_time as endTime
+        FROM
+        effect_statistics es
+        LEFT JOIN conditional_advertising ca ON es.advertising_id = ca.id
+        <trim prefix="WHERE (" suffix=")" prefixOverrides="AND">
+            <if test="platform != null  ">
+                and es.platform = #{platform}
+            </if>
+            <if test="screenLocation != null  ">
+                and es.screen_location = #{screenLocation}
+            </if>
+            <if test="materielName != null and  materielName != '' ">
+                and es.materiel_name = #{materielName}
+            </if>
+        </trim>
+        GROUP BY es.advertising_id,es.screen_location,es.begin_time,es.end_time
+        ORDER BY es.advertising_id DESC
+    </select>
+
+
+    <insert id="insertBatch" parameterType="java.util.List">
+        insert into effect_statistics
+        (advertising_id,materiel_id,platform,sn_code,screen_location,adslot_id,materiel_name,advertisers,begin_time,end_time,clicks,play_amount,play_time,device_group,create_time)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.advertisingId},
+            #{item.materielId},
+            #{item.platform},
+            #{item.snCode},
+            #{item.screenLocation},
+            #{item.adslotId},
+            #{item.materielName},
+            #{item.advertisers},
+            #{item.beginTime},
+            #{item.endTime},
+            #{item.clicks},
+            #{item.playAmount},
+            #{item.playTime},
+            #{item.deviceGroup},
+            #{item.createTime}
+            )
+        </foreach>
+    </insert>
+
+
+    <!-- 查询效果统计投放查看详情 -->
+    <select id="queryEffectDetailByAdvertising" resultType="com.yimao.cloud.pojo.dto.water.EffectStatisticsDTO">
+        SELECT
+        COUNT(DISTINCT es.sn_code) as snCodeSum,
+        SUM(es.clicks) as clicksSum,
+        SUM(es.play_amount) as playAmountSum,
+        es.advertising_id as advertisingId
+        FROM
+        effect_statistics es
+        LEFT JOIN conditional_advertising ca ON es.advertising_id = ca.id
+        <trim prefix="WHERE (" suffix=")" prefixOverrides="AND">
+            <if test="advertisingId != null  ">
+                es.advertising_id = #{advertisingId}
+            </if>
+        </trim>
+        GROUP BY es.advertising_id
+    </select>
+
+
+    <!-- 查询效果统计投放查看详情 -->
+    <select id="queryYesterdayCount" resultType="com.yimao.cloud.pojo.dto.water.EffectStatisticsDTO">
+        SELECT
+        COUNT( DISTINCT t.sn_code ) deviceDayAmount,
+        SUM( t.clicks ) as clicksDayCount,
+        SUM( t.play_amount ) as playDayAmount
+        FROM
+        effect_statistics t
+        <where>
+            date( t.play_time ) = date_sub( curdate( ), INTERVAL 1 DAY )
+            <if test="type == 1 ">
+                AND t.platform =0
+            </if>
+            <if test="type == 2 ">
+                AND  <![CDATA[ t.platform <> 0 ]]>
+            </if>
+        </where>
+
+    </select>
+</mapper>

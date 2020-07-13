@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.user.mapper.FinancialAuditMapper">
+
+    <select id="financialAuditPage" resultType="com.yimao.cloud.pojo.dto.user.FinancialAuditDTO">
+        SELECT
+        d.id AS distributorOrderId,
+        d.order_type AS orderType,
+        u.real_name AS name,
+        d.distributor_account AS distributorAccount,
+        d.price AS payMoney,
+        d.pay_type AS payType,
+        d.pay_state AS payState,
+        d.pay_time AS payTime,
+        d.pay_record AS payRecord ,
+        d.financial_state AS financialState,
+        dc1.`name` AS roleName,
+        dc2.`name` AS destRoleName
+        FROM
+        distributor_order d
+        LEFT JOIN user_distributor u ON ( d.distributor_id = u.id )
+        LEFT JOIN distributor_role dc1 ON ( dc1.id = d.role_id )
+        LEFT JOIN distributor_role dc2 ON ( dc2.id = d.dest_role_id )
+        WHERE
+        d.financial_state = 0 AND d.order_state NOT IN (3)
+        <if test="distributorOrderId !=null">
+            AND d.id like CONCAT(#{distributorOrderId},'%')
+        </if>
+        <if test="orderType != null">
+            AND d.order_type = #{orderType}
+        </if>
+        <if test="name !=null and name !=''">
+            AND u.real_name = #{name}
+        </if>
+        <if test="distributorAccount !=null and distributorAccount !=''">
+            AND d.distributor_account like CONCAT(#{distributorAccount},'%')
+        </if>
+        <if test="destRoleId !=null">
+            AND d.dest_role_level = #{destRoleId}
+        </if>
+        <if test="roleId !=null">
+            AND d.role_level = #{roleId}
+        </if>
+        <if test="payType !=null">
+            AND d.pay_type = #{payType}
+        </if>
+        <if test="payStartTime !=null ">
+            AND d.pay_time &gt;= #{payStartTime}
+        </if>
+        <if test="payEndTime !=null">
+            AND d.pay_time &lt;= #{payEndTime}
+        </if>
+        ORDER BY
+        d.id DESC
+    </select>
+
+    <select id="getFinancialAuditById" resultType="com.yimao.cloud.pojo.dto.user.FinancialAuditDTO">
+    SELECT
+	d.`status` as financialState,
+	d.auditor as financialAuditor,
+	d.audit_time as auditTime,
+	d.cause
+    FROM
+	distributor_order_audit_record d
+    WHERE
+	audit_type = 0
+	AND distributor_order_id = #{orderId}
+    ORDER BY
+	d.audit_time DESC
+    </select>
+
+    <select id="listFinancialAudit" resultType="com.yimao.cloud.pojo.dto.user.FinancialAuditExportDTO">
+        SELECT
+        dbo.id AS orderId,
+        ud.address AS address,
+        CASE
+        dbo.order_type
+        WHEN 0 THEN
+        '注册'
+        WHEN 1 THEN
+        '升级'
+        WHEN 2 THEN
+        '续费' ELSE ''
+        END AS orderTypeStr,
+        dbo.distributor_account AS distributorAccount,
+        ud.real_name AS realName,
+        dc1.`name` AS distributorType,
+        dc2.`name` AS destDistributorType,
+        CASE
+        ud.sex
+        WHEN 1 THEN
+        '男'
+        WHEN 2 THEN
+        '女' ELSE ''
+        END AS sexStr,
+        ud.id_card AS idCard,
+        dbo.mobile AS phone,
+        ud.recommend_name AS recommendName,
+        CASE
+        dbo.pay_type
+        WHEN 1 THEN
+        '微信'
+        WHEN 2 THEN
+        '支付宝'
+        WHEN 3 THEN
+        'pos机'
+        WHEN 4 THEN
+        '转账' ELSE ''
+        END AS payTypeStr,
+        CASE
+        dbo.pay_state
+        WHEN 1 THEN
+        '未支付'
+        WHEN 2 THEN
+        '已支付'
+        WHEN 3 THEN
+        '支付失败'
+        WHEN 4 THEN
+        '待审核'
+        WHEN 6 THEN
+        '无需支付' ELSE ''
+        END AS payStateStr,
+        DATE_FORMAT(dbo.pay_time,"%Y-%m-%d %H:%i:%s") AS payTimeStr,
+        dbo.price AS payMoney,
+        CASE
+        dbo.order_state
+        WHEN 0 THEN
+        '待审核'
+        WHEN 1 THEN
+        '已完成'
+        WHEN 2 THEN
+        '待付款'
+        WHEN 3 THEN
+        '已关闭' ELSE ''
+        END AS orderStateStr,
+        CASE
+        dbo.financial_state
+        WHEN 0 THEN
+        '未审核'
+        WHEN 1 THEN
+        '审核通过'
+        WHEN 2 THEN
+        '审核不通过'
+        WHEN 3 THEN
+        '无需审核' ELSE ''
+        END AS financialStateStr,
+        dbo.station_company_name AS stationCompanyName
+        FROM
+        distributor_order dbo
+        LEFT JOIN distributor_role dc1 ON dc1.id = dbo.role_id
+        LEFT JOIN distributor_role dc2 ON dc2.id = dbo.dest_role_id
+        LEFT JOIN user_distributor ud ON ud.id = dbo.distributor_id
+        WHERE dbo.financial_state = 0 AND dbo.order_state NOT IN (3)
+        <if test="distributorOrderId !=null">
+            and dbo.id like CONCAT(#{distributorOrderId},'%')
+        </if>
+        <if test="orderType !=null">
+            AND dbo.order_type = #{orderType}
+        </if>
+        <if test="name !=null and name !=''">
+            AND ud.real_name = #{name}
+        </if>
+        <if test="distributorAccount !=null and distributorAccount !=''">
+            AND dbo.distributor_account like CONCAT(#{distributorAccount},'%')
+        </if>
+        <if test="destRoleId !=null">
+            AND dbo.dest_role_level = #{destRoleId}
+        </if>
+        <if test="roleId !=null">
+            AND dbo.role_level = #{roleId}
+        </if>
+        <if test="payType !=null">
+            AND dbo.pay_type = #{payType}
+        </if>
+        <if test="payStartTime !=null ">
+            AND dbo.pay_time &gt;= #{payStartTime}
+        </if>
+        <if test="payEndTime !=null">
+            AND dbo.pay_time &lt;= #{payEndTime}
+        </if>
+        ORDER BY
+        dbo.id DESC
+    </select>
+
+</mapper>

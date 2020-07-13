@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.order.mapper.InvestmentIncomeRecordPartMapper">
+
+    <select id="getInvestmentIncomeRecordByPid" resultType="com.yimao.cloud.pojo.dto.order.IncomeRecordPartResultDTO">
+          SELECT
+            iirp.id,
+            iirp.subject_code AS incomeSubjectCode,
+            /*CASE iirp.subject_code WHEN 'MAIN_COMPANY' THEN '翼猫总部'
+            WHEN 'ASSISTANT' THEN '智慧助理'
+            WHEN 'DISTRIBUTOR_STATION_COMPANY' THEN '经销商所在区县级公司'
+            WHEN 'REGION_SHAREHOLDER' THEN '区县级股东（推荐人）' END as incomeSubjectCode,*/
+            iirp.subject_id AS subjectId,
+            iirp.subject_name AS subjectName,
+            iirp.subject_phone AS subjectPhone,
+            iirp.subject_ratio AS subjectRatio,
+            iirp.subject_money AS subjectMoney,
+            iirp.subject_province AS province,
+            iirp.subject_city AS city,
+            iirp.subject_region AS region,
+            iirp.settlement_subject_name AS settlementSubjectName,
+           /* iirp.settlement_time AS settlementTime,*/
+            iirp.has_withdraw AS hasWithdraw,
+            iirp.partner_trade_no AS partnerTradeNo,
+            iirp.audit_status AS auditStatus,
+            iirp.user_id AS userId,
+            iirp.real_name AS incomeName,
+            iirp.user_name AS account
+        FROM
+            investment_income_record_part iirp
+        where
+            income_record_id = #{incomeRecordId}
+    </select>
+
+    <insert id="insertBatch" parameterType="java.util.List" >
+        INSERT INTO investment_income_record_part(
+        income_record_id,
+        subject_code,
+        subject_id,
+        subject_name,
+        subject_phone,
+        subject_id_card,
+        subject_ratio,
+        subject_money ,
+        subject_province ,
+        subject_city,
+        subject_region,
+        settlement_subject_id,
+        settlement_subject_name,
+        distributor_type,
+        user_id,
+        real_name,
+        user_name,
+        has_withdraw,
+        partner_trade_no,
+        audit_status,
+        create_time,
+        creator,
+        update_time,
+        updater
+        )
+        VALUES
+        <foreach collection="list"   item="item" index="index" separator=",">
+           (
+            #{item.incomeRecordId},
+            #{item.subjectCode},
+            #{item.subjectId},
+            #{item.subjectName},
+            #{item.subjectPhone},
+            #{item.subjectIdCard},
+            #{item.subjectRatio},
+            #{item.subjectMoney},
+            #{item.subjectProvince},
+            #{item.subjectCity},
+            #{item.subjectRegion},
+            #{item.settlementSubjectId},
+            #{item.settlementSubjectName},
+            #{item.distributorType},
+            #{item.userId},
+            #{item.realName},
+            #{item.userName},
+            #{item.hasWithdraw},
+            #{item.partnerTradeNo},
+            #{item.auditStatus},
+            #{item.createTime},
+            #{item.creator},
+            #{item.updateTime},
+            #{item.updater}
+            )
+        </foreach>
+    </insert>
+
+</mapper>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.water.mapper.SimCardNumberMapper">
+
+    <select id="selectPage" resultType="com.yimao.cloud.pojo.vo.water.SimCardNumberVO">
+        select
+        scn.id,
+        scn.card_number as cardNumber,
+        scn.min_number as minNumber,
+        scn.max_number as maxNumber,
+        scn.create_time as createTime,
+        scn.update_time as updateTime,
+        scn.sim_card_account_id as simCardAccountId,
+        sca.company_name as simCardCompanyName
+        from sim_card_number scn
+        inner join sim_card_account sca on scn.sim_card_account_id = sca.id
+        where 1=1
+        <if test="simCardAccountId != null">
+            and scn.sim_card_account_id = #{simCardAccountId}
+        </if>
+        <if test="cardNumber != null and cardNumber != ''">
+            and scn.card_number like CONCAT('%',trim(#{cardNumber}),'%')
+        </if>
+        <if test="minNumber != null and minNumber != ''">
+            and scn.min_number = #{minNumber}
+        </if>
+        <if test="maxNumber != null and maxNumber != ''">
+            and scn.max_number = #{maxNumber}
+        </if>
+        <if test="middleNumber != null and middleNumber != ''">
+            and scn.min_number &lt;= #{middleNumber} and scn.max_number &gt;= #{middleNumber}
+        </if>
+        <if test="prefixNum != null and prefixNum != ''">
+            and scn.card_number = #{prefixNum}
+        </if>
+        <if test="suffixNum != null and suffixNum != ''">
+            and scn.min_number &lt;= #{suffixNum} and scn.max_number &gt;= #{suffixNum}
+        </if>
+        order by scn.create_time desc
+    </select>
+    <select id="selectByCardNumber" resultType="com.yimao.cloud.water.po.SimCardNumber">
+        select
+        id
+        from sim_card_number
+        where 1=1
+        <if test="cardNumber != null and cardNumber != ''">
+            and card_number = #{cardNumber}
+        </if>
+        <if test="maxNumber != null and maxNumber != ''">
+            and min_number &lt;= #{maxNumber}
+        </if>
+        <if test="minNumber != null and minNumber != ''">
+            and max_number &gt;= #{minNumber}
+        </if>
+    </select>
+
+</mapper>

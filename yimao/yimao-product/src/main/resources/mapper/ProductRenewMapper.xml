@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.product.mapper.ProductRenewMapper">
+
+    <insert id="saveProductRenew" parameterType="com.yimao.cloud.product.po.ProductRenew">
+     insert  into
+        product_renew(
+        name,
+        category_id,
+        cost_id,
+        creator,
+        create_time,
+        updater,
+        update_time
+        )
+      values
+        (
+        #{name},
+        #{categoryId},
+        #{costId},
+        #{creator},
+        #{createTime},
+        #{updater},
+        #{updateTime}
+        )
+    </insert>
+
+    <insert id="saveProductRenews" parameterType="java.util.List">
+        insert into
+        product_renew(
+        category_id,
+        cost_id,
+        create_time,
+        creator
+        )
+        values
+        <foreach collection="productRenewList" item="item" index="index" separator=",">
+            (
+            #{item.categoryId},
+            #{item.costId},
+            #{item.createTime},
+            #{item.creator}
+            )
+        </foreach>
+    </insert>
+
+    <update id="updateProductRenew">
+     update  product_renew
+        set
+        name = #{name},
+        cost_id= #{costId},
+        category_id= #{categoryId},
+        updater = #{updater},
+        update_time = #{updateTime}
+        where id=#{id}
+    </update>
+
+
+    <select id="getProductRenewById" parameterType="java.lang.Integer"
+            resultType="com.yimao.cloud.pojo.dto.product.ProductRenewDTO">
+        select
+            p1.id,
+            p1.category_id as categoryId,
+            p2.name,
+            p2.type,
+            p2.rental_fee as rentalFee,
+            p2.installation_fee as installationFee,
+            p2.total_fee as totalFee,
+            p2.product_category_id AS productCategoryId
+            p2.unit_price as unitPrice
+        from
+            product_renew p1
+            left join product_cost p2 on p1.cost_id = p2.id
+        where
+            p1.id =  #{id}
+            order by p1.sorts desc
+    </select>
+
+
+    <select id="listProductRenews" resultType="com.yimao.cloud.pojo.dto.product.ProductRenewDTO">
+        select
+        p1.id,
+        p1.sorts,
+        p1.category_id as categoryId,
+        p2.name,
+        p2.type,
+        p2.rental_fee as rentalFee,
+        p2.installation_fee as installationFee,
+        p2.total_fee as totalFee,
+        p2.unit_price as unitPrice
+        from
+        product_renew p1
+        left join product_cost p2 on p1.cost_id = p2.id
+        <trim prefix="where" prefixOverrides="and">
+            p1.deleted=0
+            <if test="categoryIdList!=null and categoryIdList.size()>0">
+                and p1.category_id in
+                <foreach collection="categoryIdList" open="(" close=")" item="categoryId" separator=",">
+                    #{categoryId}
+                </foreach>
+            </if>
+        </trim>
+        order by p1.sorts desc
+    </select>
+
+</mapper>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.product.mapper.ProductPropertyValueMapper">
+
+    <insert id="insertBatch" parameterType="java.util.List">
+        insert into product_property_value (
+        property_id,
+        property_value,
+        creator,
+        updater,
+        create_time,
+        update_time
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.propertyId},
+            #{item.propertyValue},
+            #{item.creator},
+            #{item.updater},
+            #{item.createTime},
+            #{item.updateTime}
+            )
+        </foreach>
+    </insert>
+
+    <select id="selectProductPropertyValue" resultType="com.yimao.cloud.pojo.dto.product.ProductPropertyValueDTO" >
+        SELECT
+            id,
+            property_id AS propertyId,
+            property_value AS propertyValue,
+            creator,
+            updater
+        FROM
+            product_property_value
+        WHERE
+            property_id = #{productPropertyId}
+    </select>
+
+</mapper>

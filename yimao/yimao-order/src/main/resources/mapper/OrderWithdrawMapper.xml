@@ -1,0 +1,773 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.order.mapper.OrderWithdrawMapper">
+
+    <select id="withdrawList" resultType="com.yimao.cloud.pojo.dto.order.OrderWithdrawDTO">
+        SELECT
+        DISTINCT
+        os.main_order_id AS mainOrderId,
+        if(pir.renew_order_id is null,pir.order_id,pir.renew_order_id) as subOrderId,
+        CONCAT_WS("/",osd.product_first_category_name,osd.product_two_category_name,osd.product_category_name) AS
+        productCategory,
+        os.count AS productNum,
+        os.fee AS orderAmount,
+        os.pay_type AS payType,
+        os.complete_time AS orderTime,
+        pirp.subject_money AS amount,
+        osd.user_type AS userType,
+        osd.user_name AS `name`,
+        osd.user_phone AS phone,
+        osd.user_id AS userId,
+        pir.income_type as incomeType,
+        pirp.audit_status AS auditStatus,
+        pir.status as status,
+        pirp.create_time
+        FROM
+        product_income_record_part pirp
+        inner JOIN product_income_record pir ON pir.id = pirp.record_id
+        LEFT JOIN order_sub os ON os.id = pir.order_id
+        LEFT JOIN order_sub_detail osd ON osd.sub_order_id = pir.order_id
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="orderId!=null and orderId !='' ">
+                and ( os.id LIKE CONCAT('%',#{orderId},'%')
+                or os.main_order_id LIKE CONCAT('%',#{orderId},'%')
+                or pir.renew_order_id like CONCAT('%',#{orderId},'%'))
+            </if>
+            <if test="userId!=null">
+                and pir.user_id = #{userId}
+            </if>
+            <if test="status!=null">
+                and pir.status = #{status}
+            </if>
+            <if test="phone!=null and phone!=''">
+                and osd.user_phone LIKE CONCAT('%',#{phone},'%')
+            </if>
+            <if test="incomeType!=null">
+                and pir.income_type = #{incomeType}
+            </if>
+            <if test="startTime!=null and startTime!=''">
+                and os.complete_time &gt;= #{startTime}
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                and os.complete_time &lt;= #{endTime}
+            </if>
+            AND pirp.has_withdraw = 0 AND pirp.subject_code = 'DISTRIBUTOR_USER' AND ( pirp.audit_status is null or
+            pirp.audit_status = 2 )
+        </trim>
+        ORDER BY pirp.create_time DESC
+    </select>
+
+    <select id="withdrawListExport" resultType="com.yimao.cloud.pojo.dto.order.WithdrawExportDTO">
+        SELECT
+        DISTINCT
+        pir.main_order_id AS mainOrderId,
+        if(pir.income_type is not null and pir.income_type = 2 ,pir.renew_order_id,pir.order_id) as orderId,
+        CONCAT_WS("/",osd.product_first_category_name,osd.product_two_category_name,osd.product_category_name) AS
+        productCategoryName,
+        if(pir.income_type is not null and pir.income_type = 2 ,1,os.count) AS productNum,
+        if(pir.income_type is not null and pir.income_type = 2 ,1,os.fee) AS orderFee,
+        CASE os.pay_type
+        WHEN 1 THEN "微信"
+        WHEN 2 THEN "支付宝"
+        WHEN 3 THEN "上传凭证"
+        WHEN 4 THEN "POS机"
+        END AS payType,
+        DATE_FORMAT(os.complete_time,"%Y-%m-%d %H:%i:%s") AS orderCompleteTime,
+        pirp.subject_money AS withdrawFee,
+        CASE osd.user_type
+        WHEN 0 THEN "经销商（体验版）"
+        WHEN 1 THEN "经销商（微创版）"
+        WHEN 2 THEN "经销商（个人版）"
+        WHEN 3 THEN "普通用户"
+        WHEN 4 THEN "普通用户"
+        WHEN 5 THEN "企业版经销商（主）"
+        WHEN 6 THEN "企业版经销商（子）"
+        WHEN 7 THEN "会员用户"
+        END AS userType,
+        osd.user_name AS userName,
+        osd.user_phone AS phone,
+        osd.user_id AS userId,
+        CASE pir.income_type
+        WHEN 1 THEN "产品收益"
+        WHEN 2 THEN "续费收益"
+        END AS incomeType,
+        pirp.create_time
+        FROM
+        product_income_record_part pirp
+        INNER JOIN product_income_record pir ON pir.id = pirp.record_id
+        LEFT JOIN order_sub os ON os.id = pir.order_id
+        LEFT JOIN order_sub_detail osd ON osd.sub_order_id = pir.order_id
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="orderId!=null and orderId!='' ">
+                and (os.id LIKE CONCAT('%',#{orderId},'%')
+                or os.main_order_id LIKE CONCAT('%',#{orderId},'%')
+                or pir.renew_order_id LIKE CONCAT('%',#{orderId},'%'))
+            </if>
+            <if test="userId!=null">
+                and pir.user_id = #{userId}
+            </if>
+            <if test="phone!=null and phone!=''">
+                and osd.user_phone LIKE CONCAT('%',#{phone},'%')
+            </if>
+            <if test="status!=null">
+                and pir.status = #{status}
+            </if>
+            <if test="incomeType!=null">
+                and pir.income_type = #{incomeType}
+            </if>
+            <if test="startTime!=null and startTime!=''">
+                and os.complete_time &gt;= #{startTime}
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                and os.complete_time &lt;= #{endTime}
+            </if>
+            AND pirp.has_withdraw = 0 AND pirp.subject_code = 'DISTRIBUTOR_USER' AND ( pirp.audit_status is null or
+            pirp.audit_status = 2 )
+        </trim>
+        ORDER BY pirp.create_time DESC
+    </select>
+
+    <select id="withdrawAuditList" resultType="com.yimao.cloud.pojo.dto.order.WithdrawSubDTO">
+        SELECT
+        ws.main_partner_trade_no as mainPartnerTradeNo,
+        ws.id,
+        ws.withdraw_fee as withdrawFee,
+        ws.apply_time as applyTime,
+        ws.status,
+        ws.withdraw_type as withdrawType,
+        ws.user_type as userType,
+        ws.user_name as userName,
+        ws.mobile as phone,
+        ws.product_company_name as productCompanyName,
+        max(pir.income_type) AS incomeType
+        FROM
+        withdraw_sub ws
+        INNER join product_income_record_part pirp on (ws.id = pirp.partner_trade_no)
+        INNER join product_income_record pir on (pirp.record_id = pir.id)
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="partnerTradeNo!=null">
+                and (ws.id LIKE CONCAT('%',#{partnerTradeNo},'%')
+                or ws.main_partner_trade_no LIKE CONCAT('%',#{partnerTradeNo},'%'))
+            </if>
+            <if test="userId!=null">
+                and ws.user_id = #{userId}
+            </if>
+            <if test="phone!=null and phone!=''">
+                and ws.mobile LIKE CONCAT('%',#{phone},'%')
+            </if>
+            <if test="startTime!=null and startTime!=''">
+                and ws.apply_time &gt;= #{startTime}
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                and ws.apply_time &lt;= #{endTime}
+            </if>
+            <if test="incomeType!=null">
+                and pir.income_type = #{incomeType}
+            </if>
+            and ws.status = 3
+        </trim>
+        group by ws.id
+        ORDER BY ws.apply_time DESC
+    </select>
+
+    <select id="withdrawRecordList" resultType="com.yimao.cloud.pojo.dto.order.WithdrawSubDTO">
+        SELECT
+        ws.main_partner_trade_no AS mainPartnerTradeNo,
+        ws.id,
+        ws.product_company_name AS productCompanyName,
+        pirp.subject_money AS withdrawFee,
+        ws.audit_time AS auditTime,
+        ws.status,
+        ws.withdraw_type AS withdrawType,
+        ws.payment_no AS paymentNo,
+        ws.user_type AS userType,
+        ws.user_id AS userId,
+        ws.user_name AS userName,
+        ws.mobile AS phone,
+        ws.audit_reason as auditReason,
+        WS.apply_time as applyTime,
+        ws.payment_time as paymentTime,
+        ws.audit_time as auditTime,
+        pir.income_type AS incomeType
+        FROM
+        withdraw_sub ws
+        INNER join product_income_record_part pirp on (ws.id = pirp.partner_trade_no)
+        INNER join product_income_record pir on (pirp.record_id = pir.id)
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="partnerTradeNo!=null and partnerTradeNo != ''">
+                and (ws.id LIKE CONCAT('%',#{partnerTradeNo},'%')
+                or ws.main_partner_trade_no LIKE CONCAT('%',#{partnerTradeNo},'%'))
+            </if>
+            <if test="productCompanyName!=null and productCompanyName!=''">
+                and ws.product_company_name = #{productCompanyName}
+            </if>
+            <if test="userType!=null">
+                and ws.user_type = #{userType}
+            </if>
+            <if test="userId!=null">
+                and ws.user_id = #{userId}
+            </if>
+            <if test="userName!=null and userName!=''">
+                and ws.user_name = #{userName}
+            </if>
+            <if test="phone!=null and phone!=''">
+                and ws.mobile LIKE CONCAT('%',#{phone},'%')
+            </if>
+            <if test="status!=null">
+                and ws.status = #{status}
+            </if>
+            <if test="applyStartTime!=null and applyStartTime!=''">
+                and ws.apply_time &gt;= #{applyStartTime}
+            </if>
+            <if test="applyEndTime!=null and applyEndTime!=''">
+                and ws.apply_time &lt;= #{applyEndTime}
+            </if>
+            <if test="withdrawType!=null">
+                and ws.withdraw_type = #{withdrawType}
+            </if>
+            <if test="paymentStartTime!=null and paymentStartTime!=''">
+                and ws.payment_time &gt;= #{paymentStartTime}
+            </if>
+            <if test="paymentEndTime!=null and paymentEndTime!=''">
+                and ws.payment_time &lt;= #{paymentEndTime}
+            </if>
+            <if test="auditStartTime!=null and auditStartTime!=''">
+                and ws.audit_time &gt;= #{auditStartTime}
+            </if>
+            <if test="auditEndTime!=null and auditEndTime!=''">
+                and ws.audit_time &lt;= #{auditEndTime}
+            </if>
+            <if test="sign == null or !sign">
+                and (ws.status = 1 or ws.status = 2)
+            </if>
+            <if test="incomeType!=null and incomeType!=''">
+                and pir.income_type = #{incomeType}
+            </if>
+        </trim>
+        ORDER BY ws.audit_time DESC
+    </select>
+
+    <select id="withdrawRecordDetailList" resultType="com.yimao.cloud.pojo.dto.order.WithdrawSubDTO">
+        SELECT
+        ws.main_partner_trade_no AS mainPartnerTradeNo,
+        ws.id,
+        ws.product_company_name AS productCompanyName,
+        pirp.subject_money AS withdrawFee,
+        ws.audit_time AS auditTime,
+        ws.`status`,
+        ws.withdraw_type AS withdrawType,
+        ws.payment_no AS paymentNo,
+        ws.user_type AS userType,
+        ws.user_id AS userId,
+        ws.user_name AS userName,
+        ws.mobile AS phone,
+        pir.order_id AS orderId,
+        pir.main_order_id AS mainOrderId,
+        ws.audit_reason as auditReason,
+        WS.apply_time as applyTime,
+        ws.payment_time as paymentTime,
+        ws.dest_cash as destCash,
+        ws.formalities_fee as formalitiesFee,
+        ws.orig_cash as origCash,
+        pir.income_type AS incomeType
+        FROM
+        product_income_record_part pirp
+        INNER JOIN withdraw_sub ws ON pirp.partner_trade_no = ws.id
+        INNER JOIN product_income_record pir ON pir.id = pirp.record_id
+        LEFT JOIN order_sub os ON pir.order_id = os.id
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="partnerTradeNo!=null and partnerTradeNo != ''">
+                and (ws.id LIKE CONCAT('%',#{partnerTradeNo},'%')
+                or ws.main_partner_trade_no LIKE CONCAT('%',#{partnerTradeNo},'%'))
+            </if>
+
+            <if test="orderId!=null">
+                and (pir.order_id LIKE CONCAT('%',#{orderId},'%')
+                or pir.main_order_id LIKE CONCAT('%',#{orderId},'%'))
+            </if>
+            <if test="refer!=null and refer!='' ">
+                and os.refer LIKE CONCAT('%',#{refer},'%')
+            </if>
+            <if test="productCompanyName!=null and productCompanyName!=''">
+                and ws.product_company_name = #{productCompanyName}
+            </if>
+            <if test="userType!=null">
+                and ws.user_type = #{userType}
+            </if>
+            <if test="userId!=null">
+                and ws.user_id = #{userId}
+            </if>
+            <if test="userName!=null and userName!=''">
+                and ws.user_name = #{userName}
+            </if>
+            <if test="phone!=null and phone!=''">
+                and ws.mobile LIKE CONCAT('%',#{phone},'%')
+            </if>
+            <if test="status!=null">
+                and ws.status = #{status}
+            </if>
+            <if test="applyStartTime!=null and applyStartTime!=''">
+                and ws.apply_time &gt;= #{applyStartTime}
+            </if>
+            <if test="applyEndTime!=null and applyEndTime!=''">
+                and ws.apply_time &lt;= #{applyEndTime}
+            </if>
+            <if test="paymentStartTime!=null and paymentStartTime!=''">
+                and ws.payment_time &gt;= #{paymentStartTime}
+            </if>
+            <if test="paymentEndTime!=null and paymentEndTime!=''">
+                and ws.payment_time &lt;= #{paymentEndTime}
+            </if>
+            <if test="auditStartTime!=null and auditStartTime!=''">
+                and ws.audit_time &gt;= #{auditStartTime}
+            </if>
+            <if test="auditEndTime!=null and auditEndTime!=''">
+                and ws.audit_time &lt;= #{auditEndTime}
+            </if>
+            <if test="paymentNo!=null and paymentNo!=''">
+                and ws.payment_no = #{paymentNo}
+            </if>
+            <if test="incomeType!=null and incomeType!=''">
+                and pir.income_type = #{incomeType}
+            </if>
+            and (ws.status = 1 or ws.status = 2)
+        </trim>
+        ORDER BY ws.audit_time DESC
+    </select>
+
+    <select id="withdrawRecordLogList" resultType="com.yimao.cloud.pojo.dto.order.WithdrawSubDTO">
+        SELECT
+        ws.id,
+        ws.withdraw_flag as withdrawFlag,
+        ws.updater,
+        ws.update_time as updateTime,
+        ws.audit_reason as auditReason
+        FROM
+        withdraw_sub ws
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="partnerTradeNo!=null and partnerTradeNo != ''">
+                and ws.id LIKE CONCAT('%',#{partnerTradeNo},'%')
+            </if>
+            <if test="withdrawFlag!=null">
+                and ws.withdraw_flag = #{withdrawFlag}
+            </if>
+            <if test="startTime!=null and startTime!=''">
+                and ws.update_time &gt;= #{startTime}
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                and ws.update_time &lt;= #{endTime}
+            </if>
+            and (ws.status = 1 or ws.status = 2)
+        </trim>
+        ORDER BY ws.update_time DESC
+    </select>
+
+    <select id="getWithdrawnCount" resultType="java.lang.Integer">
+        SELECT
+            count(DISTINCT main_partner_trade_no)
+        FROM
+            `withdraw_sub`
+        WHERE
+            user_id = #{userId}
+        AND (withdraw_flag = 1 or withdraw_flag is null)
+        AND date(apply_time) = curdate()
+    </select>
+
+    <select id="withdrawAuditListExport" resultType="com.yimao.cloud.pojo.dto.order.WithdrawExportDTO">
+        SELECT
+        pir.id as recordId,
+        ws.main_partner_trade_no AS mainPartnerTradeNo,
+        ws.id,
+        pir.main_order_id as mainOrderId,
+        if(pir.renew_order_id is null,pir.order_id,pir.renew_order_id) as orderId,
+        pirp.subject_money AS withdrawFee,
+        DATE_FORMAT(ws.apply_time,"%Y-%m-%d %H:%i:%s") AS applyTime,
+        CASE ws.`status`
+        WHEN 1 THEN "审核通过"
+        WHEN 2 THEN "审核不通过"
+        WHEN 3 THEN "待审核"
+        END AS status,
+        CASE ws.withdraw_type
+        WHEN 1 THEN "微信"
+        WHEN 2 THEN "支付宝"
+        WHEN 3 THEN "上传凭证"
+        WHEN 4 THEN "POS机"
+        END AS withdrawType,
+        osd.product_first_category_name AS firstProductCategory,
+        osd.product_two_category_name as secondProductCategory,
+        osd.product_category_name as productCategory,
+        pir.order_fee as orderFee,
+        ws.product_company_name as productCompanyName,
+        DATE_FORMAT(os.pay_time,"%Y-%m-%d %H:%i:%s") as payTime,
+        DATE_FORMAT(os.complete_time,"%Y-%m-%d %H:%i:%s") as orderCompleteTime,
+        CASE ws.user_type
+        WHEN 0 THEN "经销商（体验版）"
+        WHEN 1 THEN "经销商（微创版）"
+        WHEN 2 THEN "经销商（个人版）"
+        WHEN 3 THEN "普通用户"
+        WHEN 4 THEN "普通用户"
+        WHEN 5 THEN "企业版经销商（主）"
+        WHEN 6 THEN "企业版经销商（子）"
+        WHEN 7 THEN "会员用户"
+        END AS userType,
+        CASE pir.income_type
+        WHEN 1 THEN "产品收益"
+        WHEN 2 THEN "续费收益"
+        END AS incomeType,
+        ws.user_name AS userName,
+        ws.user_id as userId,
+        ws.mobile as phone,
+        os.refer as workOrderId,
+        If(osd.sub_distributor_account is null,"否","是") as  hasSubAccount,
+        osd.recommend_id as recommendId,
+        osd.recommend_name as refereeName,
+        osd.recommend_account as refereeAccount,
+        osd.recommend_province as refereeProvince,
+        osd.recommend_city as refereeCity,
+        osd.recommend_region as refereeRegion,
+        osd.distributor_type_name as distributorType,
+        osd.distributor_name as distributorName,
+        osd.distributor_account as distributorAccount,
+        osd.distributor_province as distributorProvince,
+        osd.distributor_city as distributorCity,
+        osd.distributor_region as distributorRegion
+        FROM
+        withdraw_sub ws
+        INNER JOIN product_income_record_part pirp on pirp.partner_trade_no = ws.id
+        INNER JOIN product_income_record pir on pirp.record_id = pir.id
+        LEFT JOIN order_sub os on os.id = pir.order_id
+        LEFT JOIN order_sub_detail osd on osd.sub_order_id = pir.order_id
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="partnerTradeNo!=null and partnerTradeNo != ''">
+                and (ws.id LIKE CONCAT('%',#{partnerTradeNo},'%')
+                or ws.main_partner_trade_no LIKE CONCAT('%',#{partnerTradeNo},'%'))
+            </if>
+            <if test="userId!=null">
+                and ws.user_id = #{userId}
+            </if>
+            <if test="phone!=null and phone!=''">
+                and ws.mobile LIKE CONCAT('%',#{phone},'%')
+            </if>
+            <if test="startTime!=null and startTime!=''">
+                and ws.apply_time &gt;= #{startTime}
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                and ws.apply_time &lt;= #{endTime}
+            </if>
+            and ws.status = 3
+        </trim>
+        ORDER BY ws.apply_time DESC
+    </select>
+
+    <select id="withdrawRecordListExport" resultType="com.yimao.cloud.pojo.dto.order.WithdrawExportDTO">
+        SELECT
+        ws.main_partner_trade_no AS mainPartnerTradeNo,
+        ws.id,
+        ws.withdraw_fee AS withdrawFee,
+        DATE_FORMAT(ws.apply_time,"%Y-%m-%d %H:%i:%s") AS applyTime,
+        DATE_FORMAT(ws.payment_time,"%Y-%m-%d %H:%i:%s") as paymentTime,
+        ws.payment_no as paymentNo,
+        CASE ws.`status`
+        WHEN 1 THEN "审核通过"
+        WHEN 2 THEN "审核不通过"
+        WHEN 3 THEN "待审核"
+        END AS status,
+        CASE ws.withdraw_type
+        WHEN 1 THEN "微信"
+        WHEN 2 THEN "支付宝"
+        WHEN 3 THEN "上传凭证"
+        WHEN 4 THEN "POS机"
+        END AS withdrawType,
+        ws.product_company_name as productCompanyName,
+        CASE ws.user_type
+        WHEN 0 THEN "经销商（体验版）"
+        WHEN 1 THEN "经销商（微创版）"
+        WHEN 2 THEN "经销商（个人版）"
+        WHEN 3 THEN "普通用户"
+        WHEN 4 THEN "普通用户"
+        WHEN 5 THEN "企业版经销商（主）"
+        WHEN 6 THEN "企业版经销商（子）"
+        WHEN 7 THEN "会员用户"
+        END AS userType,
+        ws.user_name AS userName,
+        ws.user_id as userId,
+        ws.mobile as phone,
+        DATE_FORMAT(ws.audit_time,"%Y-%m-%d %H:%i:%s") as auditTime,
+        ws.updater as updater
+        FROM
+        withdraw_sub ws
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="partnerTradeNo!=null and partnerTradeNo != ''">
+                and (ws.id LIKE CONCAT('%',#{partnerTradeNo},'%')
+                or ws.main_partner_trade_no LIKE CONCAT('%',#{partnerTradeNo},'%'))
+            </if>
+            <if test="productCompanyName!=null and productCompanyName!=''">
+                and ws.product_company_name = #{productCompanyName}
+            </if>
+            <if test="userType!=null">
+                and ws.user_type = #{userType}
+            </if>
+            <if test="userId!=null">
+                and ws.user_id = #{userId}
+            </if>
+            <if test="userName!=null and userName!=''">
+                and ws.user_name = #{userName}
+            </if>
+            <if test="phone!=null and phone!=''">
+                and ws.mobile LIKE CONCAT('%',#{phone},'%')
+            </if>
+            <if test="status!=null">
+                and ws.status = #{status}
+            </if>
+            <if test="applyStartTime!=null and applyStartTime!=''">
+                and ws.apply_time &gt;= #{applyStartTime}
+            </if>
+            <if test="applyEndTime!=null and applyEndTime!=''">
+                and ws.apply_time &lt;= #{applyEndTime}
+            </if>
+            <if test="withdrawType!=null">
+                and ws.withdraw_type &lt;= #{withdrawType}
+            </if>
+            <if test="paymentStartTime!=null and paymentStartTime!=''">
+                and ws.payment_time &gt;= #{paymentStartTime}
+            </if>
+            <if test="paymentEndTime!=null and paymentEndTime!=''">
+                and ws.payment_time &lt;= #{paymentEndTime}
+            </if>
+
+            <if test="auditStartTime!=null and auditStartTime!=''">
+                and ws.audit_time &gt;= #{auditStartTime}
+            </if>
+            <if test="auditEndTime!=null and auditEndTime!=''">
+                and ws.audit_time &lt;= #{auditEndTime}
+            </if>
+            and (ws.status = 1 or ws.status = 2)
+        </trim>
+        ORDER BY ws.audit_time DESC
+    </select>
+
+    <select id="withdrawRecordDetailListExport" resultType="com.yimao.cloud.pojo.dto.order.WithdrawExportDTO">
+        SELECT
+        pir.id as recordId,
+        ws.main_partner_trade_no AS mainPartnerTradeNo,
+        ws.id,
+        pir.main_order_id as mainOrderId,
+        pir.order_id as orderId,
+        os.refer as workOrderId,
+        pirp.subject_money AS withdrawFee,
+        pirp.subject_id_card AS subjectIdCard,
+        DATE_FORMAT(ws.apply_time,"%Y-%m-%d %H:%i:%s") AS applyTime,
+        DATE_FORMAT(ws.payment_time,"%Y-%m-%d %H:%i:%s") as paymentTime,
+        ws.payment_no as paymentNo,
+        CASE ws.`status`
+        WHEN 1 THEN "审核通过"
+        WHEN 2 THEN "审核不通过"
+        WHEN 3 THEN "待审核"
+        END AS status,
+        CASE ws.withdraw_type
+        WHEN 1 THEN "微信"
+        WHEN 2 THEN "支付宝"
+        WHEN 3 THEN "上传凭证"
+        WHEN 4 THEN "POS机"
+        END AS withdrawType,
+        os.product_type as productType,
+        osd.product_first_category_name AS firstProductCategory,
+        osd.product_two_category_name as secondProductCategory,
+        osd.product_category_name as productCategory,
+        osd.product_company_name as productCompanyName,
+        CASE ws.user_type
+        WHEN 0 THEN "经销商（体验版）"
+        WHEN 1 THEN "经销商（微创版）"
+        WHEN 2 THEN "经销商（个人版）"
+        WHEN 3 THEN "普通用户"
+        WHEN 4 THEN "普通用户"
+        WHEN 5 THEN "企业版经销商（主）"
+        WHEN 6 THEN "企业版经销商（子）"
+        WHEN 7 THEN "会员用户"
+        END AS userType,
+        CASE pir.income_type
+        WHEN 1 THEN "产品收益"
+        WHEN 2 THEN "续费收益"
+        END AS incomeType,
+        ws.user_name AS userName,
+        ws.user_id as userId,
+        ws.mobile as phone,
+        osd.distributor_Id as distributorId,
+        osd.distributor_name as distributorName,
+        osd.distributor_account as distributorAccount,
+        osd.distributor_city as distributorCity,
+        osd.distributor_province as distributorProvince,
+        osd.distributor_region as distributorRegion,
+        osd.distributor_type_name as distributorType,
+        DATE_FORMAT(ws.audit_time,"%Y-%m-%d %H:%i:%s") as auditTime,
+        ws.updater as updater,
+        osd.sub_distributor_account as subAccount,
+        osd.recommend_id as recommendId,
+        osd.recommend_name as refereeName,
+        osd.recommend_account as refereeAccount,
+        osd.recommend_province as refereeProvince,
+        osd.recommend_city as refereeCity,
+        osd.recommend_region as refereeRegion,
+        CONCAT_WS("/",osd.sales_subject_province,osd.sales_subject_city,osd.sales_subject_region) AS subjectArea,
+        osd.sales_subject_company_name as subjectCompany
+        FROM
+        product_income_record_part pirp
+        INNER JOIN withdraw_sub ws ON pirp.partner_trade_no = ws.id
+        INNER JOIN product_income_record pir on pirp.record_id = pir.id
+        LEFT JOIN order_sub os on os.id = pir.order_id
+        LEFT JOIN order_sub_detail osd on osd.sub_order_id = pir.order_id
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="partnerTradeNo!=null and partnerTradeNo != ''">
+                and (ws.id LIKE CONCAT('%',#{partnerTradeNo},'%')
+                or ws.main_partner_trade_no LIKE CONCAT('%',#{partnerTradeNo},'%'))
+            </if>
+
+            <if test="orderId!=null">
+                and (pir.order_id LIKE CONCAT('%',#{orderId},'%')
+                or pir.main_order_id LIKE CONCAT('%',#{orderId},'%'))
+            </if>
+            <if test="refer!=null and refer != ''">
+                and os.refer LIKE CONCAT('%',#{refer},'%')
+            </if>
+            <if test="productCompanyName!=null and productCompanyName!=''">
+                and ws.product_company_name = #{productCompanyName}
+            </if>
+            <if test="userType!=null">
+                and ws.user_type = #{userType}
+            </if>
+            <if test="userId!=null">
+                and ws.user_id = #{userId}
+            </if>
+            <if test="userName!=null and userName!=''">
+                and ws.user_name = #{userName}
+            </if>
+            <if test="phone!=null and phone!=''">
+                and ws.mobile LIKE CONCAT('%',#{phone},'%')
+            </if>
+            <if test="status!=null">
+                and ws.status = #{status}
+            </if>
+            <if test="applyStartTime!=null and applyStartTime!=''">
+                and ws.apply_time &gt;= #{applyStartTime}
+            </if>
+            <if test="applyEndTime!=null and applyEndTime!=''">
+                and ws.apply_time &lt;= #{applyEndTime}
+            </if>
+
+            <if test="paymentStartTime!=null and paymentStartTime!=''">
+                and ws.payment_time &gt;= #{paymentStartTime}
+            </if>
+            <if test="paymentEndTime!=null and paymentEndTime!=''">
+                and ws.payment_time &lt;= #{paymentEndTime}
+            </if>
+
+            <if test="auditStartTime!=null and auditStartTime!=''">
+                and ws.audit_time &gt;= #{auditStartTime}
+            </if>
+            <if test="auditEndTime!=null and auditEndTime!=''">
+                and ws.audit_time &lt;= #{auditEndTime}
+            </if>
+            <if test="paymentNo!=null and paymentNo!=''">
+                and ws.payment_no = #{paymentNo}
+            </if>
+            and (ws.status = 1 or ws.status = 2)
+        </trim>
+        ORDER BY ws.audit_time DESC
+    </select>
+    
+    <select id="withdrawRecordListExportPage" resultType="com.yimao.cloud.pojo.dto.order.WithdrawExportDTO">
+        SELECT
+        DISTINCT
+        ws.main_partner_trade_no AS mainPartnerTradeNo,
+        ws.id,
+        ws.withdraw_fee AS withdrawFee,
+        DATE_FORMAT(ws.apply_time,"%Y-%m-%d %H:%i:%s") AS applyTime,
+        DATE_FORMAT(ws.payment_time,"%Y-%m-%d %H:%i:%s") as paymentTime,
+        ws.payment_no as paymentNo,
+        CASE ws.`status`
+        WHEN 1 THEN "审核通过"
+        WHEN 2 THEN "审核不通过"
+        WHEN 3 THEN "待审核"
+        END AS status,
+        CASE ws.withdraw_type
+        WHEN 1 THEN "微信"
+        WHEN 2 THEN "支付宝"
+        WHEN 3 THEN "上传凭证"
+        WHEN 4 THEN "POS机"
+        END AS withdrawType,
+        CASE pir.income_type
+        WHEN 1 THEN "产品收益"
+        WHEN 2 THEN "续费收益"
+        END AS incomeType,
+        ws.product_company_name as productCompanyName,
+        CASE ws.user_type
+        WHEN 0 THEN "经销商（体验版）"
+        WHEN 1 THEN "经销商（微创版）"
+        WHEN 2 THEN "经销商（个人版）"
+        WHEN 3 THEN "普通用户"
+        WHEN 4 THEN "普通用户"
+        WHEN 5 THEN "企业版经销商（主）"
+        WHEN 6 THEN "企业版经销商（子）"
+        WHEN 7 THEN "会员用户"
+        END AS userType,
+        ws.user_name AS userName,
+        ws.user_id as userId,
+        ws.mobile as phone,
+        DATE_FORMAT(ws.audit_time,"%Y-%m-%d %H:%i:%s") as auditTime,
+        ws.updater as updater
+        FROM
+        withdraw_sub ws
+        INNER JOIN product_income_record_part pirp on pirp.partner_trade_no = ws.id
+        INNER JOIN product_income_record pir on pirp.record_id = pir.id
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="partnerTradeNo!=null and partnerTradeNo != ''">
+                and (ws.id LIKE CONCAT('%',#{partnerTradeNo},'%')
+                or ws.main_partner_trade_no LIKE CONCAT('%',#{partnerTradeNo},'%'))
+            </if>
+            <if test="productCompanyName!=null and productCompanyName!=''">
+                and ws.product_company_name = #{productCompanyName}
+            </if>
+            <if test="userType!=null">
+                and ws.user_type = #{userType}
+            </if>
+            <if test="userId!=null">
+                and ws.user_id = #{userId}
+            </if>
+            <if test="userName!=null and userName!=''">
+                and ws.user_name = #{userName}
+            </if>
+            <if test="phone!=null and phone!=''">
+                and ws.mobile LIKE CONCAT('%',#{phone},'%')
+            </if>
+            <if test="status!=null">
+                and ws.status = #{status}
+            </if>
+            <if test="applyStartTime!=null and applyStartTime!=''">
+                and ws.apply_time &gt;= #{applyStartTime}
+            </if>
+            <if test="applyEndTime!=null and applyEndTime!=''">
+                and ws.apply_time &lt;= #{applyEndTime}
+            </if>
+            <if test="withdrawType!=null">
+                and ws.withdraw_type &lt;= #{withdrawType}
+            </if>
+            <if test="paymentStartTime!=null and paymentStartTime!=''">
+                and ws.payment_time &gt;= #{paymentStartTime}
+            </if>
+            <if test="paymentEndTime!=null and paymentEndTime!=''">
+                and ws.payment_time &lt;= #{paymentEndTime}
+            </if>
+
+            <if test="auditStartTime!=null and auditStartTime!=''">
+                and ws.audit_time &gt;= #{auditStartTime}
+            </if>
+            <if test="auditEndTime!=null and auditEndTime!=''">
+                and ws.audit_time &lt;= #{auditEndTime}
+            </if>
+            and (ws.status = 1 or ws.status = 2)
+        </trim>
+        ORDER BY auditTime DESC
+    </select>
+
+</mapper>

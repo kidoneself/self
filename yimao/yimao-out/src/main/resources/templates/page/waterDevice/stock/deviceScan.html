@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="format-detection" content="telephone=no"/>
+    <title>扫码入库</title>
+    <!-- zui -->
+    <link rel="stylesheet" href="/css/zui/zui.min.css">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/stock.css">
+    <link rel="stylesheet" href="/css/icon/iconfont.css">
+    <style type="text/css">
+        body.modal-open, .modal-open .navbar-fixed-top, .modal-open .navbar-fixed-bottom{margin-right: 0px;}
+        .container{background-color: #fafafa;height: 100%;}
+        .switch-panel{height: 4rem;background-color: #edf1f4;border-bottom: 1px solid #ddd;}
+        .switch-panel li{width: 50%;height: 100%;border:none;}
+        .switch-panel li a{color:#707070!important;font-size: 1.4rem;text-align: center;height: 100%;border:none!important;border-bottom: 1px solid #ddd!important;line-height: 2.8rem;}
+        .switch-panel li a,.switch-panel li a:hover,.switch-panel li a:focus{background-color: rgba(0,0,0,0)!important;border:none;}
+        .switch-panel li.active a{border-bottom: 1px solid #009fe8!important;}
+        .scan-btn{height: 4.4rem;margin-left: 2rem;margin-right: 2rem;width:-webkit-fill-available;color: #009fe8;background-color: #fff;border:1px solid #009fe8;font-size: 1.6rem;margin-top: 3rem;}
+        .btn-scan{margin-top: 1rem;margin-left: 2rem;}
+        .stock-history,.stock-num{color: #707070;font-size: 1.4rem;font-weight: bold;margin-left:2rem;margin-right:2rem;}
+        .stock-his-con{margin-top: 1rem;height: 4rem;background-color: #f2f2f2;display: flex;align-items: center;justify-content: space-between;}
+        .nohis-tip-con{text-align: center;margin-top: 3.2rem;}
+        .nohis-tip{color: #999;font-size: 1.4rem;}
+        .his-list{margin-bottom:2rem; height: 100%;}
+        .list-delete{margin-right: 20px;}
+        .list-deletea:hover, .list-delete:focus{text-decoration: none;}
+        .list-select{width: 100px;height: 30px;}
+        .list-info{display: flex;flex-direction: column;font-size: 14px;}
+        .his-list-item{background-color: #fafafa;display: flex;color: #707070;margin-left: 1.9rem;justify-content:space-between;border-bottom: 1px solid #ddd;padding-bottom: 1rem;font-size: 1.6rem;font-size: 1.6rem;
+            padding-top: 1rem;}
+        #profile .his-list-item a{width:61px;}
+        .ok-btn{height: 4.4rem;margin-left:10%;width:80%;color: #fff;background-color: #0074bc;border:1px solid #0074bc;font-size: 1.6rem;margin-top: 2rem;box-shadow: none;font-weight: normal;margin-bottom: 20px;}
+        .fixed-show{position:fixed;bottom:0px;}
+         #scan .modal-dialog{position:absolute;z-index: 1050;width: 80%;height: 160px;margin-top: -80px;top: 50%;margin-right: auto;margin-left:10%;padding-right: 0px;padding-left: 0px;}
+        .scan_input{margin-left: 10px;border: navajowhite;border-bottom: 1px solid #ddd;}
+        .scan_con{display: flex;justify-content: space-around;align-items: center;}
+        .scan-confirm{text-align: right;margin-right: 20px;margin-top: 20px;}
+        .scan-cancel{color: #999;text-align: center;float: right;}
+        .scan-ok{color: #00aeef;text-align: center;float: right;}
+    </style>
+
+    <style>
+        .alertMask {top:-15px;bottom: 0;left: 0;right: 0; ;background: black;position: fixed;z-index: 9999998 ; opacity:0.7 ; display: none; }
+        .alertPanel {position: fixed;top: 15%;width: 80%;border: 1px solid #d4d0d0;left: 10%;background: #EEEEEE;z-index: 9999999;color: blue;  display: none;}
+        .alertInfoPanel {width: 100%; padding:20px ; color: #000; line-height:24px;  min-height:50px;max-height:400px;overflow:auto;overflow-x:hidden;}
+
+        .mobileInfoPanel {width: 100%; padding:20px ; color: #000; line-height:24px;}
+        .alertSplit{  height: 1px ;background:#ddd;margin: 5px 5px 5px 5px;left: 0 ;right: 0 ; }
+        .alertBtnPanel{ text-align: center;padding-bottom: 10px;padding-top:5px;color:#000}
+        .alertBtn{width: 20%;display: inline-block ;}
+
+        .mobilePanel {position: absolute;top: 10%;width: 80%;border: 1px solid #d4d0d0;left: 10%;background: #EEEEEE;z-index: 9999999;color: blue;  display: none;}
+        .mobileInfoPanel span{ float:left;font-weight: bold; font-size: 14px;color:#aaa;}
+        .mobileInfoPanel input{ width: 100%;line-height: 36px; border: 0;}
+        .mobiBtnPanel{  text-align: center;padding-bottom: 10px;padding-top:0  ;color:#000 ;font-size: 16px;}
+    </style>
+
+</head>
+<body>
+<!--弹框 start-->
+<div class="alertMask" id="alertMask" >
+    <div id="alertMaskInfo">
+        请稍等....
+    </div>
+</div>
+<div class="alertPanel">
+    <div class="alertInfoPanel"  >
+
+    </div>
+    <div class="alertSplit">
+    </div>
+    <div class="alertBtnPanel">
+        <span  class="alertBtn" id="alertOKBtn">确定</span>
+        <span  class="alertBtn"  style="color: #ddd">|</span>
+        <span class="alertBtn"  id="alertCancelBtn" >取消</span>
+        <br/>
+    </div>
+</div>
+<!--弹框 end-->
+
+<div id="selectNode" style="display:none">
+    <select class="list-select">
+        <option th:each="product : ${productModel}" th:value="${product.modalName}" th:text="${product.modalName}"></option>
+       <!-- <c:if test="${!empty productModel}">
+            <c:forEach items="${productModel}" var="product">
+                <option>${product.modalName}</option>
+            </c:forEach>
+        </c:if>-->
+    </select>
+</div>
+<div th:include="header :: header"></div>
+<div class="container pl-0 pr-0">
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs switch-panel">
+        <li class="active"><a href="#device" data-toggle="tab">设备</a></li>
+        <li><a href="#profile" data-toggle="tab">耗材</a></li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane active" id="device">
+            <!--<button class="scan-btn btn" onClick="applyQrCode(1)">扫码入库</button>-->
+            <button class="btn-primary btn btn-scan" data-toggle="modal" data-target="#scan" >扫码入库</button>
+            <div>
+                <div class="stock-his-con">
+                    <span class="stock-history">入库记录</span>
+                    <span class="stock-num"><span id="deviceCount">0</span>台</span>
+                </div>
+                <div class="nohis-tip-con">
+                    <span class="nohis-tip">暂无入库记录</span>
+                </div>
+                <div class="his-list">
+
+                </div>
+                <button class="ok-btn btn" data-index="1">确定</button>
+            </div>
+        </div>
+        <div class="tab-pane" id="profile">
+            <!--<button class="scan-btn btn" onClick="applyQrCode(2)">扫码入库</button>-->
+            <button class="btn-primary btn btn-scan" data-toggle="modal" data-target="#scan" >扫码入库</button>
+            <div>
+                <div class="stock-his-con">
+                    <span class="stock-history">入库记录</span>
+                    <span class="stock-num"><span id="materielCount">0</span>台</span>
+                </div>
+                <div class="nohis-tip-con">
+                    <span class="nohis-tip">暂无入库记录</span>
+                </div>
+                <div class="his-list his-list-2">
+
+                </div>
+                <button class="ok-btn ok-btn-2 btn" data-index="2">确定</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="scan">
+        <div class="modal-dialog">
+            <p style="margin-left: 10px;">请输入或扫描生产批次码</p>
+            <div class="scan_con">
+                <input style="margin-left:20px;margin-top:20px;width: 75%" type="text"  class="scan_input" name="">
+                <i class="icon icon-qrcode qrcode" style="font-size: 30px;margin-left: 5px;"></i>
+            </div>
+            <div class="scan-confirm">
+                <a class="btn btn-primary" href="javascript:getServerData(this)">确定</a>
+                <a class="btn btn-default" href="javascript:cancleAlert()">取消</a>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+<script type="text/javascript" th:inline="javascript">
+    var selectNode = "";
+    var stockMap = {};
+    var materielMap = {};
+    //入库失败的批次码,临时存储
+    var errorBatchMap = {};
+    var token=[[${token}]];
+
+    /**
+     * 判断当前的页面是设备还是耗材
+     * 1--设备  2--耗材
+     */
+    function getCurrentIndex() {
+        var index = 1;
+        if($('li[class=active]').find('a').attr('href') != "#device"){
+            index = 2;
+        }
+        return index;
+    }
+
+    /**
+     * 取消扫码的弹框
+     */
+    function cancleAlert(){
+        $('#scan .scan_con .scan_input').val('');
+        $('#scan').modal('toggle');
+    }
+    /**
+     * 扫码的弹框的确定点击事件
+     */
+    function okAlert(){
+        $(".scan_input").val("");
+        cancleAlert();
+    }
+
+    $(function () {
+        HideAlert();
+        updateTitle($('head title').text());
+        //设置下拉框的html代码字符
+        selectNode = $("#selectNode").html();
+        $(".qrcode").click(applyQrCode);
+    })
+
+
+    /**
+     * 校验批次码
+     */
+    function regexBatch(batchCode, index) {
+        var result = false;
+        switch (index){
+            case 1:
+                if(stockMap[batchCode] == undefined){
+                    stockMap[batchCode] = '';
+                    result = true;
+                }
+                break;
+            case 2:
+                if(materielMap[batchCode] == undefined){
+                    materielMap[batchCode] = '';
+                    result = true;
+                }
+                break;
+        }
+        return result;
+        /*if(stockMap[batchCode] == undefined){
+            stockMap[batchCode] = '';
+            return true;
+        }else{
+            return false;
+        }*/
+    }
+    /**
+     * 删除已经存储的批次码
+     */
+    function deleteBatch(batchCode,index){
+        switch (index){
+            case 1:
+                delete stockMap[batchCode];
+                break;
+            case 2:
+                delete materielMap[batchCode];
+                break;
+        }
+    }
+
+    /**
+     * 清空校验的对象
+     */
+    function truncateBatch(index) {
+        switch (index){
+            case 1:
+                stockMap = {};
+                break;
+            case 2:
+                materielMap = {};
+                break;
+        }
+    }
+
+    //入库成功后刷新页面
+    function hrefLocation(){
+        window.location.href="./deviceScan";
+    }
+    /**
+     * ajax提交数据到服务器
+     * @param index 1:设备,2:耗材
+     */
+    function addFormData(index) {
+        //默认为0,指定的是设备
+        var materielType = 0;
+        var data = '[';
+        if(index == 1){
+            var divItem = $("#device .his-list").find(".his-list-item");
+            divItem.each(function (index) {
+                // 1-正常的批次码 2-需要补全的批次码
+                var specialIndex = $(this).data("special");
+                var productModel = "";
+                if(specialIndex == 1){
+                    productModel = $(this).data("productmodel");
+                }else{
+                    productModel = $(this).find('select option:selected').text();
+                }
+                data += '{\"batchCode\":\"'+$(this).data("batchcode")+'\",\"productModel\":\"'+productModel+'\"}';
+                if(index < (divItem.length-1)){
+                    data += ',';
+                }
+            })
+        }else{
+            materielType = 1;
+            var divItem = $("#profile .his-list").find(".his-list-item");
+            divItem.each(function (index) {
+                data += '{\"batchCode\":\"'+$(this).data("batchcode")+'\"}';
+                if(index < (divItem.length-1)){
+                    data += ',';
+                }
+            })
+        }
+        data += ']';
+        //data = '[{\"batchCode\":\"'+batchCode+'\"}]';
+        //console.log(data);
+        $.ajax({
+            url:"./engineerPutStock",
+            method:"post",
+            data:{"type":1,epsJson:data,materielType:materielType,token:token},
+            success:function (response) {
+                //alert("code:"+response.code);
+                submitCallBackFunc(response,index);
+
+                /*if(response.code == 0){
+                    alert("你已经成功入库"+divItem.length+"台设备");
+                    cleanData(index);
+                }*/
+            }
+        })
+    }
+
+    /**
+     * 提交后的提示消息处理
+     * @param response
+     */
+    function submitCallBackFunc(response,index) {
+        var dataJson = JSON.parse('['+response.data+']');
+
+        //console.log("成功数量"+dataJson[0].success);
+        if(response.sign == 1){
+            //1:全部入库
+            $('#success-tip').modal('toggle');
+            hrefLocation();
+        }else{
+            //0:未全部入库
+            //入库成功的数量
+            var successNum = parseInt(dataJson[0].success);
+            var failNum = parseInt(dataJson[0].fail);
+            var errorMsg = "";
+            //console.log("错误信息列表"+dataJson[0].failList);
+            //console.log(typeof(dataJson[0].failList));
+            var errorArr = dataJson[0].failList;
+            //console.log("条数"+errorArr.length);
+            if(failNum > 0){
+                errorBatchMap = {};
+            }
+            for(var i=0;i<errorArr.length;i++){
+                var tempBatchCode = errorArr[i].batchCode;
+                errorBatchMap[tempBatchCode] = '';
+                errorMsg += "批次码:"+tempBatchCode+",信息:"+errorArr[i].failMsg;
+                if(i < errorArr.length-1){
+                    errorMsg += ",";
+                }
+                errorMsg +="<br>\r\n"
+            }
+            if(successNum > 0){
+                var materiel_type_text = "台设备"
+                if(index != 1){
+                    materiel_type_text = "支耗材";
+                }
+                if(failNum > 0){
+                    AlertWithText("本次成功入库" + successNum + materiel_type_text +",其中\n"+errorMsg,"确定","取消",function(){},function(){});
+                    resetBatchCode(errorBatchMap,index);
+                }else{
+                    setAlertOnlyOkBtn()
+                    AlertWithOkBtn("成功入库" + successNum + materiel_type_text, "确定",function(){
+                        resetAlertBtn();
+                        location.reload();
+                    });
+                }
+            }else{
+                AlertWithText("入库失败,错误信息:<br>\n"+errorMsg,"确定","取消",function(){},function(){});
+            }
+            bindItemDelButtonFunc();
+        }
+    }
+    //提交之后的错误批次码处理
+    function resetBatchCode(errorBatchMap,index){
+        var his_list_item_node = "";
+        //错误的批次码挂载点
+        var his_list_node = "";
+        var his_list_item_str = "";
+        switch (index){
+            case 1:
+                his_list_node = $("#device div .his-list");
+                his_list_item_node =  his_list_node.find(".his-list-item");
+                stockMap = errorBatchMap;
+                break;
+            case 2:
+                his_list_node = $("#profile div .his-list");
+                his_list_item_node = his_list_node.find(".his-list-item");
+                materielMap = errorBatchMap;
+                break;
+        }
+        his_list_item_node.each(function () {
+            var tempBatchCode = $(this).data("batchcode");
+            if(errorBatchMap[tempBatchCode] != undefined){
+                //node.prop('outerHTML');获取的是node这个节点的html代码,包括node本身,而node.html()获取的是当前节点的的子节点的html代码
+                his_list_item_str += $(this).prop('outerHTML');
+            }
+        })
+        his_list_node.html(his_list_item_str);
+        updateStockCountNum(index);
+    }
+
+    /**
+     * 将数据添加到h5展示页面
+     * @param index 索引 1:设备 2:耗材
+     * @param stockDataJson 库存相关数据
+     * @param batchCode 批次码
+     */
+    function setDataToH5Page(index,stockDataJson,batchCode) {
+        var htmlStr = '';
+        htmlStr += '<div class="his-list-item" data-special="1" data-batchCode="'+batchCode+'" data-productmodel="'+stockDataJson['materielCode']+'">' +
+            '                        <div class="list-info">'
+
+        if(index == 1){
+            htmlStr += '                        <span class="his-list-item-type">产品型号:'+stockDataJson['materielCode']+'</span>' +
+                '                        <span class="his-list-item-no" data-batchCode="'+batchCode+'">生产批次码:'+batchCode+'</span>' +
+                '                        </div>'+
+            '                        <a href="javascript:void(0)" class="list-delete" data-index="'+index+'">删除</a>'+
+            '                    </div>';
+            //console.log(htmlStr);
+            $("#device .nohis-tip-con").hide();
+            $("#device .his-list").append(htmlStr);
+        }else{
+            htmlStr += '                        <span class="his-list-item-type">耗材分类:'+stockDataJson['materielTypeName']+'</span>' +
+                '                        <span class="his-list-item-type">名称:'+stockDataJson['materielName']+'</span>' +
+                '                        <span class="his-list-item-type">适用机型:'+stockDataJson['fitTypeName']+'</span>' +
+                '                        <span class="his-list-item-no" data-batchCode="'+batchCode+'">生产批次码:'+batchCode+'</span>' +
+                '                        </div>'+
+            '                        <a href="javascript:void(0)" class="list-delete" data-index="'+index+'">删除</a>'+
+            '                    </div>';
+            $("#profile .nohis-tip-con").hide();
+            $("#profile .his-list").append(htmlStr);
+        }
+        updateStockCountNum(index);
+        calcBtnPos();
+    }
+    /**
+     * 补全设备批次号
+     */
+    function specialSetDataToH5Page(materielCode,batchCode) {
+        updateStockCountNum(1);
+        var count = 0;
+        var htmlStr = '';
+        htmlStr += '<div class="his-list-item" data-special="2" data-batchCode="'+batchCode+'">' +
+            '                        <div class="list-info">'+
+            '                        <span class="his-list-item-type">产品型号:'+selectNode+'</span>' +
+            '                        <span class="his-list-item-no" data-batchCode="'+batchCode+'">生产批次码:'+batchCode+'</span>' +
+            '                        </div>'+
+            '                        <a href="javascript:void(0)" class="list-delete" data-index="'+1+'">删除</a>'+
+            '                    </div>';
+
+        $("#device .nohis-tip-con").hide();
+        $("#device .his-list").append(htmlStr);
+
+        calcBtnPos();
+    }
+    /**
+     * 更新入库的统计数量
+     * @param
+     */
+    function updateStockCountNum(index) {
+        $(".his-list").each(function (index) {
+            var countNum = $(this).find(".his-list-item").length;
+            //console.log(countNum)
+            var countNode = $(this).parent().find(".stock-his-con .stock-num span");
+            countNode.html(countNum);
+            countNode.data("stockcount",countNum);
+        })
+    }
+
+    /**
+     * 从服务器获取设备型号和批次码
+     * @param sncode
+     * @return 如果为object类型的数据,则为查询的数据,如果为String类型的数据,则为错误提示语
+     */
+    function getDeviceTypaAndBatchCode(batchCode) {
+        var data = "";
+        $.ajax({
+            url:"./getMaterielInfoByBatchCode",
+            method:"get",
+            async:false,
+            data:{batchCode:batchCode,token:token},
+            success:function (response) {
+                var success = response.code;
+                console.log(response.data);
+                if(success != "00000000"){
+                    console.log(success.msg);
+                }else{
+                    data = response.data;
+                    console.log(typeof(data));
+                    console.log(data['materielName']);
+
+                }
+            }
+        })
+        return data;
+    }
+
+    var calcBtnPos =function(){
+        var windowHeight = document.body.offsetHeight;
+        var upconHeight = $('.switch-panel').height()+$('.scan-btn').outerHeight(true)+$('.stock-his-con').outerHeight(true);
+        var okbtnHeight = $('.ok-btn').outerHeight(true);
+        var listHeight = $('.his-list').height();
+        var listHeight2 = $('.his-list-2').height();
+        if (listHeight < windowHeight - upconHeight -okbtnHeight) {
+            $('.ok-btn').addClass('fixed-show');
+        }else{
+            $('.ok-btn').removeClass('fixed-show');
+        }
+        if (listHeight2 < windowHeight - upconHeight -okbtnHeight) {
+            $('.ok-btn-2').addClass('fixed-show');
+        }else{
+            $('.ok-btn-2').removeClass('fixed-show');
+        }
+    }
+    var applyQrCode=function(index){
+        var u = navigator.userAgent;
+        var isAndroid = u.indexOf('Android') > -1 || u.indexOf('Adr') > -1; //android终端
+        var isiOS = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/); //ios终端
+        if (isAndroid && !isiOS) {
+            webviewInstance.applyAndroidScanQr(index);
+        }else if(!isAndroid && isiOS){
+            applyIosScanQr(index);
+        }
+    }
+    function getQrCallback(data,index){
+            //alert("回传数据批次码:"+data);
+        $("input[class=scan_input]").val(data);
+    }
+    //从弹框中获取批次码数据,并从服务器拿取详细数据
+    function getServerData(btn){
+        var batchCode = $(".scan_input").val().trim();
+        //获取当前的页面索引
+        if(batchCode == ''){
+            AlertWithText("请输入具体的批次码!","确定","取消",function(){},function(){});
+            return false;
+        }
+        var index = getCurrentIndex();
+        console.log(batchCode);
+        if(!regexBatch(batchCode,index)){
+            AlertWithText("请不要重复扫描!","确定","取消",function(){},function(){});
+            return false;
+        }
+        /*if(index == 1 && batchCode.length != 16){
+            if(batchCode.length != 13){
+                deleteBatch(batchCode,index);
+                AlertWithText("批次号不存在!","确定","取消",function(){},function(){});
+                return false;
+            }
+            //设备,批次号小于16位
+            specialSetDataToH5Page(selectNode,batchCode);
+        }else{*/
+            var dataJson = getDeviceTypaAndBatchCode(batchCode);
+            if(dataJson == ""){
+                deleteBatch(batchCode,index);
+                AlertWithText("批次号不存在!","确定","取消",function(){},function(){});
+                return false;
+            }
+            console.log(dataJson);
+            var batchType = dataJson['materielType'];
+            //0:设备 1：耗材
+            if(batchType == 0 && index != 1){
+                deleteBatch(batchCode,index);
+                AlertWithText("该批次码不归属耗材!","确定","取消",function(){},function(){});
+                return false;
+            }else if(batchType == 1 && index != 2){
+                deleteBatch(batchCode,index);
+                AlertWithText("该批次码不归属设备!","确定","取消",function(){},function(){});
+                return false;
+            }else{
+                setDataToH5Page(index,dataJson,batchCode);
+            }
+        /*}*/
+        bindItemDelButtonFunc();
+        okAlert();
+    }
+
+    $(function(){
+        calcBtnPos();
+        $(".ok-btn.btn").on('click',function () {
+            addFormData($(this).data("index"));
+        });
+    })
+
+    //全局变量,指向点击的删除按钮
+    var delBtn = "";
+    /**
+     * 为item中的删除按钮绑定删除事件
+     */
+    function bindItemDelButtonFunc() {
+        $(".his-list-item .list-delete").click(function () {
+            //赋值给当前点击的删除按钮
+            delBtn = $(this);
+            AlertWithText("该产品即将入库,是否确定删除","确定","取消",function(){
+                //清除点击的item对象
+                $(delBtn).parent().remove();
+                //从匹配的map中去掉删除的批次码
+                var batchCode = $(delBtn).parent().data("batchcode");
+                var index = getCurrentIndex();
+                deleteBatch(batchCode,index);
+                updateStockCountNum(index);
+                /*if(stockMap[batchCode] !== undefined){
+                    updateStockCountNum($(delBtn).data("index"),"-");
+                    delete stockMap[batchCode];
+                }*/
+            },function(){});
+        })
+    }
+
+    /**
+     * 弹框设置一个按钮
+     */
+    function setAlertOnlyOkBtn() {
+        var window_Html_Code = '<div class="alertInfoPanel"  >\n' +
+            '\n' +
+            '    </div>\n' +
+            '    <div class="alertSplit">\n' +
+            '    </div>\n' +
+            '    <div class="alertBtnPanel">\n' +
+            '        <span  class="alertBtn" id="alertOKBtn">确定</span>\n' +
+            '        <br/>\n' +
+            '    </div>';
+        $(".alertPanel").html(window_Html_Code);
+    }
+
+    /**
+     * 重置弹框按钮
+     */
+    function resetAlertBtn() {
+        var window_Html_Code = '<div class="alertInfoPanel"  >\n' +
+            '\n' +
+            '    </div>\n' +
+            '    <div class="alertSplit">\n' +
+            '    </div>\n' +
+            '    <div class="alertBtnPanel">\n' +
+            '        <span  class="alertBtn" id="alertOKBtn">确定</span>\n' +
+            '        <span  class="alertBtn"  style="color: #ddd">|</span>\n' +
+            '        <span class="alertBtn"  id="alertCancelBtn" >取消</span>\n' +
+            '        <br/>\n' +
+            '    </div>';
+        $(".alertPanel").html(window_Html_Code);
+    }
+
+
+    //弹框
+
+    function SHOW_MASK(   ){
+        $('.alertMask').show();
+
+    }
+    function HIDE_MASK(){
+        $('.alertMask').hide();
+
+    }
+    function AlertWithOutBinding(info){
+        Alert(info,function(){},function(){})
+    }
+    function AlertWithOkBtn(info, okText, fnOK) {
+        $('#alertOKBtn').text(okText);
+        Alert(info , fnOK )
+    }
+    function AlertWithText(info , okText ,noText,fnOK ,fnNO){
+        $('#alertOKBtn').text(okText);
+        $('#alertCancelBtn').text(noText);
+        Alert(info , fnOK , fnNO  )
+    }
+    function Alert(info , fnOK , fnNo  ){
+        $('.alertMask').show();
+        $('.alertPanel').show() ;
+        $('.alertInfoPanel').html( "&nbsp;&nbsp;&nbsp;&nbsp;"+info)
+        $('#alertOKBtn').unbind('click'  ) ;
+        $('#alertOKBtn').on('click' ,  fnOK ) ;
+        $('#alertOKBtn').on('click' ,  HideAlert ) ;
+        if(fnNo != undefined){
+            $('#alertCancelBtn').unbind('click' ) ;
+            $('#alertCancelBtn').on('click',fnNo ) ;
+            $('#alertCancelBtn').on('click',HideAlert )
+        }
+    }
+
+    function HideAlert(){
+        $('.alertMask').hide();
+        $('.alertPanel').hide() ;
+        $('#alertOKBtn').text("确定");
+        $('#alertCancelBtn').text("取消");
+    }
+
+</script>
+</html>
+

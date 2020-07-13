@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.user.mapper.EngineerServiceAreaMapper">
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        insert into user_engineer_service_area (
+        engineer_id,
+        area_id,
+        province,
+        city,
+        region,
+        creator,
+        create_time
+        )
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.engineerId},
+            #{item.areaId},
+            #{item.province},
+            #{item.city},
+            #{item.region},
+            #{item.creator},
+            #{item.createTime}
+            )
+        </foreach>
+    </insert>
+
+    <delete id="deleteByEngineerId">
+    	DELETE
+		FROM
+			user_engineer_service_area
+		WHERE
+			engineer_id = #{engineerId}
+    </delete>
+
+    <delete id="deleteByAreaId">
+        	DELETE
+		FROM
+			user_engineer_service_area
+		WHERE
+			area_id = #{areaId}
+    </delete>
+    
+    <select id="selectAreaListByEngineerId" resultType="com.yimao.cloud.pojo.dto.user.EngineerServiceAreaDTO">
+    	SELECT
+			engineer_id as engineerId,
+			area_id as areaId,
+			province,
+			city,
+			region,
+			creator,
+			create_time as createTime
+		FROM
+			user_engineer_service_area
+		WHERE
+			engineer_id = #{engineerId}
+    </select>
+</mapper>

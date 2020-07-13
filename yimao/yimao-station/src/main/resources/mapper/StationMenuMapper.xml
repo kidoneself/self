@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.station.mapper.StationMenuMapper">
+    <resultMap id="BaseResultMap" type="com.yimao.cloud.station.po.StationMenu">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="description" jdbcType="VARCHAR" property="description"/>
+        <result column="url" jdbcType="VARCHAR" property="url"/>
+        <result column="pid" jdbcType="INTEGER" property="pid"/>
+        <result column="level" jdbcType="INTEGER" property="level"/>
+        <result column="sorts" jdbcType="INTEGER" property="sorts"/>
+        <result column="creator" jdbcType="INTEGER" property="creator"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="updater" jdbcType="INTEGER" property="updater"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="icon" jdbcType="VARCHAR" property="icon"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+    id, `name`, description, url, pid, `level`, sorts, creator, create_time, updater, update_time,icon
+  </sql>
+
+    <select id="selectSubMenus" resultType="com.yimao.cloud.pojo.dto.station.StationMenuDTO">
+        select
+        m.id,
+        m.`name`,
+        m.description,
+        m.url,
+        m.pid,
+        m.`level`,
+        m.sorts,
+        m.icon,
+        a1.real_name as creatorName,
+        m.create_time as createTime,
+        a2.real_name as updaterName,
+        m.update_time as updateTime
+        from station_menu m
+        left join station_admin a1 on m.creator = a1.id
+        left join station_admin a2 on m.updater = a2.id
+        where 1 = 1
+        <if test="id != null">
+            and m.pid = #{id}
+        </if>
+        order by m.sorts
+    </select>
+
+    <select id="selectAllMenus" resultType="com.yimao.cloud.pojo.dto.station.StationMenuDTO">
+        select
+        id,
+        `name`,
+        description,
+        url,
+        pid,
+        `level`,
+        sorts,
+        icon
+        from station_menu
+        where 1=1
+        order by `level`,sorts
+    </select>
+
+    <select id="selectFirstLevelMenus" resultType="com.yimao.cloud.pojo.dto.station.StationMenuDTO">
+        select
+        id,
+        `name`,
+        description,
+        url,
+        pid,
+        `level`,
+        sorts,
+        icon
+        from station_menu
+        where `level` = 1 and (pid = 0 or pid is null)
+        order by `level`,sorts
+    </select>
+
+    <select id="checkMenuNameAndUrlExist" resultType="java.lang.Integer">
+        select
+        count(1)
+        from station_menu
+        where id not in (#{id})
+        <if test="name != null and name.trim() != ''">
+            and `name` = #{name,jdbcType=VARCHAR}
+        </if>
+        <if test="url != null and url.trim() != ''">
+            and url = #{url,jdbcType=VARCHAR}
+        </if>
+    </select>
+
+    <select id="selectMenuByPermissionIds" parameterType="java.util.Set"
+            resultType="com.yimao.cloud.pojo.dto.station.StationMenuDTO">
+        select distinct
+        m.id,
+        m.`name`,
+        m.pid ,
+        m.`level`,
+        m.sorts
+        from station_menu m inner join station_permission p on m.id = p.menu_id
+        where p.id in
+        <foreach collection="permissionIds" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        order by m.`level`,m.sorts
+    </select>
+    <select id="selectPidById" resultType="java.lang.Integer">
+           select pid from station_menu where id = #{id}
+    </select>
+
+    <select id="selectAllMenuId" resultType="java.lang.Integer">
+        select distinct
+        id
+        from station_menu
+    </select>
+
+    <select id="selectMenuByRoleId" resultType="com.yimao.cloud.pojo.dto.station.StationMenuDTO">
+        select distinct
+        m.id,
+        m.`name`,
+        m.url,
+        m.pid,
+        m.`level`,
+        m.sorts,
+        m.icon
+        from station_menu m
+        inner join station_role__menu rm on m.id = rm.menu_id
+        where rm.role_id = #{roleId}
+        order by m.`level`,m.sorts
+    </select>
+
+    <resultMap id="MenuWithPermission" type="com.yimao.cloud.pojo.dto.station.StationMenuDTO">
+        <result column="c_id" property="id" jdbcType="INTEGER"/>
+        <collection property="permissions" ofType="com.yimao.cloud.pojo.dto.station.StationPermissionDTO"
+                    select="selectPermissionByMenuId" column="c_id">
+            <result column="c_id" property="menuId" jdbcType="INTEGER"/>
+        </collection>
+    </resultMap>
+
+    <select id="selectMenuWithPermission" resultMap="MenuWithPermission">
+        select
+        id as c_id,
+        `name` ,
+        pid ,
+        `level` ,
+        sorts
+        from station_menu
+        order by `level`,sorts
+    </select>
+
+    <select id="selectPermissionByMenuId" parameterType="java.lang.Integer"
+            resultType="com.yimao.cloud.pojo.dto.station.StationPermissionDTO">
+        select
+        id,
+        `name`,
+        method,
+        url,
+        menu_id as menuId,
+        `type`
+        from station_permission where menu_id = #{c_id}
+    </select>
+
+    <select id="selectMaxMenuLevel" resultType="java.lang.Integer">
+        select `level` from station_menu
+        order by `level` desc limit 1
+    </select>
+
+    <select id="selectMenuById" resultType="com.yimao.cloud.pojo.dto.station.StationMenuDTO">
+             select
+        m.id,
+        m.`name`,
+        m.url,
+        m.pid,
+        m.`level`,
+        m.sorts,
+        m.icon
+        from station_menu m
+        where id = #{menuId}
+    </select>
+
+</mapper>

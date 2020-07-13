@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.product.mapper.ProductCostMapper">
+
+    <select id="listProductCost" resultType="com.yimao.cloud.pojo.vo.product.ProductCostVO">
+        select distinct
+        pc.id,
+        pc.name,
+        pc.type,
+        pc.`value`,
+        pc.unit_price as unitPrice,
+        pc.rental_fee as rentalFee,
+        pc.installation_fee as installationFee,
+        pc.total_fee as totalFee,
+        pc.product_category_id as productCategoryId,
+        one.name as productFirstCategoryName,
+        two.name as productSecondCategoryName,
+        pc.deleted,
+        pc.sorts,
+        pc.creator,
+        pc.create_time as createTime,
+        pc.updater,
+        pc.update_time as updateTime,
+        pc.model_type as modelType,
+        pc.income_rule_id as incomeRuleId,
+        pc.income_rule_name as incomeRuleName,
+        pc.renew_remark as renewRemark
+        from
+        product_cost pc
+        left join product_category two on pc.product_category_id = two.id and two.level = 2
+        left join product_category one on two.pid = one.id and one.level = 1
+        where 1=1
+        <if test="name != null and name != ''">
+            and pc.name like CONCAT('%',#{name},'%')
+        </if>
+        <if test="type != null">
+            and pc.type = #{type}
+        </if>
+        <if test="modelType != null">
+            and pc.model_type = #{modelType}
+        </if>
+        <if test="secondCategoryId != null">
+            and two.id = #{secondCategoryId}
+        </if>
+        <if test="firstCategoryId != null">
+            and one.id = #{firstCategoryId}
+        </if>
+        <if test="deleted != null">
+            and pc.deleted = #{deleted}
+        </if>
+        order by pc.sorts desc
+    </select>
+
+    <!--查询水机产品的计费方式-->
+    <select id="listProductCostByProductId" resultType="com.yimao.cloud.pojo.dto.product.ProductCostDTO">
+        select distinct
+        pc.id,
+        pc.name,
+        pc.type,
+        pc.`value`,
+        pc.unit_price as unitPrice,
+        pc.rental_fee as rentalFee,
+        pc.installation_fee as installationFee,
+        pc.total_fee as totalFee,
+        pc.sorts,
+        pc.product_category_id as productCategoryId,
+        pc.renew_remark as renewRemark
+        from product_cost pc
+        inner join product__product_cost ppc on ppc.cost_id = pc.id
+        where pc.deleted = 0  and model_type = 1
+        <if test="productId != null">
+            and ppc.product_id = #{productId}
+        </if>
+        order by pc.sorts desc
+    </select>
+
+    <!--变更套餐列表-->
+    <select id="listByOldCostId" resultType="com.yimao.cloud.pojo.dto.product.ProductCostDTO">
+        select distinct
+            pc.id,
+            pc.name,
+            pc.type,
+            pc.`value`,
+            pc.unit_price as unitPrice,
+            pc.rental_fee as rentalFee,
+            pc.installation_fee as installationFee,
+            pc.total_fee as totalFee,
+            pc.sorts,
+            pc.renew_remark as renewRemark
+        from
+            product_cost pc
+        where
+            pc.deleted = 0
+        <if test="oldCostId != null">
+            and pc.product_category_id = (select product_category_id from product_cost where id = #{oldCostId})
+            and pc.model_type = (select model_type from product_cost where id = #{oldCostId})
+        </if>
+        order by
+            pc.sorts desc
+    </select>
+
+    <!--获取续费计费套餐-->
+    <select id="listRenewCostByOldCostId" resultType="com.yimao.cloud.pojo.dto.product.ProductCostDTO">
+        select distinct
+            pc.id,
+            pc.name,
+            pc.type,
+            pc.`value`,
+            pc.unit_price as unitPrice,
+            pc.rental_fee as rentalFee,
+            pc.installation_fee as installationFee,
+            pc.total_fee as totalFee,
+            pc.sorts,
+            pc.renew_remark as renewRemark,
+            pc.threshold1 as threshold1
+        from
+            product_cost pc
+        where
+            pc.deleted = 0 and model_type = 2
+        <if test="oldCostId != null">
+            and pc.product_category_id = (select product_category_id from product_cost where id = #{oldCostId})
+        </if>
+        <if test="type != null">
+            and type = #{type}
+        </if>
+        order by
+            pc.sorts desc
+    </select>
+    
+    <select id="getOnlinePoruductCost" resultType="com.yimao.cloud.pojo.dto.product.ProductCostDTO">
+    	SELECT
+			p.price as totalFee,
+			pc.id,
+			pc.`name`,
+			pc.type
+		FROM
+			product p
+		LEFT JOIN product__product_cost ppc ON p.id = ppc.product_id
+		INNER JOIN product_cost pc ON pc.id = ppc.cost_id
+		WHERE
+			p. STATUS = 2
+		AND p. MODE = 3
+		<if test="price != null">
+            AND p.price = #{price}
+        </if>
+    	
+    </select>
+
+</mapper>

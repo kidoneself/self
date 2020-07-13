@@ -1,0 +1,477 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.order.mapper.MaintenanceWorkOrderMapper">
+    <update id="updateLasteFinishTime">
+		UPDATE workorder_maintenance i
+		SET i.countdown_time = DATE_ADD(
+			i.create_time,
+			INTERVAL #{hour} HOUR
+		)
+		WHERE
+			i.bespeak_Status = 'N'
+		AND i.work_order_complete_status = 'N'
+	</update>
+
+    <update id="updateStationInfoByPCR">
+        update workorder_maintenance
+        set station_id = #{stationId},
+        station_name = #{stationName},
+        update_time = NOW()
+     	where `state` != 4
+		and addr_province = #{addrProvince}
+		and addr_city = #{addrCity}
+		and addr_region = #{addrRegion}
+    </update>
+
+    <update id="updateEngineerInfoByPCR">
+        update workorder_maintenance
+        set
+        engineer_id = #{engineerId},
+        engineer_name = #{engineerName},
+        engineer_phone = #{engineerPhone},
+        engineer_id_card = #{engineerIdCard},
+        station_id = #{stationId},
+        station_name = #{stationName},
+        update_time = NOW()
+     	where `state` != 4
+		and addr_province = #{addrProvince}
+		and addr_city = #{addrCity}
+		and addr_region = #{addrRegion}
+    </update>
+
+    <update id="updateEngineerInfo">
+        update workorder_maintenance
+        set
+        engineer_id = #{engineerId},
+        engineer_name = #{engineerName},
+        engineer_phone = #{engineerPhone},
+        engineer_id_card = #{engineerIdCard},
+        update_time = NOW()
+     	where `state` != 4
+		and engineer_id = #{oldEngineerId}
+    </update>
+
+
+    <select id="maintenanceWorkOrderExport"
+            resultType="com.yimao.cloud.pojo.dto.order.MaintenanceWorkOrderExportDTO"
+            parameterType="com.yimao.cloud.pojo.dto.order.MaintenanceWorkOrderQueryDTO">
+        SELECT
+        id,
+        materiel_detail_name AS materielDetailName,
+        address,
+        consumer_name AS consumerName,
+        consumer_phone AS consumerPhone,
+        device_batch_code AS deviceBatchCode,
+        kind_name AS kindName,
+        device_model_name AS deviceModelName,
+        device_sncode AS deviceSncode,
+        device_simcard AS deviceSimcard,
+        CASE
+        work_order_complete_status
+        WHEN 'Y' THEN
+        '完成' ELSE '未完成'
+        END AS workOrderCompleteStatus,
+        DATE_FORMAT( work_order_complete_time, '%Y-%m-%d %H:%i:%s' ) AS workOrderCompleteTime,
+        DATE_FORMAT( create_time, '%Y-%m-%d %H:%i:%s' ) AS createTime,
+        CASE
+        audit_type
+        WHEN 2 THEN
+        '人工审核'
+        WHEN 1 THEN
+        '自动审核' ELSE '未知'
+        END AS auditType,
+        CASE
+        source
+        WHEN 2 THEN
+        '总部添加'
+        WHEN 1 THEN
+        '自动生成'
+        END AS source
+        FROM
+        workorder_maintenance
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="id != null and id != ''">
+                and id like CONCAT('%',trim(#{id}),'%')
+            </if>
+            <if test="workOrderCompleteStatus != null and workOrderCompleteStatus != ''">
+                and work_order_complete_status = #{workOrderCompleteStatus}
+            </if>
+            <if test="consumerName != null and consumerName != ''">
+                and consumer_name like CONCAT('%',trim(#{consumerName}),'%')
+            </if>
+            <if test="consumerPhone != null and consumerPhone != ''">
+                and consumer_phone like CONCAT('%',trim(#{consumerPhone}),'%')
+            </if>
+            <if test="deviceSncode != null and deviceSncode != '' ">
+                and device_sncode like CONCAT('%',trim(#{deviceSncode}),'%')
+            </if>
+            <if test="createStartTime != null">
+                and create_time &gt;= #{createStartTime}
+            </if>
+            <if test="createEndTime != null">
+                and create_time &lt;= #{createEndTime}
+            </if>
+            <if test="finshStartTime != null ">
+                and work_order_complete_time &gt;= #{finshStartTime}
+            </if>
+            <if test="finshEndTime != null">
+                and work_order_complete_time &lt;= #{finshEndTime}
+            </if>
+            <if test="province != null and province != '' ">
+                and province = #{province}
+            </if>
+            <if test="city != null and city != '' ">
+                and city = #{city}
+            </if>
+            <if test="region != null and region != '' ">
+                and region = #{region}
+            </if>
+            <if test="source != null">
+                and source = #{source}
+            </if>
+            and del_status ='N'
+        </trim>
+        order by create_time desc
+    </select>
+
+    <!--维护工单  -->
+    <select id="getMaintenanceWorkOrderList" resultType="com.yimao.cloud.pojo.dto.order.RenewDTO">
+        SELECT
+        wm.device_model_name,
+        wm.kind_name,
+        count( 1 )
+        FROM
+        `workorder_maintenance` wm
+        WHERE
+        state = 4
+        <if test="engineerId != null">
+            and engineer_id = #{engineerId}
+        </if>
+        <if test="timeType != null and timeType == 1">
+            DATE_FORMAT(wm.work_order_complete_time,'%Y-%m-%d') = #{completeTime}
+        </if>
+        <if test="timeType != null and timeType == 2">
+            DATE_FORMAT(wm.work_order_complete_time,'%Y-%m') = #{completeTime}
+        </if>
+        <if test="timeType != null and timeType == 3">
+            DATE_FORMAT(wm.work_order_complete_time,'%Y') = #{completeTime}
+        </if>
+        GROUP BY
+        wm.device_model_name,
+        wm.kind_name
+    </select>
+
+
+    <select id="getMaintenanceWorkOrderCount" resultType="java.lang.Integer">
+        select count(1)
+        from
+        `workorder_maintenance` wm
+        where del_status ='N'
+        <if test="engineerId != null">
+            and engineer_id = #{engineerId}
+        </if>
+        <if test="state != null">
+            and state = #{state}
+        </if>
+    </select>
+
+    <!--根据维护工单状态查询维护工单数量-->
+    <!--<select id="getWorkOrderMaintenanceCount" resultType="java.lang.Integer">-->
+    <!--select count(1) from workorder_maintenance wm-->
+    <!--where wm.engineer_id = #{engineerId}-->
+    <!--<if test="state!=null">-->
+    <!--and wm.state = #{state}-->
+    <!--</if>-->
+    <!--</select>-->
+
+    <select id="listMaintenanceWorkOrderForClient" resultType="com.yimao.cloud.pojo.dto.order.MaintenanceDTO">
+        SELECT
+        wm.device_sncode as deviceSncode,
+        MAX(wm.device_batch_code) as deviceBatchCode,
+        MAX(wm.device_simcard) as deviceSimcard,
+        MAX(wm.cost_name) as costName,
+        MAX(wm.device_model_name) as deviceModelName,
+        MAX(wm.consumer_id) as consumerId,
+        MAX(wm.consumer_name) as consumerName,
+        MAX(wm.consumer_phone) as consumerPhone,
+        MAX(wm.work_order_complete_time) as workOrderCompleteTime,
+        MAX(wm.addr_province) as addrProvince,
+        MAX(wm.addr_city) as addrCity,
+        MAX(wm.addr_region) as addrRegion,
+        MAX(wm.address) as address,
+        MAX(wm.longitude) as longitude,
+        MAX(wm.latitude) as latitude,
+        MAX(wm.state) as state,
+        MAX(wm.state_text) as stateText,
+        MAX(wm.hang_reason) as hangReason,
+        MAX(wm.hang_remark) as hangRemark,
+        MAX(wm.hang_start_time) as hangStartTime,
+        MAX(wm.hang_end_time) as hangEndTime,
+        if(max(wm.work_order_complete_time)!=null,max(wm.work_order_complete_time),max(wm.update_time)) as orderTime
+        FROM `workorder_maintenance` wm
+        where wm.engineer_id = #{engineerId}
+        and wm.del_status = 'N'
+        and wm.source = 1
+        <if test="state!=null">
+            and wm.state = #{state}
+        </if>
+        <if test="search!=null and search!=''">
+            and (
+            wm.work_code LIKE CONCAT("%",#{search},"%") or
+            wm.addr_province LIKE CONCAT("%",#{search},"%") or
+            wm.addr_city LIKE CONCAT("%",#{search},"%") or
+            wm.addr_region LIKE CONCAT("%",#{search},"%") or
+            wm.address LIKE CONCAT("%",#{search},"%") or
+            wm.device_model_name LIKE CONCAT("%",#{search},"%") or
+            wm.consumer_name LIKE CONCAT("%",#{search},"%") or
+            wm.consumer_phone LIKE CONCAT("%",#{search},"%") or
+            wm.device_batch_code LIKE CONCAT("%",#{search},"%") or
+            wm.device_sncode LIKE CONCAT("%",#{search},"%") or
+            wm.device_simcard LIKE CONCAT("%",#{search},"%"))
+        </if>
+        group by wm.device_sncode
+        <if test="state!=null and state!=1">
+            ,wm.handsel_flag
+        </if>
+        order by orderTime desc
+    </select>
+
+    <select id="maintenanceFilterChangeList" resultType="java.util.Map">
+        SELECT
+        wm.work_code as workCode,
+        wm.materiel_detail_name as materielDetailName,
+        concat("",wm.create_time) as createTime
+        FROM workorder_maintenance wm
+        where wm.del_status = 'N'
+        <if test="engineerId!=null">
+            and wm.engineer_id = #{engineerId}
+        </if>
+        <if test="deviceSncode!=null and deviceSncode!='' ">
+            and wm.device_sncode = #{deviceSncode}
+        </if>
+        <if test="handselFlag!=null">
+            and wm.handsel_flag = #{handselFlag}
+        </if>
+        <if test="source!=null">
+            and wm.source = #{source}
+        </if>
+        <if test="state!=null">
+            and wm.state = #{state}
+        </if>
+    </select>
+
+    <!--已完成的维护工单 -->
+    <select id="maintenanceWorkOrderCompleteList" resultType="com.yimao.cloud.pojo.dto.order.MaintenanceDTO">
+        SELECT
+        wm.device_sncode as deviceSncode,
+        MAX(wm.device_batch_code) as deviceBatchCode,
+        MAX(wm.work_order_complete_time) as times,
+        MAX(wm.device_simcard) as deviceSimcard,
+        MAX(wm.cost_name) as costName,
+        MAX(wm.device_model_name) as deviceModelName,
+        MAX(wm.consumer_id) as consumerId,
+        MAX(wm.consumer_name) as consumerName,
+        MAX(wm.consumer_phone) as consumerPhone,
+        MAX(wm.addr_province) as addrProvince,
+        MAX(wm.addr_city) as addrCity,
+        MAX(wm.addr_region) as addrRegion,
+        MAX(wm.address) as address
+        FROM `workorder_maintenance` wm
+        where wm.engineer_id = #{engineerId}
+        and wm.del_status = 'N'
+        and wm.source = 1
+        and wm.state = 4
+        group by wm.device_sncode
+        <if test="sortType!=null">
+            <if test="sortType==1">
+                order by times asc
+            </if>
+            <if test="sortType==2">
+                order by times desc
+            </if>
+        </if>
+    </select>
+
+    <!--维护工单详情 -->
+    <select id="maintenanceWorkOrderByDeviceSnCode" resultType="com.yimao.cloud.pojo.dto.order.MaintenanceDTO">
+        SELECT
+        wm.device_sncode as deviceSncode,
+        wm.device_batch_code as deviceBatchCode,
+        wm.device_simcard as deviceSimcard,
+        wm.cost_name as costName,
+        wm.device_model_name as deviceModelName,
+        wm.consumer_id as consumerId,
+        wm.consumer_name as consumerName,
+        wm.consumer_phone as consumerPhone,
+        wm.addr_province as addrProvince,
+        wm.addr_city as addrCity,
+        wm.addr_region as addrRegion,
+        wm.address as address,
+        wm.state as state,
+        wm.state_text as stateText
+        FROM `workorder_maintenance` wm
+        where wm.del_status = 'N'
+        <if test="engineerId!=null">
+            and wm.engineer_id = #{engineerId}
+        </if>
+        <if test="deviceSncode!=null and deviceSncode!='' ">
+            and wm.device_sncode = #{deviceSncode}
+        </if>
+        <if test="source!=null">
+            and wm.source = #{source}
+        </if>
+        <if test="state!=null">
+            <if test="state==4">
+                and wm.state = 4
+                order by wm.work_order_complete_time desc limit 1
+            </if>
+            <if test="state!=4">
+                and wm.state = #{state}
+                order by wm.create_time desc limit 1
+            </if>
+        </if>
+    </select>
+
+    <select id="maintenanceWorkOrderRecordDetail" resultType="com.yimao.cloud.pojo.dto.order.MaintenanceDTO">
+        SELECT
+        wm.handsel_flag as handselFlag,
+        MAX(wm.device_sncode) as deviceSncode,
+        MAX(wm.device_batch_code) as deviceBatchCode,
+        MAX(wm.work_order_complete_time) as times,
+        MAX(wm.device_simcard) as deviceSimcard,
+        MAX(wm.cost_name) as costName,
+        MAX(wm.device_model_name) as deviceModelName,
+        MAX(wm.consumer_id) as consumerId,
+        MAX(wm.consumer_name) as consumerName,
+        MAX(wm.consumer_phone) as consumerPhone,
+        MAX(wm.addr_province) as addrProvince,
+        MAX(wm.addr_city) as addrCity,
+        MAX(wm.addr_region) as addrRegion,
+        MAX(wm.address) as address,
+        MAX(wm.state) as state,
+        MAX(wm.state_text) as stateText
+        FROM `workorder_maintenance` wm
+        where wm.engineer_id = #{engineerId}
+        and wm.device_sncode = #{deviceSncode}
+        and wm.del_status = 'N'
+        and wm.source = 1
+        and wm.state = 4
+        group by wm.handsel_flag
+        order by  times desc
+    </select>
+
+    <select id="maintenanceFilterChangeRecordList" resultType="java.util.Map">
+        SELECT
+        wm.work_code as workCode,
+        wm.materiel_detail_name as materielDetailName,
+        concat("",wm.create_time) as createTime,
+        concat("",wm.work_order_complete_time) as workOrderCompleteTime
+        FROM workorder_maintenance wm
+        where wm.engineer_id = #{engineerId}
+        and wm.device_sncode = #{deviceSncode}
+        <if test="handselFlag!=null">
+            and wm.handsel_flag = #{handselFlag}
+        </if>
+        <if test="handselFlag==null">
+            and wm.handsel_flag is null
+        </if>
+        and wm.del_status = 'N'
+        and wm.source = 1
+        and wm.state = 4
+    </select>
+
+    <select id="listMaintenanceOrderToStation"
+            parameterType="com.yimao.cloud.pojo.query.station.StationMaintenanceOrderQuery"
+            resultType="com.yimao.cloud.pojo.dto.order.MaintenanceWorkOrderDTO">
+        select
+        id,
+        addr_province as addrProvince,
+        addr_city as addrCity,
+        addr_region as addrRegion,
+        address,
+        state,
+        station_name as stationName,
+        consumer_name as consumerName,
+        consumer_phone as consumerPhone,
+        engineer_id as engineerId,
+        engineer_name as engineerName,
+        distributor_name as distributorName,
+        device_model_name as deviceModelName,
+        create_time as createTime
+        from workorder_maintenance
+        <where>
+            del_status="N"
+            <if test="id != null and id != ''">
+                and id like CONCAT('%', #{id}, '%')
+            </if>
+            <if test="state != null">
+                and state = #{state}
+            </if>
+            <if test="deviceModelName != null and deviceModelName != ''">
+                and device_model_name like CONCAT('%', #{deviceModelName}, '%')
+            </if>
+            <if test="consumerName != null and consumerName != ''">
+                and consumer_name like CONCAT('%', #{consumerName}, '%')
+            </if>
+            <if test="consumerPhone != null and consumerPhone != ''">
+                and consumer_phone like CONCAT('%', #{consumerPhone}, '%')
+            </if>
+            <if test="distributorName != null and distributorName != ''">
+                and distributor_name like CONCAT('%', #{distributorName}, '%')
+            </if>
+            <if test="createStartTime != null">
+                and create_time <![CDATA[>=]]> #{createStartTime}
+            </if>
+            <if test="createEndTime != null">
+                and create_time <![CDATA[<=]]> #{createEndTime}
+            </if>
+            <if test="engineerIds != null and engineerIds.size >0">
+                and engineer_id in (
+                <foreach collection="engineerIds" item="item" index="index"
+                         separator=",">
+                    #{item}
+                </foreach>
+                )
+            </if>
+        </where>
+        order by state asc,create_time desc
+
+    </select>
+
+
+    <select id="getMaintenanceModelWorkOrderTotalCount" resultType="java.lang.Integer">
+        select count(1)
+        from
+        `workorder_maintenance` wm
+        where del_status ='N' and state in (1,2,3)
+        <if test="engineerId != null">
+            and engineer_id = #{engineerId}
+        </if>
+    </select>
+    <select id="getMaintenanceWorkOrder" resultType="com.yimao.cloud.pojo.dto.order.MapOrderDTO">
+                SELECT
+            wm.consumer_name AS userName,
+            wm.consumer_phone AS userPhone,
+            wm.device_model_name AS deviceModel,
+            wm.device_sncode AS sn,
+            wm.materiel_detail_name materielDetailNames,
+            wm.address,
+            wm.addr_province AS province,
+            wm.addr_city AS city,
+            wm.addr_region AS region,
+            wm.latitude AS addrLatitude,
+            wm.longitude AS addlongitude,
+            wm.create_time AS createTime,
+            wm.state,
+            wm.engineer_id AS engineerId
+        FROM
+            workorder_maintenance wm
+        WHERE
+            1 = 1
+        AND wm.state != 4
+        AND wm.engineer_id = #{engineerId}
+        GROUP BY
+            wm.device_sncode,
+            wm.state
+    </select>
+</mapper>

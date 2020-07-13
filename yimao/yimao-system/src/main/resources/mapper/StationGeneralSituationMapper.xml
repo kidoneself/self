@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.system.mapper.StationGeneralSituationMapper">
+    <select id="getCompanyNumber" resultType="java.lang.Integer">
+        SELECT COUNT(id) FROM station_company
+    </select>
+    <select id="getStationNumber" resultType="java.lang.Integer">
+        SELECT COUNT(id) FROM station
+    </select>
+    <select id="getContractNumber" resultType="java.lang.Integer">
+        SELECT COUNT(id) FROM station WHERE contract = 1
+    </select>
+    <select id="getStationVariationTrend" resultType="java.util.Map">
+        SELECT
+        td.`day` AS cday,
+        count( ts.id ) AS ccount
+        FROM
+        t_day td
+        LEFT JOIN station_company ts ON td.`day` = DATE_FORMAT( ts.create_time, '%Y-%m-%d' )
+        WHERE
+        td.`day` > date_sub(now(),interval #{days} day)
+        AND td.`day` &lt;=#{time}
+        GROUP BY
+        cday
+    </select>
+</mapper>

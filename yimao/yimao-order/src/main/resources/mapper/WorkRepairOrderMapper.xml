@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.order.mapper.WorkRepairOrderMapper">
+
+    <insert id="createRepairOrder" parameterType="com.yimao.cloud.order.po.WorkRepairOrder">
+    insert into work_repair_order (
+ 		work_order_no,    
+        status,
+        step,
+        device_id,
+        device_model,
+        product_category_id,
+        sn,
+        fault_id,
+        fault_name,
+        distributor_id,
+        distributor_name,
+        distributor_phone,
+        engineer_id,
+        engineer_name,
+        station_id,
+        station_name,
+        province,
+        city,
+        region,       
+        device_user_id,
+        device_user_name,
+        device_user_phone,
+        address,
+        longitude,
+        latitude,
+        remark,
+        source_type,
+        launch_time,
+        service_start_time,
+        service_end_time,
+        system_creator) 
+        select
+        #{workOrderNo},
+        #{status},
+        #{step},
+        #{deviceId},
+        #{deviceModel},
+        #{productCategoryId},
+        #{sn},
+        #{faultId},
+        #{faultName},
+        #{distributorId},
+        #{distributorName},
+        #{distributorPhone},
+        #{engineerId},
+        #{engineerName},
+        #{stationId},
+        #{stationName},
+        #{province},
+        #{city},
+        #{region},
+        #{deviceUserId},
+        #{deviceUserName},
+        #{deviceUserPhone},
+        #{address},
+        #{longitude},
+        #{latitude},
+        #{remark},
+        #{sourceType},
+        #{launchTime},
+        #{serviceStartTime},
+        #{serviceEndTime},
+        #{systemCreator}
+		from DUAL
+		where not exists(select id from work_repair_order where sn=#{sn} and fault_id = #{faultId} and status = 3)    
+  </insert>
+
+    <select id="listRepairOrder" parameterType="com.yimao.cloud.pojo.query.order.WorkRepairOrderQuery"
+            resultType="com.yimao.cloud.pojo.vo.station.WorkRepairOrderVO">
+        select
+        id,
+        work_order_no as workOrderNo,
+        source_type as sourceType,
+        province,
+        city,
+        region,
+        address,
+        device_user_name as deviceUserName,
+        device_user_phone as deviceUserPhone,
+        station_name as stationName,
+        engineer_id as engineerId,
+        engineer_name as engineerName,
+        distributor_id as distributorId,
+        distributor_name as distributorName,
+        launch_time as launchTime,
+        engineer_finish_time as engineerFinishTime,
+        device_model as deviceModel,
+        fault_name as faultName,
+        status,
+        step,
+        longitude,
+        latitude,
+        <if test="longitude != null and  longitude != '' and latitude != null and latitude != ''">
+            ifnull((
+            6378.137 * 2 * ASIN(
+            SQRT(
+            POW( SIN( ( RADIANS( #{latitude} ) - RADIANS( latitude ) ) / 2 ), 2 ) + COS( RADIANS( #{latitude} ) ) * COS(
+            RADIANS( latitude ) ) * POW( SIN( ( RADIANS( #{longitude} ) - RADIANS( longitude ) ) / 2 ), 2 )
+            )
+            )
+            ) ,0) AS distanceNum,
+        </if>
+        service_start_time as serviceStartTime,
+        service_end_time as serviceEndTime,
+        CONCAT(DATE_FORMAT(service_start_time,'%Y-%m-%d %H'),"点-",DATE_FORMAT(service_end_time,'%H'),"点") as dislpayServiceTime,
+        hang_remark as hangRemark,
+        revision_start_time as revisionStartTime,
+        revision_end_time as revisionEndTime,
+        CONCAT(DATE_FORMAT(revision_start_time,'%Y-%m-%d %H'),"点-",DATE_FORMAT(revision_end_time,'%H'),"点") as dislpayRevisionTime
+        from work_repair_order
+        <where>
+            <if test="workOrderNo != null and workOrderNo != ''">
+                and work_order_no like CONCAT('%', #{workOrderNo}, '%')
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="deviceUserName != null and deviceUserName != ''">
+                and device_user_name like CONCAT('%', #{deviceUserName}, '%')
+            </if>
+            <if test="deviceUserPhone != null and deviceUserPhone != ''">
+                and device_user_phone like CONCAT('%', #{deviceUserPhone}, '%')
+            </if>
+            <if test="distributorName != null and distributorName != ''">
+                and distributor_name like CONCAT('%', #{distributorName}, '%')
+            </if>
+            <if test="sourceType != null">
+                and source_type = #{sourceType}
+            </if>
+            <if test="startLaunchTime != null and startLaunchTime != ''">
+                and launch_time <![CDATA[>=]]> #{startLaunchTime}
+            </if>
+            <if test="endLaunchTime != null and endLaunchTime != ''">
+                and launch_time <![CDATA[<=]]> #{endLaunchTime}
+            </if>
+            <if test="keywords != null and keywords != ''">
+                and ( address like CONCAT('%',trim(#{keywords}),'%') or device_user_name like CONCAT('%', #{keywords},
+                '%')
+                or device_user_phone like CONCAT('%', #{keywords}, '%') or device_model like CONCAT('%', #{keywords},
+                '%')
+                or fault_name like CONCAT('%', #{keywords}, '%')
+                )
+            </if>
+            <if test="engineerId != null">
+                and engineer_id =#{engineerId}
+            </if>
+            <if test="engineerIds != null and engineerIds.size >0">
+                and engineer_id in (
+                <foreach collection="engineerIds" item="item" index="index"
+                         separator=",">
+                    #{item}
+                </foreach>
+                )
+            </if>
+        </where>
+        <choose>
+            <when test="sortBy == 1">
+                order by distanceNum ${sortTypeString}
+            </when>
+            <when test="sortBy == 2">
+                order by launchTime ${sortTypeString}
+            </when>
+            <when test="sortBy == 3">
+                order by engineerFinishTime ${sortTypeString}
+            </when>
+            <otherwise>
+                order by status asc,launchTime desc
+            </otherwise>
+        </choose>
+
+    </select>
+
+    <select id="selectConfirmInfo" resultType="com.yimao.cloud.pojo.vo.station.WorkRepairOrderVO">
+		select
+		sn,
+		work_order_no as workOrderNo,
+		fault_name as faultName,
+		fault_id as faultId,
+		step,
+		remark
+		from work_repair_order
+		where 
+		id=#{id}
+	</select>
+
+    <insert id="batchInsertMaterialUseRecord">
+        insert into work_repair_material_use_record (
+        work_repair_order_id,
+        material_id,
+        material_name,
+        material_count
+        )
+        values
+        <foreach collection="list" item="item" index="index"
+                 separator=",">
+            (
+            #{item.workRepairOrderId},
+            #{item.materialId},
+            #{item.materialName},
+            #{item.materialCount}
+            )
+        </foreach>
+    </insert>
+
+    <select id="selectSubmitRepairInfo" resultMap="submitRepairInfo">
+		select
+		id,
+		work_order_no as workOrderNo,		
+		station_id as stationId,
+		product_category_id as productCategoryId,
+		device_user_name as deviceUserName,
+		device_user_phone as deviceUserPhone,
+		province,
+		city,
+		region,
+		address,
+		distributor_name as distributorName,
+		distributor_phone as distributorPhone,
+		device_model as deviceModel,
+		sn,
+		confirm_fault_name as confirmFaultName,		
+		is_change_material as isChangeMaterial,
+		front_image as frontImage,
+		back_image as backImage,
+		right_image as rightImage,
+		left_image as leftImage
+		from work_repair_order
+		where 
+		id=#{id}	
+	</select>
+
+    <resultMap type="com.yimao.cloud.pojo.vo.station.WorkRepairOrderVO" id="submitRepairInfo">
+        <id column="id" property="id"/>
+        <collection property="materialUseRecordList"
+                    ofType="com.yimao.cloud.pojo.dto.order.WorkRepairMaterialUseRecordDTO"
+                    select="selectMaterialUseRecordById" column="{workRepairOrderId=id}"/>
+    </resultMap>
+
+
+    <select id="selectMaterialUseRecordById" resultType="com.yimao.cloud.pojo.dto.order.WorkRepairMaterialUseRecordDTO">
+		select
+		material_name as materialName,
+		material_count as materialCount,
+		first_category_name as firstCategoryName,
+		second_category_name as secondCategoryName
+		from work_repair_material_use_record
+		where 
+		work_repair_order_id = #{workRepairOrderId}
+	</select>
+
+    <select id="getRepairOrderCount" resultType="java.lang.Integer">
+        select count(1)
+        from work_repair_order
+        where 1=1
+        <if test="status != null">
+            and status = #{status}
+        </if>
+        <if test="engineerId != null">
+            and engineer_id =#{engineerId}
+        </if>
+    </select>
+
+    <update id="replaceRepairEngineer">
+    	update work_repair_order 
+    	set engineer_id = #{engineerId},engineer_name = #{engineerName} 
+    	where work_order_no = #{workOrderNo} and status=1
+    </update>
+
+    <update id="updateStationInfoByPCR">
+		update work_repair_order
+		set station_id = #{stationId},
+		station_name = #{stationName}
+		where `status` != 4
+		and province = #{province}
+		and city = #{city}
+		and region = #{region}
+	</update>
+
+    <update id="updateEngineerInfoByPCR">
+        update work_repair_order
+		set
+		engineer_id = #{engineerId},
+		engineer_name = #{engineerName},
+		station_id = #{stationId},
+		station_name = #{stationName}
+		where `status` != 4
+		and province = #{province}
+		and city = #{city}
+		and region = #{region}
+    </update>
+
+    <update id="updateEngineerInfo">
+        update work_repair_order
+		set
+		engineer_id = #{engineerId},
+		engineer_name = #{engineerName}
+		where `status` != 4
+		and engineer_id = #{oldEngineerId}
+    </update>
+
+
+    <select id="getRepairModelTotalCount" resultType="java.lang.Integer">
+        select count(1)
+        from work_repair_order
+        where 1=1 and status in (1,2,3)
+        <if test="engineerId != null">
+            and engineer_id =#{engineerId}
+        </if>
+    </select>
+    <select id="getRepairWorkOrder" resultType="com.yimao.cloud.pojo.dto.order.MapOrderDTO">
+        SELECT
+            wro.`status`,
+            wro.step,
+            wro.device_user_name AS userName,
+            wro.device_user_phone AS userPhone,
+            wro.device_model AS deviceModel,
+            wro.source_type AS sourceType,
+            wro.fault_name AS faultName,
+            wro.province,
+            wro.city,
+            wro.region,
+            wro.address,
+            wro.latitude AS addrLatitude,
+            wro.longitude AS addrLongitude,
+            wro.launch_time AS launchTime,
+            wro.engineer_service_time AS engineerServiceTime,
+            wro.engineer_id AS engineerId
+        FROM
+            work_repair_order wro
+        WHERE
+        1=1
+        AND wro.`status` IN (1, 2, 3)
+        AND wro.engineer_id = #{engineerId}
+    </select>
+
+</mapper>

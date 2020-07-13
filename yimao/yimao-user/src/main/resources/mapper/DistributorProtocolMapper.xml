@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.user.mapper.DistributorProtocolMapper">
+
+
+    <select id="getDistributorProtocolByOrderId" resultType="com.yimao.cloud.pojo.dto.user.DistributorProtocolDTO">
+ 	SELECT
+ 	dp.id AS id,
+	dp.order_id AS orderId,
+	dp.state AS state,
+	dp.create_time AS createTime,
+	dp.user_sign_state AS userSignState,
+	dp.user_sign_time AS userSignTime,
+	dp.station_sign_state AS stationSignState,
+	dp.station_sign_time AS stationSignTime,
+	dp.ym_sign_state AS ymSignState,
+	dp.ym_sign_time AS ymSignTime,
+	dp.station_renew_state AS stationRenewState,
+	dp.station_renew_time AS stationRenewTime
+	FROM
+	distributor_protocol dp
+	WHERE
+	order_id = #{order_id}
+    </select>
+
+	<select id="selectCount4Status" resultType="java.lang.Integer">
+		select  count(1)
+		from distributor_protocol dp
+		left join  distributor_order do on dp.order_id = do.id
+		where dp.station_renew_state = 0
+		and do.order_state not in (3);
+	</select>
+
+    <select id="queryDistributorProtocolByDistIdAndSignStatus"
+            resultType="com.yimao.cloud.pojo.dto.user.DistributorProtocolDTO">
+		SELECT
+			title,
+			create_time AS createTime,
+			order_id AS orderId
+		FROM
+			distributor_protocol
+		WHERE
+			distributor_id = #{distributorId}
+			AND ym_sign_state = 1
+			AND user_sign_state = 1
+	</select>
+</mapper>

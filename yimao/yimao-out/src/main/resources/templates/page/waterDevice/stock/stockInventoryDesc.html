@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="format-detection" content="telephone=no"/>
+    <title>
+    </title>
+    <!-- zui -->
+    <link rel="stylesheet" href="/css/zui/zui.min.css">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/stock.css">
+    <link rel="stylesheet" href="/css/icon/iconfont.css">
+    <style type="text/css">
+        body.modal-open{margin-right: 0px;}
+        .bad-device{height: 100%}
+        .bad-device-title{font-size: 1.4rem;color: #707070;display: inline-block;margin-left: 2rem;margin-top: 1.3rem;margin-bottom: 1.3rem;font-weight: bold;}
+        .bad-device-list{background-color: #fafafa;margin-bottom:2rem; height: 100%;}
+
+        .bad-device-list-item{height: 14rem;background-color: #fafafa;display: flex;color: #707070;margin-left: 1.9rem;justify-content: space-around;flex-direction: column;border-bottom: 1px solid #ddd;padding-bottom: 1rem;}
+        .bad-device-list-item-type{font-size: 1.6rem;color: #707070;padding-top: 1rem;}
+        .bad-device-list-item-time,.bad-device-list-item-no,.bad-device-list-item-state{font-size: 1.4rem;color: #aaa;}
+        .bad-device-list-item-btn{text-align: right;margin-right: 2rem;}
+        .bad-device-list-item-btn button{color: #fff;background-color:#0074bc ;font-size: 1.4rem;text-shadow: none!important;}
+        .badge-blue{color:#fff;background-color: #3ca4fd;}
+
+
+        .modal-dialog{position:absolute;z-index: 1050;width: 80%;height: 20rem;margin-top: -10rem;top: 50%;;margin-right: auto;left:10%;}
+        .backtip{text-align: center;top: 50%;position: absolute;height: 2.4rem;margin-top: -2.5rem;width: 100%;left: 0px;font-size: 1.6rem;color: #333;}
+        .backtobad,.backtogood{position: absolute;bottom: 0px;width: 100%;left: 0px;height: 5rem;background-color: #edf1f4;border-bottom-left-radius: 6px;border-bottom-right-radius: 6px;}
+        .backtobad-cancel,.backtogood-cancel{width: 50%;height: 100%;font-size: 1.6rem;color: #999;text-align: center;float: left;}
+        .backtobad-ok,.backtogood-ok{width: 50%;height: 100%;font-size: 1.6rem;color: #00aeef;text-align: center;float: left;}
+        .btn:disabled{background-color: #999;color: #fff;text-shadow: none!important;}
+    </style>
+</head>
+<body>
+<div th:include="header :: header"></div>
+<div class="container pl-0 pr-0">
+    <div class="bad-device">
+        <span class="bad-device-title" th:if="${pageIndex == '0'}">净水设备</span>
+        <!--<c:if test="${pageIndex == 0}">
+            <span class="bad-device-title">净水设备</span>
+        </c:if>-->
+        <div class="bad-device-list">
+
+        </div>
+    </div>
+
+    <div class="modal fade" id="callback">
+        <div class="modal-dialog">
+            <div class="backtip">
+                <span class="callback-msg"></span>
+            </div>
+            <div class="backtobad">
+                <button class="btn backtogood">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!--<c:if test="${fromPageIndex == 1}">
+        <c:if test="${status == 0}">-->
+            <div th:if="${fromPageIndex == '1' && status == '0'}">
+                <div class="modal fade" id="backbadmodal">
+                    <div class="modal-dialog">
+                        <div class="backtip">
+                            <span>确定转不良品库吗？</span>
+                        </div>
+                        <div class="backtobad">
+                            <button class="btn backtobad-cancel">取消</button>
+                            <button class="btn backtobad-ok" data-status="${status}">确定</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+       <!-- </c:if>-->
+        <!--<c:if test="${status != 0}">-->
+            <div th:if="${fromPageIndex == '1' && status != '0'}">
+                <div class="modal fade" id="backgoodmodal">
+                    <div class="modal-dialog">
+                        <div class="backtip">
+                            <span>确定转良品库吗？</span>
+                        </div>
+                        <div class="backtobad">
+                            <button class="btn backtogood-cancel">取消</button>
+                            <button class="btn backtogood-ok" th:attr="data-status=${status}">确定</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+    <!--    </c:if>
+    </c:if>-->
+    <form class="hide-form-tranc" method="post" action="./engineerMaterielStatusChange" >
+        <input name="status" type="text" th:attr="value=${status == '0'?1:0}"  readonly />
+<!--
+        <input name="status" type="text" th:attr="value=${status == 0?1:0}" value='<c:if test="${status == 0}">1</c:if><c:if test="${status == 1}">0</c:if>'  readonly />
+-->
+        <input name="batchCode" type="text" value=""  readonly />
+    </form>
+</div>
+</body>
+<script type="text/javascript" th:inline="javascript">
+    var click_stock_batchcode='';
+    var current_node = '';
+    var operation_jump = false;
+    var token = [[${token}]];
+    $(function(){
+        var title=[[${pageIndex}=='0'?'设备':'耗材']]+[[${status}== '0'?'良品':'不良品']]+[[${isFrozen}!= '0'?'冻结':'库详情']];
+        $('title').html(title);
+    });
+
+    function stockOperation(batchCode) {
+        var statusValue=[[${status}=='1'?0:1]];
+
+        $.ajax({
+            url:"./engineerMaterielStatusChange",
+            data:{status:statusValue,batchCode:batchCode,token:token},
+            method:"post",
+            success:function (result) {
+                console.log(result+" : "+ typeof(result));
+                if(result['code'] != "00000000"){
+                    $("#callback .callback-msg").text(result['msg']);
+                    $('#callback').modal('toggle');
+                }else{
+                    $(current_node).remove();
+                    var alert_msg = "转移成功";
+                    if($(".bad-device-list .bad-device-list-item").size() <= 0){
+                        operation_jump = true;
+                        alert_msg += "<br>该库已无库存,点击确认跳转至我的库存!"
+                    }
+                    $("#callback .callback-msg").html(alert_msg);
+                    $('#callback').modal('toggle');
+                }
+                //$('.bad-device-list').append(result);
+            }
+        })
+    }
+    var fadeBtnBind = function () {
+    if([[${status == '0'}]]){
+        $('.backtobad-ok').unbind();
+        $('.backtobad-ok').click(function(){
+
+            $('#backbadmodal').modal('toggle');
+            stockOperation(click_stock_batchcode);
+            //$(".hide-form-tranc").submit();
+        })
+        $('.backtobad-cancel').unbind();
+        $(".backtobad-cancel").click(function(){
+            $('#backbadmodal').modal('toggle');
+        })
+    }else{
+        $('.backtogood-ok').unbind();
+        $('.backtogood-ok').click(function(){
+            $('#backgoodmodal').modal('toggle');
+            stockOperation(click_stock_batchcode);
+            //$(".hide-form-tranc").submit();
+        })
+        $('.backtogood-cancel').unbind();
+        $('.backtogood-cancel').click(function(){
+            $('#backgoodmodal').modal('toggle');
+        })
+    }
+
+        $('.btn.btn-sm').unbind();
+        $('.btn.btn-sm').click(function () {
+            click_stock_batchcode = $(this).data("batchcode");
+            //console.log(click_stock_batchcode);
+            //$(".hide-form-tranc").find("input[name=batchCode]").val(click_stock_batchcode);
+            current_node = $(this).parent().parent();
+            var target = $(this).data("target");
+            $(target).modal('toggle');
+        })
+    }
+    $(function(){
+        $(".hide-form-tranc").hide();
+        updateTitle($('head title').text());
+        $(".btn.backtogood").click(function () {
+            if(operation_jump){
+                window.location.href = "./inventory?time="+new Date().getTime()+"&token="+token;
+            }
+            $('#callback').modal('toggle');
+        })
+        var page = 1, //分页码
+            timers = null; //定时器(滚动加载方法 2 中用的)
+        //var materielId= "${materielId}";
+        var materielId= [[${materielId}]];
+        var stockOwnFlag=[[${stockOwnFlag}]];
+        var stockOwnId=[[${stockOwnId}]];
+        var status=[[${status}]];
+        var isFrozen=[[${isFrozen}]];
+        var pageIndex=[[${pageIndex}]];
+        var fromPageIndex=[[${fromPageIndex}]];
+        var data={};
+
+
+        //加载数据
+        var LoadingDataFn = function() {
+            data = {"token":token,"materielId":materielId,"stockOwnFlag":stockOwnFlag,"stockOwnId":stockOwnId,"status":status,"isFrozen":isFrozen,"pageIndex":pageIndex,"page":page,"fromPageIndex":fromPageIndex};
+            $.ajax({
+                url:"./getMaterielStockInfoDetail",
+                data:data,
+                method:"post",
+                success:function (result) {
+                    //console.log(result);
+                    $('.bad-device-list').append(result);
+                    fadeBtnBind();
+                }
+            })
+        };
+
+        //初始化， 第一次加载
+        $(document).ready(function() {
+            LoadingDataFn();
+        });
+
+        $(window).scroll(function() {
+            //当时滚动条离底部60px时开始加载下一页的内容
+            if (($(window).height() + $(window).scrollTop() + 60) >= $(document).height()) {
+                clearTimeout(timers);
+                timers = setTimeout(function() {
+                    page++;
+                    console.log("第" + page + "页");
+                    LoadingDataFn();
+                }, 300);
+            }
+        });
+    })
+</script>
+</html>
+

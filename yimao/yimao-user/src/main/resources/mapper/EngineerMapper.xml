@@ -1,0 +1,367 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.user.mapper.EngineerMapper">
+
+    <insert id="batchInsert" parameterType="java.util.List" useGeneratedKeys="true">
+        insert into user_engineer (
+        user_name,
+        password,
+        real_name,
+        phone,
+        province,
+        city,
+        region,
+        sex,
+        email,
+        address,
+        id_card,
+        state,
+        app_type,
+        `count`,
+        forbidden,
+        login_count,
+        last_login_time,
+        version,
+        work_id,
+        station_id,
+        station_name,
+        creator,
+        create_time,
+        updater,
+        update_time
+        )
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.userName},
+            #{item.password},
+            #{item.realName},
+            #{item.phone},
+            #{item.province},
+            #{item.city},
+            #{item.region},
+            #{item.sex},
+            #{item.email},
+            #{item.address},
+            #{item.idCard},
+            #{item.state},
+            #{item.appType},
+            #{item.count},
+            #{item.forbidden},
+            #{item.loginCount},
+            #{item.lastLoginTime},
+            #{item.version},
+            #{item.workId},
+            #{item.stationId},
+            #{item.stationName},
+            #{item.creator},
+            #{item.createTime},
+            #{item.updater},
+            #{item.updateTime}
+            )
+        </foreach>
+    </insert>
+    <update id="updateIccidToNull">
+        update user_engineer set iccid = null, updater = #{updater}, update_time = #{updateTime} where id = #{id}
+    </update>
+    <update id="bindingIccid">
+        update user_engineer set iccid = #{iccid}, updater = #{updater}, update_time = NOW() where id = #{id}
+    </update>
+
+    <!--根据oldId校验是否存在-->
+    <select id="existsWithOldId" resultType="java.lang.Boolean">
+        SELECT CASE WHEN COUNT(*)  > 0 THEN 1 ELSE 0 END AS result
+        from user_engineer
+        where old_id = #{oldId}
+    </select>
+    
+    <resultMap id="EngineerWithServiceArea" type="com.yimao.cloud.pojo.dto.user.EngineerDTO">
+        <result column="e_id" property="id" jdbcType="INTEGER"/>
+        <collection property="serviceAreaList" ofType="com.yimao.cloud.pojo.dto.user.EngineerServiceAreaDTO"
+                    select="selectServiceAreaList"
+                    column="e_id">
+            <result column="e_id" property="engineerId" jdbcType="INTEGER"/>
+        </collection>
+    </resultMap>
+
+    <!--分页查询安装工-->
+    <select id="selectPage" resultMap="EngineerWithServiceArea">
+        SELECT DISTINCT
+			ue.id as e_id,
+			ue.user_name AS userName,
+			ue.real_name AS realName,
+			ue.phone,
+			ue.station_name AS stationName,
+			ue.station_company_name AS stationCompanyName,
+			ue.province,
+			ue.city,
+			ue.region,
+			ue.state,
+			ue.forbidden,
+			ue.iccid,
+			ue.create_time AS createTime,
+			ue.old_id AS oldId
+		FROM
+			user_engineer ue
+		LEFT JOIN user_engineer_service_area uesa ON ue.id = uesa.engineer_id
+        WHERE 1=1
+        <if test="userName != null and userName != ''">
+            and ue.user_name like CONCAT('%',trim(#{userName}),'%')
+        </if>
+        <if test="realName != null and realName != ''">
+            and ue.real_name = #{realName}
+        </if>
+        <if test="phone != null and phone != ''">
+            and ue.phone like CONCAT('%',trim(#{phone}),'%')
+        </if>
+        <if test="stationCompanyName != null and stationCompanyName != ''">
+            and ue.station_company_name = #{stationCompanyName}
+        </if>
+        <if test="stationName != null and stationName != ''">
+            and ue.station_name = #{stationName}
+        </if>
+        <if test="areaId != null">
+            and uesa.area_id = #{areaId}
+        </if>
+        <if test="forbidden != null">
+            and ue.forbidden = #{forbidden}
+        </if>
+        <if test="startTime != null">
+            and ue.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and ue.create_time &lt;= #{endTime}
+        </if>
+        order by ue.create_time desc
+    </select>
+    
+    <select id="selectServiceAreaList" parameterType="java.lang.Integer" resultType="com.yimao.cloud.pojo.dto.user.EngineerServiceAreaDTO">
+        SELECT DISTINCT
+			engineer_id AS engineerId,
+			area_id AS areaId,
+			province,
+			city,
+			region,
+			creator AS creator,
+			create_time AS createTime
+		FROM
+			user_engineer_service_area
+		WHERE
+			engineer_id = #{e_id}
+    </select>
+
+    <select id="exportEngineer" resultType="com.yimao.cloud.pojo.dto.user.EngineerExportDTO">
+        SELECT
+        user_name AS userName,
+        real_name AS realName,
+        id_card AS idCard,
+        CASE sex WHEN 1 THEN '男' WHEN 2 THEN '女' ELSE '' END as sex,
+        phone,
+        province,
+        city,
+        region,
+        station_name AS stationName,
+        station_company_name AS stationCompanyName,
+        DATE_FORMAT(create_time,"%Y-%m-%d %H:%i:%s") AS createTime,
+        CASE forbidden WHEN 0 THEN '开启' WHEN 1 THEN '关闭' ELSE '' END as forbidden,
+        iccid
+        FROM
+        user_engineer
+        where 1=1
+        <if test="userName != null and userName != ''">
+            and user_name = #{userName}
+        </if>
+        <if test="realName != null and realName != ''">
+            and real_name = #{realName}
+        </if>
+        <if test="phone != null and phone != ''">
+            and phone = #{phone}
+        </if>
+        <if test="stationCompanyName != null and stationCompanyName != ''">
+            and station_company_name = #{stationCompanyName}
+        </if>
+        <if test="stationName != null and stationName != ''">
+            and station_name = #{stationName}
+        </if>
+        <if test="areaId != null">
+            and area_id = #{areaId}
+        </if>
+        <if test="forbidden != null">
+            and forbidden = #{forbidden}
+        </if>
+        <if test="startTime != null">
+            and create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and create_time &lt;= #{endTime}
+        </if>
+    </select>
+    <!--根据安装工ID获取安装工信息（消息推送时只需获取很少的几个字段）-->
+    <select id="selectBasicInfoByIdForMsgPushInfo" resultType="com.yimao.cloud.pojo.dto.user.EngineerDTO">
+        SELECT
+            id,
+            real_name AS realName,
+            app_type AS appType,
+            phone,
+            province,
+            city,
+            region,
+            address,
+            area_id as areaId
+        FROM
+        	user_engineer
+        WHERE
+            id = #{id}
+    </select>
+
+    <select id="selectOneByUserName" resultType="com.yimao.cloud.user.po.Engineer">
+        SELECT id FROM user_engineer WHERE user_name = #{userName} limit 1
+    </select>
+
+    <select id="selectOneByPhone" resultType="com.yimao.cloud.user.po.Engineer">
+        SELECT id FROM user_engineer WHERE phone = #{phone} limit 1
+    </select>
+
+    <select id="selectStateAndCountById" resultType="com.yimao.cloud.user.po.Engineer">
+        SELECT id, `state`, `count` FROM user_engineer WHERE id = #{id}
+    </select>
+
+    <select id="pageEngineerInfoToStation" resultType="com.yimao.cloud.pojo.vo.station.EngineerVO">
+        SELECT DISTINCT
+			ue.id,
+			ue.user_name AS userName,
+			ue.real_name AS realName,
+			ue.phone,
+			ue.forbidden,
+			ue.create_time AS createTime
+		FROM
+			user_engineer ue
+		LEFT JOIN user_engineer_service_area uesa ON ue.id = uesa.engineer_id
+		WHERE
+			1 = 1
+        <if test="userName != null and userName != ''">
+            AND ue.user_name like CONCAT('%',trim(#{userName}),'%')
+        </if>
+        <if test="realName != null and realName != ''">
+            AND ue.real_name = #{realName}
+        </if>
+        <if test="phone != null and phone != ''">
+            AND ue.phone like CONCAT('%',trim(#{phone}),'%')
+        </if>
+        <if test="forbidden != null">
+            AND ue.forbidden = #{forbidden}
+        </if>
+        <if test="areas != null and areas.size() > 0">
+            AND uesa.area_id IN
+            <foreach collection="areas" item="areaId" index="index" separator="," open="(" close=")">
+                #{areaId}
+            </foreach>
+        </if>
+        order by ue.create_time desc
+    </select>
+
+    <select id="getEngineerIdsByAreaIds" resultType="java.lang.Integer">
+        select distinct
+        engineer_id
+        from user_engineer_service_area
+        where 1 = 1
+        <choose>
+            <when test="areaIds != null and areaIds.size() > 0">
+                and area_id in
+                <foreach collection="areaIds" item="areaId" index="index" separator="," open="(" close=")">
+                    #{areaId}
+                </foreach>
+            </when>
+            <otherwise>
+                and 0 = 1
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getEngineerListByStationIds" resultType="com.yimao.cloud.pojo.vo.station.EngineerVO">
+        select
+        id,
+        real_name as realName
+        from user_engineer
+        where station_id in
+        <foreach collection="stationIds" item="stationId" index="index" separator="," open="(" close=")">
+            #{stationId}
+        </foreach>
+        and forbidden = false
+    </select>
+
+    <select id="getEngineerListByStationId" resultType="com.yimao.cloud.pojo.dto.user.EngineerDTO">
+   		select
+			id,
+			real_name as realName
+		from
+			user_engineer
+		where
+			station_id = #{stationId}
+		and forbidden = false
+        <if test="engineerId != null">
+            and id!=#{engineerId}
+        </if>
+    </select>
+	
+	<select id="getEngineerListByArea" resultType="com.yimao.cloud.pojo.dto.user.EngineerDTO">
+		SELECT DISTINCT
+			ue.id,
+			ue.user_name AS userName,
+			ue. PASSWORD,
+			ue.real_name AS realName,
+			ue.phone,
+			ue.province,
+			ue.city,
+			ue.region,
+			ue.sex,
+			ue.email,
+			ue.address,
+			ue.id_card AS idCard,
+			ue.state,
+			ue.app_type AS appType,
+			ue.`count`,
+			ue.forbidden,
+			ue.login_count AS loginCount,
+			ue.last_login_time AS lastLoginTime,
+			ue.version,
+			ue.work_id AS workId,
+			ue.station_id AS stationId,
+			ue.station_name AS stationName,
+			ue.creator,
+			ue.create_time AS createTime,
+			ue.updater,
+			ue.update_time AS updateTime
+		FROM
+			user_engineer ue
+		INNER JOIN user_engineer_service_area uesa ON ue.id = uesa.engineer_id
+		WHERE
+			ue.forbidden = 0
+		AND uesa.area_id = #{areaId}
+		ORDER BY
+			ue.count ASC
+	</select>
+	
+	<select id="selectCountByArea" resultType="java.lang.Integer">
+		SELECT
+			COUNT(1)
+		FROM
+			user_engineer ue
+		INNER JOIN user_engineer_service_area uesa ON ue.id = uesa.engineer_id
+		WHERE
+			uesa.area_id = #{areaId}
+		<if test="forbidden != null">
+            and ue.forbidden = #{forbidden}
+        </if>
+	</select>
+
+    <select id="getEngineerByStationId" resultType="com.yimao.cloud.pojo.dto.user.EngineerDTO">
+        select
+        id,
+        real_name as realName
+        from
+        user_engineer
+        where
+        station_id = #{stationId}
+    </select>
+</mapper>

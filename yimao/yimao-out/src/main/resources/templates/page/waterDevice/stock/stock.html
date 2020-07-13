@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:c="http://www.w3.org/1999/XSL/Transform" lang="zh-cn">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="format-detection" content="telephone=no"/>
+    <title>我的库存</title>
+    <!-- zui -->
+    <link rel="stylesheet" href="/css/zui/zui.min.css">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/stock.css">
+    <link rel="stylesheet" href="/css/icon/iconfont.css">
+    <style type="text/css">
+        .switch-panel {
+            height: 4rem;
+            background-color: #edf1f4;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .switch-panel li {
+            width: 50%;
+            height: 100%;
+            border: none;
+        }
+
+        .switch-panel li a {
+            color: #707070 !important;
+            font-size: 1.4rem;
+            text-align: center;
+            height: 100%;
+            border: none !important;
+            border-bottom: 1px solid #ddd !important;
+            line-height: 2.8rem;
+        }
+
+        .switch-panel li a, .switch-panel li a:hover, .switch-panel li a:focus {
+            background-color: rgba(0, 0, 0, 0) !important;
+            border: none;
+        }
+
+        .switch-panel li.active a {
+            border-bottom: 1px solid #009fe8 !important;
+        }
+
+        .good .stock-title {
+            color: #95bd27;
+        }
+
+        .bad .stock-title {
+            color: #ff9e00;
+        }
+
+        .goodfreeze .stock-title {
+            color: #009fe8;
+        }
+
+        .badfreeze .stock-title {
+            color: #7665f4;
+        }
+
+        .stock-title {
+            font-size: 1.4rem;
+            display: inline-block;
+            margin-left: 2rem;
+            margin-top: 1.3rem;
+            margin-bottom: 1.3rem;
+            font-weight: bold;
+        }
+
+        .stock-list {
+            background-color: #fafafa;
+        }
+
+        .stock-list-con {
+            padding-top: 10px;
+        }
+
+        .stock-list-title {
+            margin-left: 1.9rem;
+        }
+
+        .stock-list-item-con {
+            margin-top: 10px;
+        }
+
+        .stock-list-item {
+            background-color: #fafafa;
+            display: flex;
+            vertical-align: middle;
+            align-items: center;
+            color: #707070;
+            justify-content: space-around;
+        }
+
+        .stock-list-item span:first-child {
+            flex: 1;
+            font-size: 1.6rem;
+        }
+
+        .stock-list-item span:nth-child(2) {
+            font-size: 1.6rem;
+        }
+
+        .stock-list-item i {
+            width: 1.2rem;
+            height: 1.2rem;
+            margin-left: 1.2rem;
+            margin-right: 2rem;
+            color: #ccc;
+            font-size: 1.6rem;
+        }
+
+        .stock-list .stock-list-item:last-child {
+            border-bottom: none;
+        }
+
+        .product .material-title {
+            color: #707070;
+        }
+
+        .material-title {
+            font-size: 1.4rem;
+            display: inline-block;
+            margin-left: 2rem;
+            margin-top: 1.3rem;
+            margin-bottom: 1.3rem;
+            font-weight: bold;
+        }
+
+        .material-list {
+            background-color: #fafafa;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .material-list-item-show {
+            border-top: 1px solid #ddd;
+            margin-left: 1.9rem;
+        }
+
+        .material-list-item-show .material-list-item-more:last-child {
+            margin-bottom: 10px;
+        }
+
+        .material-list-item {
+            height: 4.5rem;
+            background-color: #fafafa;
+            display: flex;
+            vertical-align: middle;
+            align-items: center;
+            color: #707070;
+            margin-left: 1.9rem;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            padding-right: 4.4rem;
+        }
+
+        .material-list-column {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .material-list-item-more {
+            background-color: #fafafa;
+            display: flex;
+            vertical-align: middle;
+            align-items: left;
+            color: #707070;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            padding-top: 1rem;
+        }
+
+        .material-list-item-more.second-item {
+            padding-right: 4.4rem;
+        }
+
+        .material-list-item .material-list-item-name, .material-list-item-more .material-list-item-name {
+            font-size: 1.6rem;
+        }
+
+        .material-list-item .material-list-item-num, .material-list-item-more .material-list-item-num {
+            font-size: 1.6rem;
+            text-align: right;
+        }
+
+        .material-list-item-more .material-list-item-tip {
+            font-size: 1.4rem;
+            color: #aaa;
+        }
+
+        .material-list .material-list-item-more:nth-child(3) {
+            border: none;
+        }
+
+        .material-list-item i, .material-list-item-more i {
+            width: 1.2rem;
+            height: 1.2rem;
+            margin-left: 1.2rem;
+            margin-right: 2rem;
+            color: #ccc;
+            font-size: 1.6rem;
+        }
+
+        .material-list .material-list-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-m-con {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+<div th:include="header :: header"></div>
+<div class="container pl-0 pr-0">
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs switch-panel">
+        <li class="active"><a href="#device" data-toggle="tab">设备库存</a></li>
+        <li><a href="#profile" data-toggle="tab">耗材库存</a></li>
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content mb-20">
+        <div class="tab-pane active" id="device">
+            <div th:if="${not #lists.isEmpty(productResult)}">
+                <div class="good">
+                    <span class="stock-title">良品库</span>
+                    <div class="stock-list">
+                        <div class="stock-list-con" th:each="entry:${productResult.get('higthQualityList')}">
+                            <div class="stock-list-item-con">
+                                <!--<c:forEach items="${entry.productList}" var="product">-->
+                                    <div class="stock-list-item" th:attr="data-id=${product.id}"
+                                         th:each="product:${entry.productList}">
+                                        <p th:text="${product.code}"></p>
+                                        <p th:text="${product.usableNum}+'台(可用数:'+${product.materielNumber}+')'"></p>
+                                    </div>
+                                <!-- </c:forEach>-->
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="bad">
+                    <span class="stock-title">不良品库</span>
+                    <div class="stock-list">
+                        <div class="stock-list-con" th:each="entry:${productResult.get('lowQualityList')}">
+                            <div class="stock-list-item-con">
+                                <div class="stock-list-item" th:attr="data-id=${product.id}"
+                                     th:each="product:${entry.productList}">
+                                    <p>
+                                    <div th:text="${product.code}"></div>
+                                    </p>
+                                    <p>
+                                    <div th:text="${product.usableNum}+'台'"></div>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="goodfreeze">
+                    <span class="stock-title">良品冻结库</span>
+                    <div class="stock-list">
+                        <div class="stock-list-con" th:each="entry:${productResult.get('frozenHigthQualityList')}">
+                            <div class="stock-list-item-con">
+                                <div class="stock-list-item" th:attr="data-id=${product.id}"
+                                     th:each="product:${entry.productList}">
+                                    <p><span th:text="${product.code}"></span></p>
+                                    <p><span th:text="${product.usableNum}+'台'"></span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="badfreeze">
+                    <span class="stock-title">不良品冻结库</span>
+                    <div class="stock-list">
+                        <div class="stock-list-con" th:each="entry:${productResult.get('frozenLowQualityList')}">
+                            <!--<span class="stock-list-title" data-product-id="${entry.productKindId}">${entry.productKindName}</span>-->
+                            <div class="stock-list-item-con">
+                                <div th:each="product:${entry.productList}">
+                                    <div class="stock-list-item" th:attr="data-id=${product.id}">
+                                        <p><span th:text="${product.code}"></span></p>
+                                        <p><span th:text="${product.usableNum}+'台'"></span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane" id="profile">
+            <div class="product">
+                <!--<div class="dropdown">
+                <span class="material-title">&lt;%&ndash;滤芯&ndash;%&gt;</span>-->
+                <!--<span class="msg">没有耗材</span>-->
+
+                <!--<c:if test="${!empty materielResult}">-->
+                <div th:if="${not #lists.isEmpty(materielResult)}">
+                    <div class="good">
+                        <span class="stock-title">良品库</span>
+                        <div class="stock-list">
+                            <div th:each="entry,iterStat:${materielResult['higthQualityList']}">
+                                <div class="material-list">
+                                    <div class="material-list-item" data-toggle="collapse" th:attr="data-target='#hqdemo'+${iterStat.count}">
+                                        <div>
+                                            <span class="material-list-item-name" th:attr="data-id=${entry.materielTypeId}" th:text="${entry.materielTypeName}"></span>
+                                            <i class="icon icon-chevron-down downshow"></i>
+                                            <i class="icon icon-chevron-up downshow" style="display: none;"></i>
+                                        </div>
+                                        <!--初始化统计数量-->
+                                       <!-- <c:set value="0" var="count"/>-->
+                                        <!--<span th:with="count = 0"></span>-->
+                                        <span class="material-list-item-num" th:text="${entry.materielCount}+'支'"><!--10只--></span>
+                                    </div>
+                                    <div th:attr="id='hqdemo'+${iterStat.count}" class="collapse material-list-item-show">
+                                        <!-- <c:forEach items="${entry.materielList}" var="materiel">-->
+                                        <div th:each="materiel:${entry.materielList}">
+                                            <div class="material-list-item-more second-item"
+                                                 th:attr="data-id=${materiel.id}">
+                                                <div class="item-m-con">
+                                                    <span class="material-list-item-name"
+                                                          th:text="${materiel.name}"></span>
+                                                    <span class="material-list-item-tip"
+                                                          th:text="'适用机型:'+${materiel.fitTypeName}"></span>
+                                                </div>
+                                                <span class="material-list-item-num"
+                                                      th:text="${materiel.usableNum}+${materiel.unitName}"></span>
+                                               <!-- <c:set value="${count + materiel.usableNum}" var="count"/>-->
+                                               <!-- <span th:with="count = ${count + materiel.usableNum}"></span>-->
+
+                                            </div>
+                                        </div>
+
+                                        <!--</c:forEach>-->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bad">
+                        <span class="stock-title">不良品库</span>
+                        <div class="stock-list">
+                            <div th:each="entry,iterStat:${materielResult['lowQualityList']}">
+                                <div class="material-list">
+                                    <div class="material-list-item" data-toggle="collapse" th:attr="data-target='#lqdemo'+${iterStat.count}">
+                                        <div>
+                                            <span class="material-list-item-name"
+                                                  th:attr="data-id=${entry.materielTypeId}"
+                                                  th:text="${entry.materielTypeName}"></span>
+                                            <i class="icon icon-chevron-down downshow"></i>
+                                            <i class="icon icon-chevron-up downshow" style="display: none;"></i>
+                                        </div>
+                                        <!--初始化统计数量-->
+                                        <!--<c:set value="0" var="count" />-->
+                                        <span th:with="count=0"></span>
+                                        <span class="material-list-item-num"
+                                              th:text="${entry.materielCount}+'支'"></span>
+                                    </div>
+                                    <div id="lqdemo${iterStat.count}" class="collapse material-list-item-show">
+                                        <!--<c:forEach items="${entry.materielList}" var="materiel">-->
+                                        <div th:each="materiel:${entry.materielList}">
+                                            <div class="material-list-item-more second-item"
+                                                 th:attr="data-id=${materiel.id}">
+                                                <div class="item-m-con">
+                                                    <span class="material-list-item-name"
+                                                          th:text="${materiel.name}"></span>
+                                                    <span class="material-list-item-tip"
+                                                          th:text="'适用机型:'+${materiel.fitTypeName}"></span>
+                                                </div>
+                                                <span class="material-list-item-num"
+                                                      th:text="${materiel.usableNum}+${materiel.unitName}"></span>
+                                                <!--<c:set value="${count + materiel.usableNum}" var="count"/>-->
+                                               <!-- <span th:with="count = ${count + materiel.usableNum}"></span>-->
+                                            </div>
+                                        </div>
+                                        <!-- </c:forEach>-->
+                                    </div>
+                                </div>
+
+                            </div>
+                            <!--<c:forEach items="${materielResult['lowQualityList']}" begin="0" step="1"  varStatus="status" var="entry">
+
+                            </c:forEach>-->
+                        </div>
+                    </div>
+                    <div class="goodfreeze">
+                        <span class="stock-title">良品冻结库</span>
+                        <div class="stock-list">
+                            <div th:each="entry,iterStat:${materielResult['frozenHigthQualityList']}">
+                                <div class="material-list">
+                                    <div class="material-list-item" data-toggle="collapse" th:attr="data-target='#fhqdemo'+${iterStat.count}">
+                                        <div>
+                                            <span class="material-list-item-name" data-id="${entry.materielTypeId}">${entry.materielTypeName}</span>
+                                            <i class="icon icon-chevron-down downshow"></i>
+                                            <i class="icon icon-chevron-up downshow" style="display: none;"></i>
+                                        </div>
+                                        <!--初始化统计数量-->
+                                        <!--<c:set value="0" var="count" />-->
+                                        <!--<span th:with="count =0"></span>-->
+                                        <span class="material-list-item-num" th:text="${entry.materielCount}+'支'"><!--10只--></span>
+                                    </div>
+                                    <div id="fhqdemo${iterStat.count}" class="collapse material-list-item-show">
+                                        <!--<c:forEach items="${entry.materielList}" var="materiel">-->
+                                        <div th:each="materiel:${entry.materielList}">
+                                            <div class="material-list-item-more second-item"
+                                                 th:attr="data-id=${materiel.id}">
+                                                <div class="item-m-con">
+                                                    <span class="material-list-item-name"
+                                                          th:text="${materiel.name}"></span>
+                                                    <span class="material-list-item-tip"
+                                                          th:text="'适用机型:'+${materiel.fitTypeName}"></span>
+                                                </div>
+                                                <span class="material-list-item-num"
+                                                      th:text="${materiel.usableNum}+${materiel.unitName}"></span>
+                                                <!-- <c:set value="${count + materiel.usableNum}" var="count"/>-->
+                                               <!-- <span th:with="count = ${count + materiel.usableNum}"></span>-->
+                                            </div>
+                                        </div>
+
+                                        <!-- </c:forEach>-->
+                                    </div>
+                                </div>
+
+                            </div>
+                            <!--  <c:forEach items="${materielResult['frozenHigthQualityList']}" begin="0" step="1"  varStatus="status" var="entry">
+
+                              </c:forEach>-->
+                        </div>
+                    </div>
+                    <div class="badfreeze">
+                        <span class="stock-title">不良品冻结库</span>
+                        <div class="stock-list">
+                            <div th:each="entry,iterStat:${materielResult['frozenLowQualityList']}">
+                                <div class="material-list">
+                                    <div class="material-list-item" data-toggle="collapse" th:attr="data-target='#flqdemo'+${iterStat.count}">
+                                        <div>
+                                            <span class="material-list-item-name"
+                                                  th:attr="data-id=${entry.materielTypeId}"
+                                                  th:text="${entry.materielTypeName}"></span>
+                                            <i class="icon icon-chevron-down downshow"></i>
+                                            <i class="icon icon-chevron-up downshow" style="display: none;"></i>
+                                        </div>
+                                        <!--初始化统计数量-->
+                                        <!-- <c:set value="0" var="count" />-->
+                                       <!-- <span th:with="count =0"></span>-->
+                                        <span class="material-list-item-num" th:text="${entry.materielCount}支"><!--10只--></span>
+                                    </div>
+                                    <div th:attr="id='flqdemo'+${status.count}"
+                                         class="collapse material-list-item-show">
+                                        <div th:each="materiel:${entry.materielList}">
+                                            <div class="material-list-item-more second-item"
+                                                 th:attr="data-id=${materiel.id}">
+                                                <div class="item-m-con">
+                                                    <span class="material-list-item-name"
+                                                          th:text="${materiel.name}"></span>
+                                                    <span class="material-list-item-tip"
+                                                          th:text="'适用机型:'+${materiel.fitTypeName}"></span>
+                                                </div>
+                                                <span class="material-list-item-num"
+                                                      th:text="${materiel.usableNum}+${materiel.unitName}"></span>
+                                                <!--<c:set value="${count + materiel.usableNum}" var="count"/>-->
+                                              <!--  <span th:with="count = ${count + materiel.usableNum}"></span>-->
+                                            </div>
+                                        </div>
+                                        <!--<c:forEach items="${entry.materielList}" var="materiel">
+
+                                        </c:forEach>-->
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- <c:forEach items="${materielResult['frozenLowQualityList']}" begin="0" step="1"  varStatus="status" var="entry">
+
+                             </c:forEach>-->
+                        </div>
+                    </div>
+                </div>
+                <!--  </c:if>-->
+
+            </div>
+        </div>
+        <form class="hide-form-tranc" method="post" action="./getMaterielStockInfo">
+            <input name="token" id="token" type="text" th:value="${token}" readonly/>
+            <input name="materielId" type="text" value="" readonly/>
+            <input name="stockOwnFlag" type="text" value="" readonly/>
+            <input name="stockOwnId" type="text" value="" readonly/>
+            <input name="status" type="text" value="0" readonly/>
+            <input name="isFrozen" type="text" value="0" readonly/>
+            <input name="pageIndex" type="text" value="0" readonly/>
+        </form>
+    </div>
+</div>
+
+</body>
+<script type="text/javascript">
+    function setFromValue(materielId, stockOwnFlag, stockOwnId, status, isFrozen, pageIndex) {
+        $(".hide-form-tranc").find("input[name=materielId]").val(materielId);
+        $(".hide-form-tranc").find("input[name=stockOwnFlag]").val(stockOwnFlag);
+        $(".hide-form-tranc").find("input[name=stockOwnId]").val(stockOwnId);
+        $(".hide-form-tranc").find("input[name=status]").val(status);
+        $(".hide-form-tranc").find("input[name=isFrozen]").val(isFrozen);
+        $(".hide-form-tranc").find("input[name=pageIndex]").val(pageIndex);
+    }
+
+    function stockInfo() {
+        $(".hide-form-tranc").submit();
+    }
+
+    $(function () {
+        updateTitle($('head title').text());
+        $('div.material-list-item[data-toggle="collapse"]').click(function () {
+
+        })
+        $(".hide-form-tranc").hide();
+        $('#device .good').find('.stock-list-item').click(function () {
+            var materielId = $(this).data("id");
+            setFromValue(materielId, 2, 0, 0, 0, 0);
+            stockInfo();
+        })
+        $('#device .bad').find('.stock-list-item').click(function () {
+            var materielId = $(this).data("id");
+            setFromValue(materielId, 2, 0, 1, 0, 0);
+            stockInfo();
+        })
+        $('#device .goodfreeze').find('.stock-list-item').click(function () {
+            var materielId = $(this).data("id");
+            setFromValue(materielId, 2, 0, 0, 1, 0);
+            stockInfo();
+        })
+        $('#device .badfreeze').find('.stock-list-item').click(function () {
+            var materielId = $(this).data("id");
+            setFromValue(materielId, 2, 0, 1, 1, 0);
+            stockInfo();
+        })
+
+        $('#profile .good').find('.material-list-item-more.second-item').click(function () {
+            var materielId = $(this).data("id");
+            setFromValue(materielId, 2, 0, 0, 0, 1);
+            stockInfo();
+        })
+        $('#profile .bad').find('.material-list-item-more').click(function () {
+            var materielId = $(this).data("id");
+            setFromValue(materielId, 2, 0, 1, 0, 1);
+            stockInfo();
+        })
+        $('#profile .goodfreeze').find('.material-list-item-more').click(function () {
+            var materielId = $(this).data("id");
+            setFromValue(materielId, 2, 0, 0, 1, 1);
+            stockInfo();
+        })
+        $('#profile .badfreeze').find('.material-list-item-more').click(function () {
+            var materielId = $(this).data("id");
+            setFromValue(materielId, 2, 0, 1, 1, 1);
+            stockInfo();
+        })
+
+    })
+</script>
+</html>
+

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.system.mapper.StockOperationMapper">
+
+    <!--云平台导出库存操作日志-->
+    <select id="stockOperationExport" parameterType="java.util.Map" resultType="com.yimao.cloud.pojo.dto.system.StockOperationExportDTO">
+      select
+      so.id,
+      so.admin,
+      case so.operation
+      when 1 then '下发产品'
+      when 2 then '调拨产品'
+      when 3 then '产品返仓'
+      else '' end as operation,
+      so.original_province as originalProvince,
+      so.original_city as originalCity,
+      so.original_region as originalRegion,
+      so.operate_province as operateProvince,
+      so.operate_city as operateCity,
+      so.operate_region as operateRegion,
+      so.device_name as deviceName,
+      so.count,
+      DATE_FORMAT(so.create_time,'%Y-%m-%d %H:%i:%s') as createTime
+      from `stock_operation` so
+      where 1=1
+      <if test="operation != null">
+          and so.operation = #{operation}
+      </if>
+      <if test="originalProvince != null and originalProvince != ''">
+          and so.original_province = #{originalProvince}
+      </if>
+      <if test="originalCity != null and originalCity != ''">
+          and so.original_city = #{originalCity}
+      </if>
+      <if test="originalRegion != null and originalRegion != ''">
+          and so.original_region = #{originalRegion}
+      </if>
+      <if test="operateProvince != null and operateProvince != ''">
+          and so.operate_province = #{operateProvince}
+      </if>
+      <if test="operateCity != null and operateCity != ''">
+          and so.operate_city = #{operateCity}
+      </if>
+      <if test="operateRegion != null and operateRegion != ''">
+          and so.operate_region = #{operateRegion}
+      </if>
+      <if test="startTime != null">
+          and so.create_time &gt; #{startTime}
+      </if>
+      <if test="endTime != null">
+          and so.create_time &lt; #{endTime}
+      </if>
+      <if test="special != null">
+          and so.special = #{special}
+      </if>
+
+      order by so.create_time desc
+    </select>
+</mapper>

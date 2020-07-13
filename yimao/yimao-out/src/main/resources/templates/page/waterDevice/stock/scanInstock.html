@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="format-detection" content="telephone=no"/>
+    <title>扫码入库</title>
+    <!-- zui -->
+    <link rel="stylesheet" href="/css/zui/zui.min.css">
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/stock.css">
+    <link rel="stylesheet" href="/css/icon/iconfont.css">
+    <style type="text/css">
+        body.modal-open{margin-right: 0px;}
+        .scan-title{font-size: 1.6rem;color: #707070;margin-left: 2rem;display: block;margin-top: 2rem;margin-bottom: 2rem;}
+        .scan-btn{height: 4.4rem;margin-left: 2rem;margin-right: 2rem;width:-webkit-fill-available;color: #aaa;background-color: #fff;border:1px solid #ddd;font-size: 1.6rem;margin-top: 1rem;display: flex;vertical-align: middle;align-items: center;justify-content: space-between;}
+        .scan-btn.btn input{height: 100%;width: -webkit-fill-available;margin-right: 20px;border: none;color: #aaa;font-size: 1.6rem;}
+        .scan-img{width: 2.4rem;height: 2.4rem;}
+        .ok-btn{height: 4.4rem;margin-left: 2rem;margin-right: 2rem;width:-webkit-fill-available;color: #fff;background-color: #0074bc;border:1px solid #0074bc;font-size: 1.6rem;margin-top: 2rem;box-shadow: none;font-weight: normal;margin-bottom: 20px;}
+        .tiptitle{width: 100%;text-align: center;}
+        .tiptitle span{color: #707070;font-size: 1.6rem;display: inline-block;margin-bottom: 1rem;margin-left: 1rem;}
+        .tipcontent{margin-left: 2rem;margin-right: 2rem;font-size: 1.6rem;color: #707070;margin-top: 2rem;}
+        .tip{position: absolute;bottom: 0px;width: 100%;left: 0px;height: 5rem;background-color: #edf1f4;border-bottom-left-radius: 6px;border-bottom-right-radius: 6px;}
+        .tip-ok{width: 100%;height: 100%;font-size: 1.6rem;color: #00aeef;text-align: center;}
+        #success-tip .modal-dialog{z-index: 1050;width: 80%;height: 20rem;top:50%;margin-top: -10rem;margin-right: auto;margin-left: auto;padding-right: 0px;padding-left: 0px;padding-top: 10px;}
+
+        .hide-form-tranc{display: none}
+    </style>
+    <style>
+        .alertMask {top:-15px;bottom: 0;left: 0;right: 0; ;background: black;position: fixed;z-index: 9999998 ; opacity:0.7 ; display: none; }
+        .alertPanel {position: fixed;top: 15%;width: 80%;border: 1px solid #d4d0d0;left: 10%;background: #EEEEEE;z-index: 9999999;color: blue;  display: none;}
+        .alertInfoPanel {width: 100%; padding:20px ; color: #000; line-height:24px;  min-height:50px;max-height:400px;overflow:auto;overflow-x:hidden;}
+
+        .mobileInfoPanel {width: 100%; padding:20px ; color: #000; line-height:24px;}
+        .alertSplit{  height: 1px ;background:#ddd;margin: 5px 5px 5px 5px;left: 0 ;right: 0 ; }
+        .alertBtnPanel{ text-align: center;padding-bottom: 10px;padding-top:5px;color:#000}
+        .alertBtn{width: 20%;display: inline-block ;}
+
+        .mobilePanel {position: absolute;top: 10%;width: 80%;border: 1px solid #d4d0d0;left: 10%;background: #EEEEEE;z-index: 9999999;color: blue;  display: none;}
+        .mobileInfoPanel span{ float:left;font-weight: bold; font-size: 14px;color:#aaa;}
+        .mobileInfoPanel input{ width: 100%;line-height: 36px; border: 0;}
+        .mobiBtnPanel{  text-align: center;padding-bottom: 10px;padding-top:0  ;color:#000 ;font-size: 16px;}
+    </style>
+</head>
+<body>
+<!--弹框 start-->
+<div class="alertMask" id="alertMask" >
+    <div id="alertMaskInfo">
+        请稍等....
+    </div>
+</div>
+<div class="alertPanel">
+    <div class="alertInfoPanel"  >
+
+    </div>
+    <div class="alertSplit">
+    </div>
+    <div class="alertBtnPanel">
+        <span  class="alertBtn" id="alertOKBtn">确定</span>
+        <span  class="alertBtn"  style="color: #ddd">|</span>
+        <span class="alertBtn"  id="alertCancelBtn" >取消</span>
+        <br/>
+    </div>
+</div>
+
+<div th:include="header :: header"></div>
+<!--弹框 end-->
+
+<div class="container pl-0 pr-0">
+    <span class="scan-title">您有<span th:text="${count}" />台设备/耗材需要扫描入库</span>
+    <div>
+        <div th:each="scanItem:${#numbers.sequence(1,count)}">
+            <div class="scan-btn btn">
+                <input th:attr="class='scan-input'+${scanItem}" type="text" name="" placeholder="请输入或扫描设备/耗材批次码">
+                <img class="scan-img" src="/images/stock/scan_normal.png" th:attr="onClick='applyQrCode('+${scanItem}+')'">
+            </div>
+        </div>
+        <!-- <c:forEach begin="1" end="${count}" step="1" var="scanItem">
+             <div class="scan-btn btn">
+                 <input th:attr="class='scan-input'+${scanItem}" type="text" name="" placeholder="请输入或扫描设备/耗材批次码">
+                 <img class="scan-img" src="/images/stock/scan_normal.png" th:attr="onClick='applyQrCode('+${scanItem}+')'">
+             </div>
+         </c:forEach>-->
+
+    </div>
+    <button class="ok-btn ok-btn-2 btn" id="submitok" th:attr="data-serielNo=${serielNo},data-inputFromId=${inputFromId}">提交入库</button>
+
+    <div class="modal fade" id="success-tip">
+        <div class="modal-dialog">
+            <div class="tiptitle">
+                <span>提示</span>
+            </div>
+            <div class="tipcontent">
+                您已成功入库<span th:text="${count}"></span>台设备
+            </div>
+            <div class="tip">
+                <button class="btn tip-ok">我知道了</button>
+            </div>
+        </div>
+    </div>
+
+    <form class="hide-form-tranc" method="post" action="./scanInstock" >
+        <input name="serielNo" type="text" th:attr="value=${serielNo}"  readonly />
+        <input name="inputFromId" type="text" th:attr="value=${inputFromId}"  readonly />
+        <input name="count" type="text" value=""  readonly />
+        <input name="token" type="text"  th:attr="value=${token}"  readonly />
+
+    </form>
+</div>
+</body>
+<script type="text/javascript"  th:inline="javascript">
+    var count = [[${count}]];
+    var token=[[${token}]];
+    var stockMap = {};
+
+    var applyQrCode=function(index){
+        var u = navigator.userAgent;
+        var isAndroid = u.indexOf('Android') > -1 || u.indexOf('Adr') > -1; //android终端
+        var isiOS = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/); //ios终端
+        if (isAndroid && !isiOS) {
+            webviewInstance.applyAndroidScanQr(index);
+        }else if(!isAndroid && isiOS){
+            applyIosScanQr(index);
+        }
+    }
+    function getQrCallback(data,index){
+        //alert("index"+index);
+        //alert(data);
+        var dataArr = data.split(",");
+        if (index) {
+            //alert(12);
+            var str = '.scan-input'+ index;
+            $(str).val(data);
+        }
+
+    }
+
+
+    function alertModelInfo(info,clickFunc) {
+        $("#success-tip .tipcontent").html(info);
+        $('#success-tip .tip-ok').on('click',clickFunc);
+    }
+
+    /**
+     * 从服务器获取设备型号和批次码
+     * @param sncode
+     * @return 如果为object类型的数据,则为查询的数据,如果为String类型的数据,则为错误提示语
+     */
+    function getDeviceTypaAndBatchCode(sncode) {
+        $.ajax({
+            url: "./getMaterielInfoBySnCode",
+            method: "get",
+            data: {snCode: sncode,token:token},
+            success: function (response) {
+                console.log(response);
+                var success = response.code;
+                if (success != "00000000") {
+                    console.log(success.msg);
+                } else {
+                    var data = response.data;
+                    var result = data.substr(1, data.length - 2);
+                    var resultJsonObject = JSON.parse(result);
+                    console.log(typeof(resultJsonObject));
+                    console.log(resultJsonObject.batchCode);
+                    return resultJsonObject;
+                }
+            }
+        })
+    }
+    $('#submitok').on('click',function(){
+        //alert("aa");
+        var scanInputArr = $(this).prev().find(".scan-btn.btn");
+        //var isPass =true;
+        var epsList = '',data = {};
+        var stockCount = 0;
+        scanInputArr.each(function (index) {
+            var merialId = $(this).find("input").val();
+            if(merialId.trim() == ""){
+                return true;
+            }else{
+                var data_text = '{\"batchCode\":\"'+merialId+'\"}';
+                epsList += data_text;
+                if(index < scanInputArr.length - 1){
+                    epsList += ',';
+                }
+                stockCount++;
+            }
+        });
+        if(stockCount == 0){
+            AlertWithText("您还没有扫描二维码,无法提交哦!","确定","取消",function(){},function(){});
+            //alertModelInfo("您还没有扫描二维码,无法提交哦!",function(){$('#success-tip').modal('toggle')});
+        }else{
+            data = {"token":token,"type":0,"inputFromId":$(this).data("inputfromid"),epsJson:'['+epsList+']',allotId:$(this).data("serielno")};
+            //alert(data);
+            //$("#success-tip .tipcontent").html('您已成功入库'+stockCount+'台设备');
+            $.ajax({
+                url:"./engineerPutStock",
+                method:"post",
+                data:data,
+                success:function (response) {
+                    console.log("code:"+response.code);
+                    console.log(response.data);
+                    submitCallBackFunc(response);
+                }
+            })
+        }
+    })
+
+    /**
+     * 继续入库
+     */
+    function formContinue(remainCount) {
+        $(".hide-form-tranc input[name=count]").val(remainCount);
+        $(".hide-form-tranc").submit();
+    }
+
+
+    /**
+     * 提交后的提示消息处理
+     * @param response
+     */
+    function submitCallBackFunc(response) {
+        var dataJson = JSON.parse('['+response.data+']');
+
+        //console.log("成功数量"+dataJson[0].success);
+        if(response.sign == 1){
+            //1:全部入库
+            AlertWithText("您已成功入库<${count}台设备","确定","取消",function(){},function(){});
+            //$('#success-tip').modal('toggle');
+        }else{
+            //0:未全部入库
+            //入库成功的数量
+            var successNum = parseInt(dataJson[0].success);
+            //入库失败的数量
+            var failNum = parseInt(dataJson[0].fail);
+            var errorMsg = "";
+            //console.log("错误信息列表"+dataJson[0].failList);
+            //console.log(typeof(dataJson[0].failList));
+            var errorArr = dataJson[0].failList;
+            console.log("条数"+errorArr.length);
+            for(var i=0;i<errorArr.length;i++){
+                errorMsg += "批次码:"+errorArr[i].batchCode+",信息:"+errorArr[i].failMsg
+                if(i < errorArr.length-1){
+                    errorMsg += ",";
+                }
+                errorMsg +="\n"
+            }
+            if(successNum > 0){
+                if(failNum > 0){
+                    AlertWithText("本次成功入库"+successNum+"台设备,其中\n"+errorMsg,"确定","取消",function(){hrefLocation();},function(){});
+                }else{
+                    var remainCount = (count-successNum);
+                    AlertWithText("成功入库"+successNum+"台设备,还需入库"+remainCount+"台,是否继续入库","确定","取消",function(){formContinue(remainCount)},function(){hrefLocation();});
+                }
+            }else{
+                AlertWithText("入库失败,错误信息:\n"+errorMsg,"确定","取消",function(){},function(){});
+            }
+        }
+    }
+    $(function(){
+        updateTitle($('head title').text());
+        /*$('.tip-ok').click(function(){
+            $('#success-tip').modal('toggle');
+            hrefLocation();
+        })*/
+    })
+    function hrefLocation(){
+        window.location.href="./myApply?haschecked=1&token="+token;
+    }
+
+    //弹框
+
+    function SHOW_MASK(   ){
+        $('.alertMask').show();
+
+    }
+    function HIDE_MASK(){
+        $('.alertMask').hide();
+
+    }
+    function AlertWithOutBinding(info){
+        Alert(info,function(){},function(){})
+    }
+    function AlertWithText(info , okText ,noText,fnOK ,fnNO){
+        $('#alertOKBtn').text(okText);
+        $('#alertCancelBtn').text(noText);
+        Alert(info , fnOK , fnNO  )
+
+    }
+    function Alert(info , fnOK , fnNo  ){
+        $('.alertMask').show();
+        $('.alertPanel').show() ;
+        $('.alertInfoPanel').html( "&nbsp;&nbsp;&nbsp;&nbsp;"+info)
+        $('#alertOKBtn').unbind('click'  ) ;
+        $('#alertCancelBtn').unbind('click' ) ;
+        $('#alertOKBtn').on('click' ,  fnOK ) ;
+        $('#alertCancelBtn').on('click',fnNo ) ;
+        $('#alertOKBtn').on('click' ,  HideAlert ) ;
+        $('#alertCancelBtn').on('click',HideAlert )
+    }
+
+    function HideAlert(){
+        $('.alertMask').hide();
+        $('.alertPanel').hide() ;
+        $('#alertOKBtn').text("确定");
+        $('#alertCancelBtn').text("取消");
+    }
+
+</script>
+</html>
+

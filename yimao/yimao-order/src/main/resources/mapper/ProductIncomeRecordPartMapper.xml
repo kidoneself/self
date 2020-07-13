@@ -1,0 +1,807 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.order.mapper.ProductIncomeRecordPartMapper">
+    <select id="selectPartIdBySubOrderId" resultType="com.yimao.cloud.order.po.ProductIncomeRecordPart">
+        SELECT
+            pirp.id, pirp.subject_id as subjectId
+        FROM
+            product_income_record_part pirp
+        INNER JOIN product_income_record pir ON pirp.record_id = pir.id
+        WHERE
+            pirp.subject_code = 'ENGINEER'
+        AND pir.income_type = 1
+        AND pir.order_id = #{subOrderId}
+    </select>
+
+    <select id="getPartByProductIncomeRecordId" resultType="com.yimao.cloud.pojo.dto.order.ProductIncomeRecordPartDTO">
+        select
+            id,
+            record_id as productIncomeRecordId,
+            subject_code as subjectCode,
+            subject_id as subjectId,
+            subject_name as subjectName,
+            settlement_subject_id as settlementSubjectId,
+            settlement_subject_name as settlementSubjectName,
+            subject_phone as subjectPhone,
+            subject_ratio as subjectRatio,
+            subject_money as subjectMoney,
+            subject_province as subjectProvince,
+            subject_city as subjectCity,
+            subject_region as subjectRegion,
+            settlement_time as settlementTime,
+            has_withdraw as hasWithdraw,
+            partner_trade_no as partnerTradeNo,
+            audit_status as auditStatus,
+            subject_id_card as subjectIdCard
+        from
+            product_income_record_part
+        where record_id = #{productIncomeRecordId}
+    </select>
+
+    <select id="getPartByIncomeRecordId" resultType="com.yimao.cloud.pojo.dto.order.IncomeRecordPartResultDTO">
+        SELECT
+            id,
+            subject_code AS incomeSubjectCode,
+            subject_id AS subjectId,
+            subject_name AS incomeName,
+            subject_phone AS subjectPhone,
+            subject_ratio AS subjectRatio,
+            subject_money AS subjectMoney,
+            subject_province AS province,
+            subject_city AS city,
+            subject_region AS region,
+            settlement_time AS settlementTime,
+            has_withdraw AS hasWithdraw,
+            partner_trade_no AS partnerTradeNo,
+            audit_status AS auditStatus,
+            settlement_subject_name AS settlementSubjectName
+            -- user_id AS userId
+        FROM
+            product_income_record_part
+        where
+            record_id = #{productIncomeRecordId}
+    </select>
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO `product_income_record_part` (
+        `record_id`,
+        `subject_code`,
+        `subject_id`,
+        `subject_name`,
+        `subject_phone`,
+        `subject_ratio`,
+        `subject_money` ,
+        `subject_province` ,
+        `subject_city`,
+        `subject_region`,
+        `settlement_subject_id`,
+        `settlement_subject_code`,
+        `settlement_subject_name`,
+        `settlement_time`,
+        `has_withdraw`,
+        `partner_trade_no`,
+        `audit_status`,
+        `create_time`,
+        `update_time`
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.recordId},
+            #{item.subjectCode},
+            #{item.subjectId},
+            #{item.subjectName},
+            #{item.subjectPhone},
+            #{item.subjectRatio},
+            #{item.subjectMoney},
+            #{item.subjectProvince},
+            #{item.subjectCity},
+            #{item.subjectRegion},
+            #{item.settlementSubjectId},
+            #{item.settlementSubjectCode},
+            #{item.settlementSubjectName},
+            #{item.settlementTime},
+            #{item.hasWithdraw},
+            #{item.partnerTradeNo},
+            #{item.auditStatus},
+            NOW(),
+            #{item.updateTime}
+            )
+        </foreach>
+    </insert>
+
+    <select id="listUserIncomeByProductType" resultType="com.yimao.cloud.order.dto.DistributorIncomeDTO">
+        SELECT
+        osd.product_first_category_name as productTypeName,
+        sum(pirp.subject_money) as income,
+        osd.product_first_category_id as productTypeId
+        FROM
+        product_income_record_part pirp
+        INNER JOIN product_income_record pir ON pir.id = pirp.record_id
+        INNER JOIN order_sub_detail osd ON osd.sub_order_id = pir.order_id
+        where pir.status = 1
+        <if test="incomeType !=null">
+            and pir.income_type = #{incomeType}
+        </if>
+        <if test="isDistributor != null and isDistributor">
+            and ((pirp.subject_id = #{userId} and pirp.subject_code = 'DISTRIBUTOR_USER')
+            or (pirp.subject_id = #{distributorId} and pirp.subject_code = 'DISTRIBUTOR'))
+        </if>
+        <if test="isVipUser != null and isVipUser">
+            and pirp.subject_id = #{userId} and pirp.subject_code = 'DISTRIBUTOR_USER'
+        </if>
+        <if test="withdrawStatus != null">
+            and (pirp.audit_status is null or pirp.audit_status = 2 or pirp.audit_status = 4 )
+        </if>
+        GROUP BY
+        osd.product_first_category_id,osd.product_first_category_name
+    </select>
+
+    <select id="listUserTotalIncome" resultType="java.math.BigDecimal">
+        SELECT
+        sum(pirp.subject_money) as money
+        FROM
+        product_income_record_part pirp
+        INNER JOIN product_income_record pir ON pir.id = pirp.record_id
+        INNER JOIN order_sub_detail osd ON osd.sub_order_id = pir.order_id
+        WHERE
+        pir.status = #{orderCompleteStatus}
+        <if test="year != null">
+            AND YEAR(pirp.settlement_time) = #{year}
+        </if>
+        <if test="month != null">
+            AND MONTH(pirp.settlement_time) = #{month}
+        </if>
+        <if test="incomeType !=null">
+            and pir.income_type = #{incomeType}
+        </if>
+        <if test="productType != null">
+            AND osd.product_first_category_id = #{productType}
+        </if>
+        <if test="isDistributor != null and isDistributor">
+            and ((pirp.subject_id = #{userId} and pirp.subject_code = 'DISTRIBUTOR_USER')
+            or (pirp.subject_id = #{distributorId} and pirp.subject_code = 'DISTRIBUTOR'))
+        </if>
+        <if test="isVipUser != null and isVipUser">
+            and pirp.subject_id = #{userId} and pirp.subject_code = 'DISTRIBUTOR_USER'
+        </if>
+    </select>
+
+    <select id="listUserIncomeDetail" resultType="com.yimao.cloud.pojo.dto.order.UserIncomeDTO">
+        SELECT
+        osd.product_first_category_id as productTypeId,
+        osd.product_first_category_name as productTypeName,
+        pirp.subject_money as income,
+        pirp.settlement_time as balanceTime,
+        osd.user_id as userId,
+        pir.order_id as orderId,
+        pirp.record_id as recordId,
+        osd.sub_distributor_name as subDistributorName
+        FROM
+        product_income_record_part pirp
+        INNER JOIN product_income_record pir ON pir.id = pirp.record_id
+        INNER JOIN order_sub_detail osd ON osd.sub_order_id = pir.order_id
+        WHERE pir.status = #{orderCompleteStatus}
+        <if test="year != null">
+            AND YEAR(pirp.settlement_time) = #{year}
+        </if>
+        <if test="month != null">
+            AND MONTH(pirp.settlement_time) = #{month}
+        </if>
+        <if test="incomeType !=null">
+            and pir.income_type = #{incomeType}
+        </if>
+        <if test="productType != null and productType != '' ">
+            AND osd.product_first_category_id = #{productType}
+        </if>
+        <if test="isDistributor != null and isDistributor">
+            and ((pirp.subject_id = #{userId} and pirp.subject_code = 'DISTRIBUTOR_USER')
+            or (pirp.subject_id = #{distributorId} and pirp.subject_code = 'DISTRIBUTOR'))
+        </if>
+        <if test="isVipUser != null and isVipUser">
+            and pirp.subject_id = #{userId} and pirp.subject_code = 'DISTRIBUTOR_USER'
+        </if>
+    </select>
+
+    <select id="listDistributorIncomeDetail" resultType="com.yimao.cloud.pojo.dto.order.UserIncomeDTO">
+        SELECT
+        osd.product_first_category_id as productTypeId,
+        osd.product_first_category_name as productTypeName,
+        pirp.subject_money as income,
+        pirp.settlement_time as balanceTime,
+        osd.user_id as userId,
+        pir.order_id as orderId,
+        pirp.record_id as recordId,
+        osd.sub_distributor_name as subDistributorName
+        FROM
+        product_income_record_part pirp
+        LEFT JOIN product_income_record pir ON pir.id = pirp.record_id
+        LEFT JOIN order_sub_detail osd ON osd.sub_order_id = pir.order_id
+        WHERE pir.status = #{orderCompleteStatus}
+        <if test="year != null">
+            AND YEAR(pirp.settlement_time) = #{year}
+        </if>
+        <if test="month != null">
+            AND MONTH(pirp.settlement_time) = #{month}
+        </if>
+        <if test="productType != null and productType != '' ">
+            AND osd.product_first_category_id = #{productType}
+        </if>
+        <if test="incomeType !=null">
+            and pir.income_type = #{incomeType}
+        </if>
+        <if test="distributorId != null">
+            and pirp.subject_id = #{distributorId} and pirp.subject_code = 'DISTRIBUTOR'
+        </if>
+        <choose>
+            <when test="sonId != null">
+                AND osd.sub_distributor_id = #{sonId}
+            </when>
+            <otherwise>
+                AND osd.sub_distributor_id is null
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getUserSaleWithdrawIncome" resultType="com.yimao.cloud.pojo.dto.order.ProductIncomeRecordPartDTO">
+        SELECT
+        pirp.id,
+        pirp.record_id AS recordId,
+        pirp.subject_money AS subjectMoney,
+        pirp.audit_status AS auditStatus,
+        pirp.partner_trade_no AS partnerTradeNo,
+        pir.product_company_id AS productCompanyId
+        FROM
+        product_income_record_part pirp
+        INNER JOIN product_income_record pir ON pirp.record_id = pir.id
+        where pir.status = 1
+        and (pirp.subject_id = #{userId} and pirp.subject_code = 'DISTRIBUTOR_USER')
+        and pirp.has_withdraw =#{hasBeenWithdrawn}
+        <if test="auditStatus != null">
+            and pirp.audit_status = #{auditStatus}
+        </if>
+        <if test="incomeType != null">
+            and pir.income_type = #{incomeType}
+        </if>
+        <if test="auditStatus == null">
+            and (pirp.audit_status is null or pirp.audit_status = 2 or pirp.audit_status = 4)
+        </if>
+        <if test="partnerTradeNoList!=null and partnerTradeNoList.size() &gt; 0 ">
+            and pirp.partner_trade_no in
+            <foreach collection="partnerTradeNoList" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        order by pir.order_complete_time desc
+    </select>
+
+    <select id="countSaleOrder" resultType="java.lang.Integer">
+        select
+        SUM (sub.count)
+        from product_income_record pir
+        inner join product_income_record_part pp on pir.id = pp.record_id
+        inner join order_sub sub on pir.order_id = sub.id
+        where pp.subject_id = #{userSaleId}
+        and pir.`status` = 1
+        and pir.income_type = 1
+        and pir.order_complete_time is not null
+        and sub.product_type = 3
+    </select>
+
+    <!-- app经销商收益首页汇总-->
+    <select id="getProductIncomeGrandTotalforApp" resultType="java.math.BigDecimal">
+        SELECT
+        IFNULL(sum(pirp.subject_money),0) AS money
+        FROM
+        product_income_record_part pirp
+        LEFT JOIN product_income_record pir ON pir.id = pirp.record_id
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="userType != null and userType != 7">
+                ((pirp.subject_id = #{distributorId} and pirp.subject_code = 'DISTRIBUTOR')
+                or (pirp.subject_id = #{userId} and pirp.subject_code = 'DISTRIBUTOR_USER'))
+            </if>
+            <if test="userType != null and  userType == 7">
+                pirp.subject_id = #{userId} and pirp.subject_code = 'DISTRIBUTOR_USER'
+            </if>
+            <if test="incomeType !=null">
+                and pir.income_type = #{incomeType}
+            </if>
+            <if test="status !=null and status==1">
+                and pir.status =0
+            </if>
+            <if test="status !=null and status==2">
+                and (pir.status =1 or pir.status =2 or pir.status =4)
+            </if>
+            <if test="status !=null and status==3">
+                and pir.status =3
+            </if>
+            <if test="type !=null and type==1 and createTime!=null">
+                and DATE_FORMAT(pir.create_time,'%Y-%m-%d') = DATE_FORMAT(#{createTime},'%Y-%m-%d')
+            </if>
+            <if test="type !=null and type==2 and createTime!=null">
+                and DATE_FORMAT(pir.create_time,'%Y-%m')=DATE_FORMAT(#{createTime},'%Y-%m')
+            </if>
+        </trim>
+    </select>
+
+    <!-- app经销商收益概况-->
+    <select id="productIncomeReportOverviewforApp" resultType="java.util.Map">
+        SELECT
+        sum( pirp.subject_money ) as totalMoney,
+        osd.product_first_category_id as productFirstCategoryId,
+        osd.product_first_category_name as productFirstCategoryName,
+        count(*) AS totalCount
+        FROM
+        product_income_record_part pirp
+        LEFT JOIN product_income_record pir ON pirp.record_id = pir.id
+        LEFT JOIN order_sub_detail osd ON pir.order_id = osd.sub_order_id
+        LEFT JOIN order_renew orw ON pir.renew_order_id = orw.id
+        <trim prefix="where" prefixOverrides="and | or">
+            <include refid="income_where"/>
+        </trim>
+        GROUP BY pirp.subject_id,osd.product_first_category_id,osd.product_first_category_name
+    </select>
+
+    <select id="renewIncomeReportOverviewforApp" resultType="java.util.Map">
+        SELECT
+        sum( pirp.subject_money ) as totalMoney,
+        CASE orw.cost_type
+        when 1 then "包流量"
+        when 2 then "包时长"
+        else "" end as costName,
+        orw.product_second_category_name as costModel,
+        count(*) AS totalCount
+        FROM
+        product_income_record_part pirp
+        LEFT JOIN product_income_record pir ON pirp.record_id = pir.id
+        LEFT JOIN order_renew orw ON pir.renew_order_id = orw.id
+        <trim prefix="where" prefixOverrides="and | or">
+            <include refid="income_where"/>
+        </trim>
+        GROUP BY orw.cost_type,orw.product_second_category_name
+    </select>
+
+    <!-- app经销商收益概况-->
+    <select id="productIncomeTotalMoney" resultType="java.math.BigDecimal">
+        SELECT
+        sum( pirp.subject_money ) as totalMoney
+        FROM
+        product_income_record_part pirp
+        LEFT JOIN product_income_record pir ON pirp.record_id = pir.id
+        LEFT JOIN order_sub_detail osd ON pir.order_id = osd.sub_order_id
+        LEFT JOIN order_renew orw ON pir.renew_order_id = orw.id
+        <trim prefix="where" prefixOverrides="and | or">
+            <include refid="income_where"/>
+        </trim>
+    </select>
+
+    <!-- app经销商统计收益列表-->
+    <select id="productIncomeListForApp" resultType="java.util.Map">
+        SELECT
+        pirp.id,
+        if(pir.order_complete_time is null,
+        if(orw.create_time is null,os.create_time,orw.create_time),
+        pir.order_complete_time) as createTime,
+        pirp.subject_money as money,
+        os.user_id as userId,
+        osd.user_name as userName,
+        osd.product_first_category_id as productFirstCategoryId,
+        osd.product_name as productName,
+        orw.cost_type_name  as costTypeName,
+        orw.cost_id  as costId,
+        orw.product_category_name as productCategoryName,
+        osd.product_first_category_name as productFirstCategoryName,
+        orw.water_user_name as waterUserName
+        FROM
+        product_income_record_part pirp
+        LEFT JOIN product_income_record pir ON pirp.record_id = pir.id
+        LEFT JOIN order_sub os ON pir.order_id = os.id
+        LEFT JOIN order_sub_detail osd on os.id=osd.sub_order_id
+        LEFT JOIN order_renew orw ON pir.renew_order_id = orw.id
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="userType != null and  userType != 7">
+                ((pirp.subject_id = #{distributorId} and pirp.subject_code = 'DISTRIBUTOR'
+                <if test="queryType !=null and queryType ==1">
+                    and osd.sub_distributor_id is null
+                </if>) or (pirp.subject_id = #{userId} and pirp.subject_code = 'DISTRIBUTOR_USER'))
+            </if>
+            <if test="userType != null and  userType == 7">
+                pirp.subject_id = #{userId} and pirp.subject_code = 'DISTRIBUTOR_USER'
+            </if>
+            <if test="sonId != null">
+                AND osd.sub_distributor_id = #{sonId}
+            </if>
+            <if test="incomeType !=null">
+                and pir.income_type = #{incomeType}
+            </if>
+            <if test="terminal != null">
+                and os.terminal= #{terminal}
+            </if>
+            <if test="productFirstCategoryId != null">
+                and osd.product_first_category_id = #{productFirstCategoryId}
+            </if>
+            <if test="status !=null and status==1">
+                and pir.status =0
+            </if>
+            <!-- 已完成取得是完成时间 -->
+            <if test="status !=null and status==2">
+                and (pir.status =1 or pir.status =2 or pir.status = 4)
+                <if test="startTime != null">
+                	and pir.order_complete_time &gt;= #{startTime}
+            	</if>
+            	<if test="endTime != null">
+                	and pir.order_complete_time &lt;= #{endTime}
+            	</if>
+            </if>
+            <if test="status !=null and status==3">
+                and pir.status =3
+            </if>
+            <!-- 未完成取得是下单时间 -->
+            <if test="status !=null and status!=2">
+            	<if test="startTime != null">
+                	and pir.create_time &gt;= #{startTime}
+            	</if>
+            	<if test="endTime != null">
+                	and pir.create_time &lt;= #{endTime}
+            	</if>
+            </if>
+            <if test="type != null and type == 1">
+                <if test="incomeType ==1 and createTime!=null">
+                    <if test="status !=null and status==2">
+                        and DATE_FORMAT(pir.order_complete_time,'%Y-%m-%d') = DATE_FORMAT(#{createTime},'%Y-%m-%d')
+                    </if>
+                    <if test="status ==null or status!=2">
+                        and DATE_FORMAT(osd.create_time,'%Y-%m-%d') = DATE_FORMAT(#{createTime},'%Y-%m-%d')
+                    </if>
+                </if>
+                <if test="incomeType ==2 and createTime!=null">
+                    and DATE_FORMAT(orw.create_time,'%Y-%m-%d') = DATE_FORMAT(#{createTime},'%Y-%m-%d')
+                </if>
+            </if>
+            <if test="type != null and type == 2">
+                <if test="incomeType ==1 and createTime!=null">
+                    <if test="status !=null and status==2">
+                        and DATE_FORMAT(pir.order_complete_time,'%Y-%m') = DATE_FORMAT(#{createTime},'%Y-%m')
+                    </if>
+                    <if test="status ==null or status!=2">
+                        and DATE_FORMAT(osd.create_time,'%Y-%m') = DATE_FORMAT(#{createTime},'%Y-%m')
+                    </if>
+                </if>
+                <if test="incomeType ==2 and createTime!=null">
+                    and DATE_FORMAT(orw.create_time,'%Y-%m') = DATE_FORMAT(#{createTime},'%Y-%m')
+                </if>
+            </if>
+            ORDER BY createTime desc
+        </trim>
+    </select>
+
+    <!-- 经销商app获取指定日期的总金额-->
+    <select id="incomeMoneyForDate" resultType="java.math.BigDecimal">
+        SELECT
+        sum(pirp.subject_money) as incomeMoney
+        FROM
+        product_income_record_part pirp
+        LEFT JOIN product_income_record pir ON pirp.record_id = pir.id
+        LEFT JOIN order_sub os ON pir.order_id = os.id
+        LEFT JOIN order_sub_detail osd on os.id=osd.sub_order_id
+        LEFT JOIN order_renew orw ON pir.renew_order_id = orw.id
+        <trim prefix="where" prefixOverrides="and | or">
+            <include refid="income_where_status"/>
+            <if test="sonId != null">
+                AND osd.sub_distributor_id = #{sonId}
+            </if>
+            <if test="terminal != null">
+                and os.terminal= #{terminal}
+            </if>
+            <if test="productFirstCategoryId != null">
+                and osd.product_first_category_id = #{productFirstCategoryId}
+            </if>
+            <if test="status !=null and status==1">
+                and pir.status =0
+            </if>
+            <if test="status !=null and status==2">
+                and (pir.status =1 or pir.status =2 or pir.status = 4)
+            </if>
+            <if test="status !=null and status==3">
+                and pir.status =3
+            </if>
+        </trim>
+    </select>
+
+    <!-- app经销商统计收益详情-->
+    <select id="productIncomeDetailForApp" resultType="java.util.Map">
+        SELECT DISTINCT
+        pirp.id,
+        pirp.record_id as recordId,
+        pirp.subject_money AS money,
+        osd.product_name AS productName,
+        case os.terminal
+        when 1 then '终端app'
+        when 2 then '微信公众号'
+        when 3 then '翼猫APP'
+        when 4 then '小程序'
+        ELSE ''
+        end as terminal,
+        osd.vip_user_id as vipUserId,
+        osd.user_id as userId,
+        osd.user_name as userName,
+        osd.product_name as productName,
+        os.count,
+        pir.order_complete_time as orderCompleteTime,
+        os.create_time as createTime,
+        os.trade_no as tradeNo,
+        pir.main_order_id as mainOrderId,
+        pir.`status`*1 as status,
+        CASE os.`status`
+        WHEN 0 THEN '待付款'
+        WHEN 1 THEN '待审核'
+        WHEN 2 THEN '待发货'
+        WHEN 3 THEN '待出库'
+        WHEN 4 THEN '待收货'
+        WHEN 5 THEN '交易成功'
+        WHEN 6 THEN '售后中'
+        WHEN 7 THEN '交易关闭'
+        WHEN 8 THEN '已取消' ELSE '' END as statusText,
+        osd.addressee_name as addresseeName
+        FROM
+        product_income_record pir
+        LEFT JOIN product_income_record_part pirp ON pir.id=pirp.record_id
+        LEFT JOIN order_sub os ON pir.order_id = os.id
+        LEFT JOIN order_sub_detail osd ON os.id = osd.sub_order_id
+        <trim prefix="where" prefixOverrides="and | or">
+            and pir.income_type = 1
+            <if test="userType != null and userType != 7">
+                and pirp.subject_id = #{distributorId} and pirp.subject_code = 'DISTRIBUTOR'
+            </if>
+            <if test="userType != null and  userType == 7">
+                and pirp.subject_id = #{userId} and pirp.subject_code = 'DISTRIBUTOR_USER'
+            </if>
+            <if test="id != null">
+                and pirp.id = #{id}
+            </if>
+        </trim>
+    </select>
+
+    <!-- app经销商统计收益详情(续费)-->
+    <select id="renewIncomeDetailForApp" resultType="java.util.Map">
+        SELECT DISTINCT
+        pirp.id,
+        pirp.record_id as recordId,
+        pirp.subject_money AS money,
+        orw.product_category_name AS productCategoryName,
+        case orw.terminal
+        when 8 then '广告屏'
+        when 9 then '总部业务系统' ELSE '' end as terminal,
+        if(pir.order_complete_time is null,orw.create_time,pir.order_complete_time) AS createTime,
+        orw.pay_time AS payTime,
+        orw.trade_no as tradeNo,
+        orw.amount_fee as amountFee,
+        pir.`status`*1 as status,
+        osd.user_id as userId,
+        osd.vip_user_id as vipUserId,
+        osd.addressee_name as addresseeName,
+        osd.addressee_phone as addresseePhone,
+        orw.device_address as deviceAddress,
+        CASE orw.`status`
+        WHEN 1 THEN '待审核'
+        WHEN 3 THEN '支付成功'
+        WHEN 3 THEN '支付失败' ELSE '' END as statusText,
+        orw.sn_code as sn,
+        orw.id as renewId,
+        orw.cost_name as costName
+        FROM
+        product_income_record pir
+        LEFT JOIN product_income_record_part pirp ON pir.id=pirp.record_id
+        LEFT JOIN order_renew orw ON pir.renew_order_id = orw.id
+        LEFT JOIN order_sub_detail osd ON pir.order_id = osd.sub_order_id
+        <trim prefix="where" prefixOverrides="and | or">
+            and pir.income_type = 2
+            <if test="userType != null and userType != 7">
+                and pirp.subject_id = #{distributorId} and pirp.subject_code = 'DISTRIBUTOR'
+            </if>
+            <if test="userType != null and  userType == 7">
+                and pirp.subject_id = #{userId} and pirp.subject_code = 'DISTRIBUTOR_USER'
+            </if>
+            <if test="id != null">
+                and pirp.id = #{id}
+            </if>
+        </trim>
+    </select>
+
+    <select id="selectVipUserIncome" resultType="com.yimao.cloud.order.po.ProductIncomeRecordPart">
+        select
+            pirp.id,
+            pirp.record_id as recordId,
+            pirp.subject_id as subjectId,
+            pirp.subject_name as subjectName,
+            pirp.subject_code as subjectCode,
+            pirp.subject_phone as subjectPhone,
+            pirp.subject_id_card as subjectIdCard,
+            pirp.subject_ratio as subjectRatio,
+            pirp.subject_money as subjectMoney,
+            pirp.subject_province as subjectProvince,
+            pirp.subject_city as subjectCity,
+            pirp.subject_region as subjectRegion,
+            pirp.settlement_subject_id as settlementSubjectId,
+            pirp.settlement_subject_name as settlementSubjectName
+        from
+            product_income_record_part pirp
+            inner join product_income_record pir on pirp.record_id = pir.id
+        where
+            pir.main_order_id = #{mainOrderId} and pir.order_id = #{orderId} and subject_code = #{subjectCode}
+        limit 1
+    </select>
+    <select id="existsIncomeWithUserId" resultType="java.lang.Boolean">
+        SELECT
+            CASE WHEN COUNT(*)  > 0 THEN 1 ELSE 0 END AS result
+        from
+            product_income_record_part
+        where
+            subject_id = #{userId} and subject_code = 'DISTRIBUTOR_USER'
+    </select>
+
+    <!-- 收益统计(2.1版本) -->
+    <select id="productIncomeStatInfo" parameterType="com.yimao.cloud.pojo.dto.order.IncomeStatsQueryDTO"
+            resultType="com.yimao.cloud.pojo.dto.order.IncomeStatsResultDTO">
+        select
+        ifnull(sum(pirp.subject_money),0) as amount,
+        <if test="type != null and type == 1">
+            DATE_FORMAT(pir.order_complete_time,'%Y-%m-%d')
+        </if>
+        <if test="type != null and type == 2">
+            DATE_FORMAT(pir.order_complete_time,'%Y-%m')
+        </if>
+        <if test="type != null and type == 3">
+            DATE_FORMAT(pir.order_complete_time,'%Y')
+        </if>
+        as completeTime
+        from
+        product_income_record_part pirp
+        inner join product_income_record pir ON pirp.record_id = pir.id
+        where (pir.status =1 or pir.status =2 or pir.status =4)
+        and pir.order_complete_time is not null
+        <if test="userType != null and userType != 7">
+            and ((pirp.subject_id = #{distributorId} and pirp.subject_code = 'DISTRIBUTOR')
+            or (pirp.subject_id = #{userId} and pirp.subject_code = 'DISTRIBUTOR_USER'))
+        </if>
+        <if test="userType != null and  userType == 7">
+            and pirp.subject_id = #{userId} and pirp.subject_code = 'DISTRIBUTOR_USER'
+        </if>
+
+        <!-- 按日统计取传入日期前30天数据 -->
+        <if test="type != null and type == 1">
+            and DATE_FORMAT(pir.order_complete_time,'%Y-%m-%d') BETWEEN DATE_SUB(#{completeTime},INTERVAL 29 day) and
+            #{completeTime}
+        </if>
+        <!-- 按月统计取传入日期前12个月数据 -->
+        <if test="type != null and type == 2">
+            and DATE_FORMAT(pir.order_complete_time,'%Y-%m') BETWEEN DATE_FORMAT(DATE_SUB(CONCAT(#{completeTime},'-01'),
+            interval 11 MONTH),'%Y-%m') and #{completeTime}
+        </if>
+
+        <!-- 按年统计 -->
+        <if test="type != null and type == 3">
+            and DATE_FORMAT(pir.order_complete_time,'%Y') &lt;=#{completeTime}
+        </if>
+
+        <if test="incomeType != null">
+            and pir.income_type =#{incomeType}
+        </if>
+        group by
+        <if test="type != null and type == 1">
+            DATE_FORMAT(pir.order_complete_time,'%Y-%m-%d')
+        </if>
+        <if test="type != null and type == 2">
+            DATE_FORMAT(pir.order_complete_time,'%Y-%m')
+        </if>
+        <if test="type != null and type == 3">
+            DATE_FORMAT(pir.order_complete_time,'%Y')
+        </if>
+    </select>
+    <!-- 会员用户的收益金额 -->
+    <select id="vipUserIncomeMoneyByPartId" resultType="java.math.BigDecimal">
+        SELECT
+        pirp.subject_money AS vipUserMoney
+        FROM product_income_record_part pirp
+        where pirp.record_id = #{recordId}
+        and pirp.subject_id = #{vipUserId} and pirp.subject_code = 'DISTRIBUTOR_USER'
+    </select>
+
+    <sql id="income_where">
+        <if test="userType != null and  userType != 7">
+            ((pirp.subject_id = #{distributorId} and pirp.subject_code = 'DISTRIBUTOR') or (pirp.subject_id = #{userId}
+            and pirp.subject_code = 'DISTRIBUTOR_USER'))
+        </if>
+        <if test="userType != null and  userType == 7">
+            pirp.subject_id = #{userId} and pirp.subject_code = 'DISTRIBUTOR_USER'
+        </if>
+        <if test="incomeType !=null">
+            and pir.income_type = #{incomeType}
+        </if>
+        <if test="type != null and type == 1">
+            <if test="incomeType ==1 and createTime!=null">
+                and DATE_FORMAT(osd.create_time,'%Y-%m-%d') = DATE_FORMAT(#{createTime},'%Y-%m-%d')
+            </if>
+            <if test="incomeType ==2 and createTime!=null">
+                and DATE_FORMAT(orw.create_time,'%Y-%m-%d') = DATE_FORMAT(#{createTime},'%Y-%m-%d')
+            </if>
+        </if>
+        <if test="type != null and type == 2">
+            <if test="incomeType ==1 and createTime!=null">
+                and DATE_FORMAT(osd.create_time,'%Y-%m') = DATE_FORMAT(#{createTime},'%Y-%m')
+            </if>
+            <if test="incomeType ==2 and createTime!=null">
+                and DATE_FORMAT(orw.create_time,'%Y-%m') = DATE_FORMAT(#{createTime},'%Y-%m')
+            </if>
+        </if>
+    </sql>
+
+    <sql id="income_where_status">
+        <if test="userType != null and  userType != 7">
+            ((pirp.subject_id = #{distributorId} and pirp.subject_code = 'DISTRIBUTOR') or (pirp.subject_id = #{userId}
+            and pirp.subject_code = 'DISTRIBUTOR_USER'))
+        </if>
+        <if test="userType != null and  userType == 7">
+            pirp.subject_id = #{userId} and pirp.subject_code = 'DISTRIBUTOR_USER'
+        </if>
+        <if test="incomeType !=null">
+            and pir.income_type = #{incomeType}
+        </if>
+        <if test="type != null and type == 1">
+            <if test="incomeType ==1 and createTime!=null">
+                <if test="status !=null and status==2">
+                    and DATE_FORMAT(pir.order_complete_time,'%Y-%m-%d') = DATE_FORMAT(#{createTime},'%Y-%m-%d')
+                </if>
+                <if test="status ==null or status!=2">
+                    and DATE_FORMAT(osd.create_time,'%Y-%m-%d') = DATE_FORMAT(#{createTime},'%Y-%m-%d')
+                </if>
+            </if>
+            <if test="incomeType ==2 and createTime!=null">
+                and DATE_FORMAT(orw.create_time,'%Y-%m-%d') = DATE_FORMAT(#{createTime},'%Y-%m-%d')
+            </if>
+        </if>
+        <if test="type != null and type == 2">
+            <if test="incomeType ==1 and createTime!=null">
+                <if test="status !=null and status==2">
+                    and DATE_FORMAT(pir.order_complete_time,'%Y-%m') = DATE_FORMAT(#{createTime},'%Y-%m')
+                </if>
+                <if test="status ==null or status!=2">
+                    and DATE_FORMAT(osd.create_time,'%Y-%m') = DATE_FORMAT(#{createTime},'%Y-%m')
+                </if>
+            </if>
+            <if test="incomeType ==2 and createTime!=null">
+                and DATE_FORMAT(orw.create_time,'%Y-%m') = DATE_FORMAT(#{createTime},'%Y-%m')
+            </if>
+        </if>
+    </sql>
+    
+    <update id="updateIncomeForEngineer" parameterType="com.yimao.cloud.pojo.dto.order.ProductIncomeRecordPartDTO">
+    	UPDATE product_income_record_part pirp
+		INNER JOIN product_income_record pir ON pirp.record_id = pir.id
+		INNER JOIN order_sub_detail osd ON osd.sub_order_id=pir.order_id
+		SET pirp.subject_id = #{subjectId},
+		 pirp.subject_name = #{subjectName},
+		 pirp.subject_id_card = #{subjectIdCard},
+		 pirp.subject_phone = #{subjectPhone},
+		 pirp.subject_province = #{subjectProvince},
+		 pirp.subject_city = #{subjectCity},
+		 pirp.subject_region = #{subjectRegion},
+		 pirp.update_time = NOW()
+		WHERE
+			pir. STATUS = 0
+		AND pirp.subject_code = 'ENGINEER'
+		 <if test="oldSubjectId !=null">
+			   AND pirp.subject_id = #{oldSubjectId}
+        </if>
+		 <if test="addresseeProvince !=null and addresseeProvince !=''">
+			   AND osd.addressee_province = #{addresseeProvince}
+        </if>
+        <if test="addresseeCity !=null and addresseeCity !=''">
+			   AND osd.addressee_city = #{addresseeCity}
+        </if>
+        <if test="addresseeRegion !=null and addresseeRegion !=''">
+			   AND osd.addressee_region = #{addresseeRegion}
+        </if>
+    </update>
+</mapper>

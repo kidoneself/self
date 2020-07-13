@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="format-detection" content="telephone=no"/>
+    <title>库存查询</title>
+    <!-- zui -->
+    <link rel="stylesheet" href="/css/zui/zui.min.css">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/stock.css">
+    <link rel="stylesheet" href="/css/icon/iconfont.css">
+    <style type="text/css">
+        body.modal-open{margin-right: 0px;}
+        .switch-panel{height: 4rem;background-color: #edf1f4;border-bottom: 1px solid #ddd;}
+        .switch-panel li{width: 50%;height: 100%;border:none;}
+        .switch-panel li a{color:#707070!important;font-size: 1.4rem;text-align: center;height: 100%;border:none!important;border-bottom: 1px solid #ddd!important;line-height: 2.8rem;}
+        .switch-panel li a,.switch-panel li a:hover,.switch-panel li a:focus{background-color: rgba(0,0,0,0)!important;border:none;}
+        .switch-panel li.active a{border-bottom: 1px solid #009fe8!important;}
+
+        .service .stock-title,.man .stock-title{color: #707070;}
+        .service .stock-title .btn{background-color: #0074bc;color: #fff;font-size: 1.4rem;margin-right: 2rem;text-shadow: none;    height: 2.5rem;line-height: 1.25rem;}
+        .man .stock-list-title .btn{background-color: #0074bc;color: #fff;font-size: 1.4rem;margin-right: 2rem;text-shadow: none;    height: 2.5rem;line-height: 1.25rem;margin-top: 10px;}
+        .stock-title{font-size: 1.4rem;display: inline-block;margin-left: 2rem;margin-top: 1.3rem;margin-bottom: 1.3rem;font-weight: bold;display: flex;justify-content: space-between;align-items: center;}
+        .stock-list{background-color: #fafafa;}
+        .stock-list-con{padding-top: 10px;}
+        .stock-list-title{margin-left: 1.9rem;display: flex;align-items: center;}
+        .stock-list-item-con{margin-top: 10px;}
+        .stock-list-item{background-color: #fafafa;display: flex;vertical-align: middle;align-items: center;color: #707070;justify-content: space-around;}
+        .stock-list-item span:first-child{flex: 1;font-size: 1.6rem;}
+        .stock-list-item span:nth-child(2){font-size: 1.6rem;}
+        .man .stock-list-item span:nth-child(2){margin-right: 2rem;}
+        .stock-list-item i{width: 1.2rem;height: 1.2rem;margin-left: 1.2rem;margin-right: 2rem;color: #ccc;font-size: 1.6rem;}
+        .stock-list .stock-list-item:last-child{border-bottom: none;}
+        .man-tel{flex: 1;margin-left: 1rem;}
+
+        .service .material-title,.man .material-title{color: #707070;}
+        .material-title{font-size: 1.4rem;display: inline-block;margin-left: 2rem;margin-top: 1.3rem;margin-bottom: 1.3rem;font-weight: bold;display: flex;justify-content: space-between;align-items: center;}
+        .service .material-title .btn,.man .material-title .btn{background-color: #0074bc;color: #fff;font-size: 1.4rem;margin-right: 2rem;text-shadow: none;    height: 2.5rem;line-height: 1.25rem;}
+        .material-list{background-color: #fafafa;border-bottom: 1px solid #ddd;}
+        .material-list span{font-size: 14px!important;}
+        .material-list-item-show{border-top: 1px solid #ddd;margin-left: 1.9rem;}
+        .material-list-item-show .material-list-item-more:last-child{margin-bottom: 10px;}
+        .material-list-item{height: 4.5rem;background-color: #fafafa;display: flex;vertical-align: middle;align-items: center;color: #707070;margin-left: 1.9rem;justify-content: space-between;flex-wrap: wrap;padding-right: 4.4rem;}
+        .material-list-column{display: flex;flex-direction: column;}
+        .item-me-con{flex: 1;  display: flex;  flex-direction: column;}
+        .material-list-item-more{background-color: #fafafa;display: flex;vertical-align: middle;align-items: left;color: #707070;justify-content: space-between;flex-wrap: wrap;padding-top: 1rem;}
+        .material-list-item-more.second-item{padding-right: 4.4rem;}
+        .material-list-item .material-list-item-name{display: inline-block;  width: 40px;}
+        .material-list-item-more .material-list-item-name{flex: 1;font-size: 1.6rem;}
+        .material-list-item .material-list-item-num,.material-list-item-more .material-list-item-num{font-size: 1.6rem;text-align: right;}
+        .material-list-item-more .material-list-item-tip{font-size: 1.4rem;color: #aaa;}
+        .material-list .material-list-item-more:nth-child(3){border:none;}
+        .material-list-item i,.material-list-item-more i{width: 1.2rem;height: 1.2rem;margin-left: 1.2rem;margin-right: 2rem;color: #ccc;font-size: 1.6rem;}
+        .material-list .material-list-item:last-child{border-bottom: none;}
+
+        #own .modal-dialog{position:absolute;z-index: 1050;width: 80%;height: 40rem;top:50%;margin-top: -20rem;margin-right: auto;margin-left:10%;padding-right: 0px;padding-left: 0px;}
+        #successTip .modal-dialog{z-index: 1050;width: 80%;height: 20rem;position:fixed;top:50%;left:10%;/*margin-top: -10rem;*/margin-right: auto;margin-left: auto;padding-right: 0px;padding-left: 0px;}
+        .owntitle{width: 100%;border-bottom: 1px solid #ddd;}
+        .owntitle span{color: #707070;font-size: 1.6rem;display: inline-block;margin-bottom: 1rem;margin-left: 1rem;}
+        .owntip{text-align: center;margin-top: 2rem;width: 100%;left: 0px;font-size: 1.6rem;color: #333;margin-bottom: 2rem;}
+        .tiptitle{width: 100%;text-align: center;}
+        .tiptitle span{color: #707070;font-size: 1.6rem;display: inline-block;margin-bottom: 1rem;margin-left: 1rem;}
+        .tipcontent{margin-left: 2rem;margin-right: 2rem;font-size: 1.6rem;color: #707070;margin-top: 2rem;}
+        .own-list-item{display: flex;justify-content: flex-end;margin-bottom: 1.2rem;}
+        .own-item-type{flex: 1;margin-left: 2rem;text-align: left;font-size: 1.6rem;line-height: 2.4rem;}
+        .own-item-num{height: 2.4rem;width: 2.4rem;line-height: 2.4rem;}
+        .own-list-item img{width: 2.4rem;height: 2.4rem;}
+        .own-list-item img:last-child{margin-right: 2rem;}
+        .ownop,.tip{position: absolute;bottom: 0px;width: 100%;left: 0px;height: 5rem;background-color: #edf1f4;border-bottom-left-radius: 6px;border-bottom-right-radius: 6px;}
+        .ownop-cancel{width: 50%;height: 100%;font-size: 1.6rem;color: #999;text-align: center;float: left;}
+        .ownop-ok{width: 50%;height: 100%;font-size: 1.6rem;color: #00aeef;text-align: center;float: left;}
+        .tip-ok{width: 100%;height: 100%;font-size: 1.6rem;color: #00aeef;text-align: center;}
+        .btn:disabled{background-color: #999;color: #fff;text-shadow: none!important;}
+    </style>
+</head>
+<body>
+<div th:include="header :: header"></div>
+<div class="container pl-0 pr-0">
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs switch-panel">
+        <li class="active"><a href="#device" data-toggle="tab">设备库存</a></li>
+        <li><a href="#profile" data-toggle="tab">耗材库存</a></li>
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+        <div class="tab-pane active" id="device">
+
+            <div class="service">
+                <span class="stock-title">服务站<button class="btn btn-blue scan-apply">申领</button></span>
+                <div class="stock-list">
+                    <div th:if="${not #strings.isEmpty(serviceProduct)}">
+                        <div class="stock-list-con" th:each="servicePro:${serviceProduct}">
+                            <div class="stock-list-item-con">
+                                <div class="stock-list-item" th:each="productDetail:${servicePro.productList}" th:attr="data-id=${productDetail.id}" >
+                                    <p th:text="${productDetail.code}"></p>
+                                    <p th:text="${productDetail.usableNum}+${productDetail.unitName}"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="man">
+                <span class="stock-title">安装工</span>
+                <!--<c:if test="${!empty serviceEngineerProduct}">
+                    <c:forEach items="${serviceEngineerProduct}" var="engineerProduct">-->
+                <div th:if="${not #lists.isEmpty(serviceEngineerProduct)}">
+                    <div  th:each="engineerProduct:${serviceEngineerProduct}">
+                        <div class="stock-list">
+                            <div class="stock-list-title">
+                                <span th:text="${engineerProduct.engineerName}"></span>
+                                <a  class="man-tel" th:href="'tel:'+${engineerProduct.engineerPhone}" th:text="'电话:'+${engineerProduct.engineerPhone}"></a>
+                                <button class="btn btn-blue" data-toggle="modal" data-target="#own" th:attr="data-engineername=${engineerProduct.engineerName},data-engineerId=${engineerProduct.engineerId}"   data-clicktype="device">借调</button>
+                            </div>
+                            <!--<c:forEach items="${engineerProduct.engineerStock}" var="entry">-->
+                            <div th:each="entry:${engineerProduct.engineerStock}">
+                                <div class="stock-list-item-con">
+                                    <div class="stock-list-item-con">
+                                        <!--<c:forEach items="${entry.productList}" var="product">-->
+                                        <div th:each="product:${entry.productList}">
+                                            <div class="stock-list-item" th:attr="data-id=${product.id},data-name=${product.code},data-usablenum=${product.usableNum}">
+                                                <p><span th:text="${product.code}"></span></p>
+                                                <p><span th:text="${product.usableNum}+'台'"></span></p>
+                                            </div>
+                                        </div>
+                                        <!-- </c:forEach>-->
+                                    </div>
+                                </div>
+                            </div>
+                            <!--</c:forEach>-->
+                        </div>
+                    </div>
+
+                </div>
+                <!-- </c:forEach>
+             </c:if>-->
+
+            </div>
+
+        </div>
+        <div class="tab-pane" id="profile">
+
+            <div class="service">
+                <span class="material-title">服务站<button class="btn btn-blue scan-apply">申领</button></span>
+                <div class="material-list">
+                    <!-- <c:forEach items="${serviceMateriel}" varStatus="status" var="serviceMat" >-->
+                    <div th:each="serviceMat,status:${serviceMateriel}">
+                        <div class="material-list-item" data-toggle="collapse" th:attr="data-target='#demo'+${status.count},data-id=${serviceMat.materielTypeId}">
+                            <div>
+                                <div>
+                                    <span class="material-list-item-name" th:text="${serviceMat.materielTypeName}"></span>
+                                    <i class="icon icon-chevron-down downshow"></i>
+                                    <i class="icon icon-chevron-up downshow" style="display: none;"></i>
+                                </div>
+                            </div>
+                            <span class="material-list-item-num" th:text="${serviceMat.materielCount}+'支'"><!--10只--></span>
+                        </div>
+                        <div th:attr="id='demo'+${status.count}" class="collapse material-list-item-show">
+                            <!--  <c:forEach items="${serviceMat.materielList}" var="materielDetail">-->
+                            <div th:each="materielDetail:${serviceMat.materielList}">
+                                <div class="material-list-item-more second-item" th:attr="data-id=${materielDetail.id}">
+                                    <div class="item-me-con">
+                                        <span class="material-list-item-name" th:text="${materielDetail.name}"></span>
+                                        <span class="material-list-item-tip" th:text="'适用机型:'+${materielDetail.fitTypeName}"></span>
+                                    </div>
+                                    <span class="material-list-item-num" th:text="${materielDetail.usableNum}+${materielDetail.unitName}"></span>
+                                </div>
+                            </div>
+                            <!--</c:forEach>-->
+                        </div>
+                    </div>
+
+                    <!--</c:forEach>-->
+                </div>
+            </div>
+
+            <div class="man">
+                <!--<c:if test="${!empty serviceEngineerMateriel}">-->
+                <div th:if="${not #lists.isEmpty(serviceEngineerMateriel)}">
+                    <!--<c:forEach items="${serviceEngineerMateriel}" var="engineerCon" >-->
+                    <div th:each="engineerCon:${serviceEngineerMateriel}">
+                        <span class="material-title"><span th:text="${engineerCon.engineerName}"></span><button class="btn btn-blue" data-toggle="modal" data-target="#own" data-clicktype="materiel" th:attr="data-engineername=${engineerCon.engineerName},data-engineerId=${engineerCon.engineerId}">借调</button></span>
+                        <div class="material-list">
+                            <!--<c:forEach items="${engineerCon.engineerStock}" var="entry" varStatus="status">-->
+                            <div th:each="entry,status:${engineerCon.engineerStock}">
+                                <div class="material-list-item" data-toggle="collapse" th:attr="data-target='#'+${engineerCon.engineerName}+${status.count},data-id=${entry.materielTypeId},data-engineerId=${engineerCon.engineerId},data-name=${entry.materielTypeName},data-number=${entry.materielCount}">
+                                    <div>
+                                        <div>
+                                            <span class="material-list-item-name" th:text="${entry.materielTypeName}"></span>
+                                            <i class="icon icon-chevron-down downshow"></i>
+                                            <i class="icon icon-chevron-up downshow" style="display: none;"></i>
+                                        </div>
+                                    </div>
+                                    <span class="material-list-item-num" th:text="${entry.materielCount}+'支'"><!--10只--></span>
+                                </div>
+                                <div th:attr="id=${engineerCon.engineerName}+${status.count}" class="collapse material-list-item-show">
+                                    <!--<c:forEach items="${entry.materielList}" var="materielDetail">-->
+                                    <div th:each="materielDetail:${entry.materielList}">
+                                        <div class="material-list-item-more second-item" th:attr="data-id=${materielDetail.id},data-name=${materielDetail.name},data-usablenum=${materielDetail.usableNum}">
+                                            <div class="item-me-con">
+                                                <span class="material-list-item-name" th:text="${materielDetail.name}"></span>
+                                                <span class="material-list-item-tip" th:text="'适用机型:'+${materielDetail.fitTypeName}"></span>
+                                            </div>
+                                            <span class="material-list-item-num" th:text="${materielDetail.usableNum}+${materielDetail.unitName}"></span>
+                                        </div>
+                                    </div>
+                                    <!-- </c:forEach>-->
+                                </div>
+                            </div>
+
+                            <!--</c:forEach>-->
+                        </div>
+                    </div>
+                    <!-- </c:forEach>-->
+                </div>
+
+                <!-- </c:if>-->
+            </div>
+
+        </div>
+    </div>
+    <form id="getStockDesc" class="hide-form-tranc" method="post" action="./getMaterielStockInfo" >
+        <input name="materielId" type="text" value=""  readonly />
+        <input name="stockOwnFlag" type="text" value=""  readonly />
+        <input name="stockOwnId" type="text" value=""  readonly />
+        <input name="status" type="text" value="0"  readonly />
+        <input name="isFrozen" type="text" value="0"  readonly />
+        <input name="pageIndex" type="text" value="0"  readonly />
+        <input name="fromPageIndex" type="text" value="2"  readonly />
+        <input name="token" id="token1" type="text"  th:value="${token}"  readonly />
+    </form>
+    <form id="applyMateriel" class="hide-form-tranc" method="get" action="./applyMaterielToServiceEngineer" >
+        <input name="allotFromId" type="text" value=""  readonly />
+        <input name="allotList" type="text" value=""  readonly />
+        <input name="token" id="token2" type="text" th:value="${token}"  readonly />
+    </form>
+    <div class="modal fade" id="own">
+        <div class="modal-dialog">
+            <div class="owntitle">
+                <span>被借人:张三</span>
+            </div>
+            <div class="owntip">
+                <div class="own-list">
+                    <div class="own-list-item">
+                        <span class="own-item-type">1601T</span>
+                        <img class="cutOne" src="/images/stock/subtract_click.png">
+                        <span class="own-item-num">0</span>
+                        <img class="addOne" src="/images/stock/add_click.png">
+                    </div>
+                </div>
+            </div>
+            <div class="ownop">
+                <button class="btn ownop-cancel">取消</button>
+                <button class="btn ownop-ok">确定</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="successTip">
+        <div class="modal-dialog">
+            <div class="tiptitle">
+                <span>提示</span>
+            </div>
+            <div class="tipcontent">
+                申请已发送成功,请到我的申请模块中查看审核结果
+            </div>
+            <div class="tip">
+                <button class="btn tip-ok">我知道了</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+
+<script type="text/javascript" th:inline="javascript">
+    var entrance = "${entrance}";
+    function setFromValue(materielId,stockOwnFlag,stockOwnId,status,isFrozen,pageIndex) {
+        $(".hide-form-tranc").find("input[name=materielId]").val(materielId);
+        $(".hide-form-tranc").find("input[name=stockOwnFlag]").val(stockOwnFlag);
+        $(".hide-form-tranc").find("input[name=stockOwnId]").val(stockOwnId);
+        $(".hide-form-tranc").find("input[name=status]").val(status);
+        $(".hide-form-tranc").find("input[name=isFrozen]").val(isFrozen);
+        $(".hide-form-tranc").find("input[name=pageIndex]").val(pageIndex);
+    }
+    function stockInfo(){
+        $("#getStockDesc").submit();
+    }
+    /**
+     * 隐藏关键信息
+     */
+    function hideInfo() {
+        $(".needInfo").hide();
+        $(".hide-form-tranc").hide();
+    }
+    $(function(){
+        //隐藏所有的id信息
+        hideInfo();
+        updateTitle($('head title').text());
+
+        var calcOwnHeight = function(){
+            var titleHeight = $('.owntitle').outerHeight();
+            var tipHeight = $('.owntip').outerHeight(true);
+            var opHeight = $('.ownop').outerHeight();
+            $('#own').find('.modal-dialog').height(titleHeight+tipHeight+opHeight-10);
+        }
+        var bindClickBtn = function(){
+            $('.addOne').off().click(function(){
+                var $x=$($(this).parent().find('.own-item-num'));
+                var maxNum = $(this).data("maxnum");
+                if(parseInt($x.text())<parseInt(maxNum)){
+                    $x.text(parseInt($x.text())+1);
+                }
+            })
+            $('.cutOne').off().click(function(){
+                var $x=$($(this).parent().find('.own-item-num'));
+                if ($x.text()>0) {
+                    $x.text(parseInt($x.text())-1);
+                }
+            })
+        }
+
+        function getOwnString(item) {
+            var html_text = '      <div class="own-list-item" data-id="'+item.data("id")+'">' +
+                '                        <span class="own-item-type">'+item.data("name")+'</span>' +
+                '                        <img class="cutOne" src="/images/stock/subtract_click.png">' +
+                '                        <span class="own-item-num">0</span>' +
+                '                        <img class="addOne" src="/images/stock/add_click.png" data-maxNum="'+item.data("usablenum")+'">' +
+                '                    </div>';
+            return html_text;
+        }
+
+        function getOwnMaterielString(item){
+
+            var html_text = '      <div class="own-list-item" data-id="'+item.data("id")+'">' +
+                '                        <span class="own-item-type">'+item.data("name")+'</span>' +
+                '                        <img class="cutOne" src="/images/stock/subtract_click.png">' +
+                '                        <span class="own-item-num">0</span>' +
+                '                        <img class="addOne" src="/images/stock/add_click.png" data-maxNum="'+item.data("number")+'">' +
+                '                    </div>';
+            return html_text;
+        }
+
+        //借调
+        $('.btn[data-target=#own]').click(function(){
+            var stockType = $(this).data("type");
+            var own_item_html='<div class="modal-dialog">' +
+                '            <div class="owntitle">' +
+                '                <span>被借人:'+$(this).data("engineername")+'</span>' +
+                '            </div>' +
+                '            <div class="owntip">' +
+                '                <div class="own-list">';
+            if($(this).data("clicktype") == "device"){
+                $(this).parent().parent().find(".stock-list-item").each(function (index) {
+                    own_item_html += getOwnString($(this));
+                })
+            }else{
+                $(this).parent().next().find(".material-list-item-more.second-item").each(function () {
+                    own_item_html += getOwnString($(this));
+                })
+            }
+            own_item_html +=
+                '                </div>' +
+                '            </div>' +
+                '            <div class="ownop">' +
+                '                <button class="btn ownop-cancel">取消</button>' +
+                '                <button class="btn ownop-ok" data-engineerid="'+$(this).data("engineerid")+'">确定</button>' +
+                '            </div>';
+
+            $("#own").html(own_item_html);
+            applyStockInit();
+        })
+
+        function applyStockInit(){
+            setTimeout(function(){
+                calcOwnHeight();
+                $('.modal-dialog').css('margin-top',-$('.modal-dialog').height()/2);
+                bindClickBtn();
+                ownBind();
+            },300)
+        }
+
+        //提示框,没有点击事件
+        function modelAlert(alertInfo){
+            $("#successTip .tipcontent").text(alertInfo);
+            //alert("您还没有确定借调的数量哦,无法为您发起借调申请");
+            $("#successTip").modal('show');
+        }
+
+
+        $("#successTip").bind('hide.bs.modal',function(){
+            $(".modal-backdrop").remove();
+        })
+        $("#successTip .btn.tip-ok").click(function () {
+            //console.log("test");
+            $("#successTip").modal('hide');
+            $(".modal-backdrop.fade.in").remove();
+        })
+
+        var ownBind = function () {
+            $('.ownop-ok').click(function(){
+                var isPass = true;
+                //每个设备的借调数量和总数量
+                var materlNumber = 0,count = 0;
+                var data = "[";
+                var dataNode = $(this).parent().prev().find(".own-list .own-list-item")
+                dataNode.each(function (index) {
+                    materlNumber = parseInt($(this).find(".own-item-num").text());
+                    //console.log("借调数量index"+materlNumber);
+                    if( materlNumber > 0){
+                        count += materlNumber;
+                        data +='{\"materielId\":\"'+$(this).data("id")+'\",\"materielNumber\":\"'+materlNumber+'\"}';
+                        if(index != (dataNode.length-1)){
+                            data += ",";
+                        }
+                    }
+                });
+                data += "]";
+                console.log("count"+count);
+                $('#own').modal('hide');
+                if(count <= 0){
+                    modelAlert("您还没有确定借调的数量哦,无法为您发起借调申请");
+                    return ;
+                }
+
+                console.log(data);
+                $("#applyMateriel").find("input[name=allotFromId]").val($(this).data("engineerid"));
+                $("#applyMateriel").find("input[name=allotList]").val(data);
+                //window.location.href="./applyMaterielToServiceEngineer?allotFromId="+$(this).data("engineerid")+"&allotList="+data;
+                $("#applyMateriel").submit();
+            })
+            $('.ownop-cancel').click(function(){
+                $('#own').modal('hide');
+            })
+            $('.tip-ok').click(function(){
+                $('#successTip').modal('hide');
+            })
+        }
+        $('.scan-apply').click(function(){
+            var token=[[${token}]];
+            window.location.href="./deviceScan?token="+token;
+        })
+
+        $('div.material-list-item[data-toggle="collapse"]').click(function () {
+
+        })
+        /*
+                function setFromValue(materielId,stockOwnFlag,stockOwnId,status,isFrozen,pageIndex) {
+                    $(".hide-form-tranc").find("input[name=materielId]").val(materielId);
+                    $(".hide-form-tranc").find("input[name=stockOwnFlag]").val(stockOwnFlag);
+                    $(".hide-form-tranc").find("input[name=stockOwnId]").val(stockOwnId);
+                    $(".hide-form-tranc").find("input[name=status]").val(status);
+                    $(".hide-form-tranc").find("input[name=isFrozen]").val(isFrozen);
+                    $(".hide-form-tranc").find("input[name=pageIndex]").val(pageIndex);
+                }*/
+
+        /*$('#device .service .stock-list').find('.stock-list-item').click(function(){
+            var materielId = $(this).data("id");
+            setFromValue(materielId,1,0,0,0,0);
+            stockInfo();
+        })
+
+        $('#profile .service .material-list').find('.material-list-item').click(function(){
+            var materielId = $(this).data("id");
+            setFromValue(materielId,1,0,0,0,1);
+            stockInfo();
+        })*/
+
+
+    })
+</script>
+</html>
+

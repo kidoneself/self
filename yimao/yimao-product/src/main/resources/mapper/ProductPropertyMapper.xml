@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.product.mapper.ProductPropertyMapper">
+
+    <resultMap id="PropertyWithValue" type="com.yimao.cloud.pojo.vo.product.ProductPropertyVO">
+        <result column="c_id" property="id" jdbcType="INTEGER"/>
+        <collection property="propertyValues" ofType="com.yimao.cloud.pojo.dto.product.ProductPropertyValueDTO" select="selectPropertyValue"
+                    column="c_id">
+            <result column="c_id" property="propertyId" jdbcType="INTEGER"/>
+        </collection>
+    </resultMap>
+
+    <!--获取产品属性列表，携带产品属性值-->
+    <select id="listWithValueByType" resultMap="PropertyWithValue">
+        select distinct
+        id as c_id,
+        `name` as name,
+        type_id as typeId,
+        sorts as sorts,
+        deleted as deleted,
+        creator as creator,
+        create_time as createTime,
+        updater as updater,
+        update_time as updateTime
+        from product_property
+        where 1=1 and deleted = 0
+        <if test="name != null and name != ''">
+            and `name` like CONCAT('%',#{name},'%')
+        </if>
+        <if test="typeId != null">
+            and type_id = #{typeId}
+        </if>
+        <if test="startUpdateTime != null">
+            and update_time &gt;=#{startUpdateTime}
+        </if>
+        <if test="endUpdateTime != null">
+            and update_time &lt;=#{endUpdateTime}
+        </if>
+    </select>
+
+    <select id="selectPropertyValue" parameterType="java.lang.Integer" resultType="com.yimao.cloud.pojo.dto.product.ProductPropertyValueDTO">
+        select distinct
+        id as id,
+        property_id as propertyId,
+        property_value as propertyValue,
+        creator as creator,
+        create_time as createTime,
+        updater as updater,
+        update_time as updateTime
+        from product_property_value
+        where property_id = #{c_id}
+    </select>
+
+</mapper>

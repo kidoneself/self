@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.hra.mapper.HraReportMapper">
+
+    <select id="findHraReport" resultType="com.yimao.cloud.hra.po.HraReport">
+        SELECT
+        hre.id AS id,
+        hre.show_flag AS showFlag
+        FROM
+        hra_report hre
+        LEFT JOIN hra_customer hcu ON hre.customer_id = hcu.id
+        LEFT JOIN hra_device hde ON hre.device_id = hde.device_id
+        WHERE
+        hcu.phone = #{phone} AND hre.ticket_no = #{ticketNo}
+        <if test="showFlag == 0">
+            AND (hre.show_flag = 0 OR hre.show_flag IS NULL)
+        </if>
+        <if test="showFlag == 1">
+            AND hre.show_flag = 1
+        </if>
+    </select>
+
+
+    <!-- 根据评估卡号和手机号查询评估报告 -->
+    <select id="findHraReportRecord" resultType="com.yimao.cloud.hra.po.HraReport">
+        SELECT
+        hre.id AS id,
+        hre.show_flag AS showFlag
+        FROM
+        hra_report hre
+        LEFT JOIN hra_customer hcu ON hre.customer_id = hcu.id
+        WHERE
+        hcu.phone = #{phone} and hre.ticket_no = #{ticketNo} and hre.customer_id is not null
+    </select>
+
+
+    <select id="findUsedTicketNoWithNotShow" resultType="java.lang.String">
+        select ticket_no from hra_report where show_flag IS NULL OR show_flag = 0
+    </select>
+
+    <!--根据体检卡号查询体检报告 -->
+    <select id="findReportByTicketNo" parameterType="java.lang.String" resultType="com.yimao.cloud.pojo.dto.hra.ReportDTO">
+        SELECT
+            hra.`customer_id` AS customerId,
+            hra.`ticket_no` AS ticketNo,
+            hra.`report_pdf` AS reportPdf,
+            hra.`exam_date` AS examDate,
+            cus.`id` AS id,
+            cus.`username` AS username,
+            cus.`phone` AS phone
+        FROM
+            hra_report hra
+        LEFT JOIN hra_customer cus ON hra.`customer_id` = cus.`id`
+        WHERE hra.`ticket_no` = #{ticketNo}
+    </select>
+
+    <!--获取模板数据 -->
+    <select id="findReportByMap" parameterType="Map" resultType="com.yimao.cloud.pojo.dto.hra.ReportDTO">
+        SELECT
+            hra.`customer_id` AS customerId,
+            hra.`ticket_no` AS ticketNo,
+            hra.`report_pdf` AS reportPdf,
+            hra.`exam_date` AS examDate,
+            cus.`id` AS id,
+            cus.`username` AS username,
+            cus.`phone` AS phone
+        FROM
+            hra_report hra
+        LEFT JOIN hra_customer cus ON hra.`customer_id` = cus.`id`
+        WHERE hra.`ticket_no` = #{ticketNo}
+    </select>
+
+    <select id="findCustomByTicketNo" parameterType="java.lang.String" resultType="com.yimao.cloud.hra.po.HraReport">
+      SELECT
+          report.`id` AS id,
+          report.`ticket_no` AS ticketNo,
+          report.`customer_id` AS customerId,
+          report.`exam_date` AS examDate,
+          report.`report_pdf` AS reportPdf,
+          report.`report_dat` AS reportDat,
+          report.`report_swf` AS reportSwf,
+          report.`report_pics` AS reportPics,
+          report.`report_jpgs` AS reportJpgs,
+          report.`doctor` AS doctor,
+          report.`pic1` AS pic1,
+          report.`pic2` AS pic2,
+          report.`pic3` AS pic3,
+          report.`pic4` AS pic4,
+          report.`pic5` AS pic5,
+          report.`pic6` AS pic6,
+          report.`pic7` AS pic7,
+          report.`pic8` AS pic8,
+          report.`remark` AS remark
+    FROM hra_report report
+    WHERE
+          report.`ticket_no` = #{ticketNo}
+    </select>
+
+</mapper>

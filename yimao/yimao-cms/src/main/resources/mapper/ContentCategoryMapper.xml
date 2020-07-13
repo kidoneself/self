@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.cms.mapper.ContentCategoryMapper">
+    <insert id="batchSave" parameterType="java.util.List" >
+        insert into t_content__category(content_id,category_id) values
+        <foreach collection="result" item="item"  separator="," >
+            (#{item.contentId},#{item.categoryId})
+        </foreach>
+    </insert>
+
+    <select id="findByContentId" resultType="java.lang.Integer" parameterType="java.lang.Integer" >
+        select category_id as categoryId from t_content__category where content_id = #{contentId}
+    </select>
+
+    <select id="findContentRelationInfo" resultType="com.yimao.cloud.pojo.dto.cms.CategoryRelationDTO" parameterType="java.lang.Integer" >
+        select
+        tc.platform,tc.id as categoryId,
+        tc.parent_id as parentId,
+        tc.`level`,
+        tc.`name` as categoryName
+        from t_content__category tcc
+        left join t_category tc
+        on(tcc.category_id=tc.id)
+        where tcc.content_id=#{contentId}
+    </select>
+    <select id="findContentCategoryInfo" resultType="com.yimao.cloud.pojo.dto.cms.CategoryRelationDTO">
+         select
+        tc.platform,tc.id as categoryId,
+        tc.parent_id as parentId,
+        tc.`level`,
+        tc.`name` as categoryName
+        from t_content__category tcc
+        left join t_category tc
+        on(tcc.category_id=tc.id)
+        where tcc.content_id=#{contentId}
+    </select>
+
+</mapper>

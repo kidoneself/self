@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.order.mapper.OrderAuditLogMapper">
+
+    <!--审核记录查询 -->
+    <select id="orderAuditLogList" parameterType="com.yimao.cloud.pojo.dto.order.AfterSalesConditionDTO" resultType="com.yimao.cloud.pojo.dto.order.OrderAuditLogDTO">
+      select
+          oal.id,
+          oal.sales_id as salesId,
+          oal.order_id as orderId,
+          aso.main_order_id as mainOrderId,
+          aso.create_time as afterSaleCreateTime,
+          aso.refund_reason as refundReason,
+          oal.creator,
+          oal.create_time as createTime,
+          oal.operation_status as operationStatus,
+          oal.audit_reason as auditReason,
+          aso.terminal,
+          aso.num,
+          oal.detail_reason as detailReason,
+          os.refer,
+          os.cancel_reason as cancelReason
+      from
+        order_audit_log oal
+      inner join after_sales_order aso on oal.sales_id = aso.id
+      inner join order_sub os on os.id = oal.order_id
+      where 1=1
+        and os.product_type = #{productType}
+      <if test="salesId != null and salesId != ''">
+        and oal.sales_id like concat('%',#{salesId},'%')
+      </if>
+      <if test="orderId != null and orderId != ''">
+        and (oal.order_id like concat('%',#{orderId},'%') or aso.main_order_id like concat('%',#{orderId},'%') or os.refer like concat('%',#{orderId},'%'))
+      </if>
+      <if test="terminal != null and terminal != ''">
+        and os.terminal = #{terminal}
+      </if>
+      <if test="startTime != null and startTime != ''">
+        and aso.create_time &gt;= #{startTime}
+      </if>
+      <if test="endTime != null and endTime != ''">
+        and aso.create_time &lt;= #{endTime}
+      </if>
+      <if test="status != null and status != ''">
+        and aso.status = #{status}
+      </if>
+      <if test="operationStatus != null">
+        and oal.operation_status = #{operationStatus}
+      </if>
+      order by oal.create_time desc
+    </select>
+
+</mapper>

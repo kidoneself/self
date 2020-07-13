@@ -1,0 +1,1517 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.user.mapper.DistributorMapper">
+
+    <select id="pageQueryDistributorToStation" resultType="com.yimao.cloud.pojo.vo.station.DistributorVO">
+        SELECT
+        ud.id as id,
+        ud.user_id as userId,
+        ud.user_name AS userName,
+        ud.real_name AS realName,
+        ud.phone,
+        ud.type,
+        ud.agent_level AS agentLevel,
+        ud.role_name as roleName,
+        u.user_name AS recommendAccount,
+        ud.terminal,
+        ud.sponsor,
+        ud.remaining_quota AS remainingQuota,
+        ud.create_time AS createTime,
+        udb.real_name AS mainAccountName,
+        udb.user_name AS mainAccount,
+        ud.company_name AS companyName,
+        ud.province,
+        ud.city,
+        ud.region,
+        case
+        ud.forbidden
+        when 0 then '启用'
+        when 1 then '禁用' else ''
+        end as forbiddenStatus
+        from user_distributor ud
+        left join user_distributor u on ud.recommend_id = u.id
+        left join user_distributor udb on udb.id = ud.pid
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="type!=null">
+                and ud.role_level = #{type}
+            </if>
+            <if test="name!=null and name.trim() !=''">
+                and ud.real_name like CONCAT('%', #{name}, '%')
+            </if>
+            <if test="account!=null and account.trim() !=''">
+                and ud.user_name like CONCAT('%', #{account}, '%')
+            </if>
+            <if test="phone!=null and phone.trim() !=''">
+                and ud.phone like CONCAT('%', #{phone}, '%')
+            </if>
+            <if test="stationMaster!=null">
+                and ud.station_master = #{stationMaster}
+            </if>
+            <if test="terminal!=null">
+                and ud.terminal = #{terminal}
+            </if>
+            <if test="sourceType!=null">
+                and ud.source_type = #{sourceType}
+            </if>
+            <if test="sponsor!=null">
+                and ud.sponsor = #{sponsor}
+            </if>
+            <if test="isAgent != null and isAgent">
+                and ud.agent_level is not null
+            </if>
+            <if test="mainAccount != null and mainAccount.trim() != ''">
+                and udb.user_name = #{mainAccount}
+            </if>
+            <if test="mainName != null and mainName.trim() != ''">
+                and udb.real_name = #{mainName}
+            </if>
+            <choose>
+                <when test="subAccount != null and subAccount">
+                    and ud.role_level = 1000
+                </when>
+                <otherwise>
+                    and (ud.role_level != 1000 or ud.role_level is null)
+                </otherwise>
+            </choose>
+            <if test="flag != null and flag">
+                and (ud.type in
+                <foreach collection="types" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+                AND (
+                ud.agent_level = 4
+                OR ud.agent_level = 5
+                OR ud.agent_level = 6
+                OR ud.agent_level = 7
+                )
+                )
+            </if>
+            <if test="flag != null and !flag">
+                and ud.type not in
+                <foreach collection="types" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="recommendId != null">
+                and ud.recommend_id = #{recommendId}
+            </if>
+            <if test="isDistributor != null and isDistributor">
+                AND ud.type in (2,3)
+            </if>
+            <if test="areas != null and areas.size() > 0">
+                AND ud.area_id IN
+                <foreach collection="areas" item="areaId" index="index" separator="," open="(" close=")">
+                    #{areaId}
+                </foreach>
+            </if>
+            and ud.deleted = 0
+        </trim>
+        order by ud.create_time desc
+    </select>
+
+    <select id="pageQueryDistributor" resultType="com.yimao.cloud.pojo.dto.user.DistributorDTO">
+        SELECT
+        ud.id as id,
+        us.id as userId,
+        ud.user_name AS userName,
+        ud.real_name AS realName,
+        ud.phone,
+        ud.type,
+        ud.agent_level AS agentLevel,
+        ud.role_id AS roleId,
+        ud.role_name as roleName,
+        u.user_name AS recommendAccount,
+        ud.sponsor,
+        ud.station_master AS stationMaster,
+        ud.sponsor_level AS sponsorLevel,
+        ud.terminal,
+        ud.province,
+        ud.city,
+        ud.region,
+        ud.role_level as roleLevel,
+        ud.remaining_quota AS remainingQuota,
+        ud.create_time AS createTime,
+        ud.forbidden,
+        ud.company_id AS companyId,
+        ud.company_name AS companyName,
+        udb.real_name AS mainAccountName,
+        udb.user_name AS mainAccount,
+        ud.forbidden_order AS forbiddenOrder,
+        ud.source_type as sourceType,
+        ud.id_card as idCard,
+        ud.founder as founder,
+        ud.sex as sex
+        from user_distributor ud
+        left join user_distributor u on ud.recommend_id = u.id
+        left join user_distributor udb on udb.id = ud.pid
+        LEFT JOIN `user` us ON us.id = ud.user_id
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="id!=null">
+                and us.id like CONCAT('%', #{id}, '%')
+            </if>
+            <if test="account!=null and account!=''">
+                and ud.user_name like CONCAT('%', #{account}, '%')
+            </if>
+            <if test="name!=null and name!=''">
+                and ud.real_name like CONCAT('%', #{name}, '%')
+            </if>
+            <if test="phone!=null and phone!=''">
+                and ud.phone like CONCAT('%', #{phone}, '%')
+            </if>
+            <if test="province!=null and province!=''">
+                and ud.province = #{province}
+            </if>
+            <if test="region!=null and region!=''">
+                and ud.region = #{region}
+            </if>
+            <if test="city!=null and city!=''">
+                and ud.city = #{city}
+            </if>
+            <if test="terminal!=null">
+                and ud.terminal = #{terminal}
+            </if>
+
+            <if test="stationMaster!=null">
+                and ud.station_master = #{stationMaster}
+            </if>
+            <if test="originator!=null">
+                and ud.sponsor = #{originator}
+            </if>
+            <if test="referrer!=null and referrer!=''">
+                and u.user_name like CONCAT(#{referrer},'%')
+            </if>
+            <if test="startTime!=null and startTime!=''">
+                and ud.create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                and ud.create_time &lt;= #{endTime}
+            </if>
+            <if test="mainAccount!=null and mainAccount!=''">
+                and udb.user_name = #{mainAccount}
+            </if>
+            <if test="mainName!=null and mainName!=''">
+                and udb.real_name = #{mainName}
+            </if>
+            <if test="type!=null">
+                and ud.role_level = #{type}
+            </if>
+            <if test="sourceType!=null">
+                and ud.source_type = #{sourceType}
+            </if>
+            <choose>
+                <when test="subAccount!=null and subAccount">
+                    and ud.role_level = 1000
+                </when>
+                <otherwise>
+                    and (ud.role_level != 1000 or ud.role_level is null)
+                </otherwise>
+            </choose>
+            <if test="isAgent != null and isAgent">
+                and ud.agent_level is not null
+            </if>
+            <if test="flag != null and flag">
+                and ud.type in
+                <foreach collection="types" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="flag != null and !flag">
+                and ud.type not in
+                <foreach collection="types" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+
+            and ud.deleted = 0
+        </trim>
+        order by ud.create_time desc
+    </select>
+
+    <select id="getDistributorById" resultType="com.yimao.cloud.pojo.dto.user.DistributorDTO">
+       SELECT
+        d.user_name AS userName,
+        d.real_name AS realName,
+        d.role_id as roleId,
+        d.role_level as roleLevel,
+        d.user_id AS userId,
+        d.recommend_id AS recommendId,
+        d.phone,
+        d.province,
+        d.city,
+        d.region,
+        d.pid,
+        d.company_id as companyId,
+        d.company_name AS companyName
+        FROM
+        user_distributor d
+        WHERE
+         d.id = #{distributorId}
+    </select>
+
+    <select id="getDistributorReferrerById" resultType="com.yimao.cloud.pojo.dto.user.DistributorDTO">
+    SELECT
+	d.user_name AS userName,
+	d.real_name AS realName,
+	d.user_id AS userId,
+	d.province,
+	d.city,
+	d.region
+    FROM
+	user_distributor d
+	WHERE d.id = #{recommendId}
+    </select>
+
+    <select id="getDistByUserNameAndPass" resultType="com.yimao.cloud.user.po.Distributor">
+        SELECT
+            ud.id AS id,
+            ud.user_name AS username,
+            ud.real_name AS realName,
+            ud.type AS type,
+            ud.sex AS sex,
+            ud.phone AS phone,
+            ud.province AS province,
+            ud.city AS city,
+            ud.region AS region,
+            ud.address AS address,
+            ud.id_card AS idcard,
+            ud.email AS email,
+            ud.recommend_id AS recommendId,
+            ud.user_id AS userId,
+            ud.pay_money AS payMoney,
+            ud.pid AS pid,
+            ud.station_master AS stationMaster,
+            ud.terminal AS terminal,
+            ud.sponsor_level AS sponsorLevel,
+            ud.agent_level AS agentLevel,
+            ud.role_id as roleId,,
+            ud.company_id  AS companyId,
+            ud.accessory AS accessory,
+            ud.remark AS remark,
+            ud.quota AS quota,
+            ud.remaining_quota AS remainingQuota,
+            ud.province_ranking AS provinceRanking,
+            ud.city_ranking AS cityRanking,
+            ud.region_ranking AS regionRanking,
+            ud.deleted AS deleted,
+            ud.forbidden AS forbidden,
+            ud.forbidden_order AS forbiddenOrder,
+            ud.replacement_amount AS replacementAmount,
+            ud.remaining_replacement_amount AS remainingReplacementAmount,
+            ud.creator AS creator,
+            ud.create_time AS createTime,
+            ud.updater AS updater,
+            ud.update_time AS updateTime,
+            ud.fuhuishun AS fuhuishun
+        FROM
+            user_distributor ud
+        WHERE
+            ud.user_name = #{username}
+        AND ud.password = #{password}
+    </select>
+
+    <select id="countDistributor4ConfigName" resultType="java.util.Map">
+        SELECT
+            dc.`name` as name,
+            COUNT(ud.role_id) as num
+        FROM
+            user_distributor ud
+        LEFT JOIN distributor_role dc ON dc.id = ud.role_id
+        WHERE
+            ud.recommend_id = #{id}
+        GROUP BY
+            dc.`name`
+    </select>
+
+    <select id="countDistributor4Update" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        distributor_order dbo
+        LEFT JOIN user_distributor ud ON ud.id = dbo.distributor_id
+        WHERE
+        dbo.order_type = 1
+        AND ud.recommend_id = #{id}
+        <choose>
+            <when test="sign == true">
+                -- 昨天
+                and TO_DAYS(NOW())-TO_DAYS(dbo.completion_time) &gt;= 1
+            </when>
+            <otherwise>
+                -- 上周
+                and YEARWEEK(date_format(dbo.completion_time,'%Y-%m-%d')) = YEARWEEK(now())-1
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="countDistributor4total" resultType="java.lang.Integer">
+        SELECT
+        COUNT(*)
+        FROM
+        user_distributor ud
+        LEFT JOIN distributor_role dc ON dc.id = ud.role_id
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="id != null">
+                and ud.recommend_id = #{id}
+            </if>
+            <if test="level != null">
+                and dc.`level` = #{level}
+            </if>
+        </trim>
+    </select>
+
+    <select id="getRecommendByDistributorId" resultType="com.yimao.cloud.user.po.Distributor">
+        SELECT
+            udr.id,
+            udr.user_name as userName,
+            udr.phone,
+            udr.province,
+            udr.city,
+            udr.region,
+            udr.real_name as realName,
+            udr.user_id as userId
+        FROM
+            user_distributor udr
+            INNER JOIN user_distributor ud ON udr.id = ud.recommend_id
+        WHERE
+            ud.id = #{distributorId} and udr.deleted = 0 and udr.forbidden = 0;
+    </select>
+
+    <select id="getMainAccountByDistributorId" resultType="com.yimao.cloud.user.po.Distributor">
+        SELECT
+            udr.id,
+            udr.user_name as userName,
+            udr.phone,
+            udr.province,
+            udr.city,
+            udr.region,
+            udr.real_name as realName,
+            u.id as userId,
+            udr.type
+        FROM
+            user_distributor udr
+            INNER JOIN user_distributor ud ON udr.id = ud.pid
+            INNER JOIN user u ON u.id = udr.user_id					
+        WHERE
+            ud.id = #{distributorId}
+            GROUP BY udr.id
+    </select>
+
+    <select id="getDistributorIdByParam" resultType="java.lang.Integer">
+        SELECT
+        ud.id
+        from user_distributor ud
+        left join user_distributor u on ud.recommend_id = u.id
+        left join user_distributor udb on udb.id = ud.pid
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="userId!=null">
+                and ud.user_id = #{userId}
+            </if>
+            <if test="distributorAccount!=null and distributorAccount!=''">
+                and ud.user_name like CONCAT(#{distributorAccount},'%')
+            </if>
+            <if test="distributorName!=null and distributorName!=''">
+                and ud.real_name like CONCAT(#{distributorName},'%')
+            </if>
+            <if test="province!=null and province!=''">
+                and ud.province = #{province}
+            </if>
+            <if test="region!=null and region!=''">
+                and ud.region = #{region}
+            </if>
+            <if test="city!=null and city!=''">
+                and ud.city = #{city}
+            </if>
+            <if test="distributorType!=null">
+                and ud.role_id = #{distributorType}
+            </if>
+            <if test="recommendAccount!=null and recommendAccount!=''">
+                and u.user_name = #{recommendAccount}
+            </if>
+            <if test="recommendName!=null and recommendName!=''">
+                and u.real_name = #{recommendName}
+            </if>
+            and ud.deleted = 0
+        </trim>
+    </select>
+
+    <select id="countDistributorTotal" resultType="java.lang.Integer">
+        SELECT
+        COUNT(*)
+        FROM
+        user_distributor ud
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="sign == 1">
+                and create_time > DATE_SUB(CURDATE(), INTERVAL 1 WEEK)
+            </if>
+            <if test="sign == 2">
+                and create_time > DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
+            </if>
+            <if test="sign == 3">
+                and create_time > DATE_SUB(CURDATE(), INTERVAL 3 MONTH)
+            </if>
+            <if test="sign == 4">
+                and create_time > DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+            </if>
+            and type in (2,3)
+        </trim>
+    </select>
+
+    <select id="countAgentTotal" resultType="java.lang.Integer">
+        SELECT
+        COUNT(*)
+        FROM
+        user_distributor ud
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="sign == 1">
+                and create_time > DATE_SUB(CURDATE(), INTERVAL 1 WEEK)
+            </if>
+            <if test="sign == 2">
+                and create_time > DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
+            </if>
+            <if test="sign == 3">
+                and create_time > DATE_SUB(CURDATE(), INTERVAL 3 MONTH)
+            </if>
+            and type in (1,3)
+        </trim>
+    </select>
+    <select id="existsWithOldId" resultType="java.lang.Boolean">
+        SELECT CASE WHEN COUNT(*)  > 0 THEN 1 ELSE 0 END AS result
+        from user_distributor
+        where old_id = #{oldId}
+    </select>
+
+    <resultMap id="DistributorOrderForId" type="com.yimao.cloud.pojo.dto.user.DistributorExportDTO">
+        <result column="u_id" property="u_id" jdbcType="INTEGER"/>
+        <collection property="orderList" ofType="com.yimao.cloud.pojo.dto.user.DistributorOrderDTO"
+                    select="getDistributorOrderById" column="u_id">
+            <result column="u_id" property="distributorId" jdbcType="INTEGER"/>
+        </collection>
+    </resultMap>
+
+    <select id="getDistributorOrderById" resultType="com.yimao.cloud.pojo.dto.user.DistributorOrderDTO">
+        select
+            orig_distributor_configuration_level as origDistributorConfigurationLevel,
+            dest_distributor_configuration_level as destDistributorConfigurationLevel,
+            completion_time as completionTime,
+            price as price
+        from distributor_order where distributor_id = #{u_id} and order_state = 1 order by completion_time desc
+    </select>
+
+    <select id="distributorExport" resultType="com.yimao.cloud.pojo.dto.user.DistributorExportDTO">
+        SELECT
+        ud.id ,
+        us.id AS userId,
+        ud.user_name AS userName,
+        ud.real_name AS realName,
+        CASE ud.sex
+        WHEN 1 THEN "男"
+        WHEN 2 THEN "女"
+        END AS sex,
+        ud.id_card AS idCard,
+        ud.phone,
+        CASE ud.type
+        WHEN 1 THEN "代理商"
+        WHEN 2 THEN "经销商"
+        WHEN 3 THEN "经销商+代理商"
+        END AS type,
+        CASE ud.agent_level
+        WHEN 1 THEN "省代"
+        WHEN 2 THEN "市代"
+        WHEN 4 THEN "区代"
+        WHEN 3 THEN "省代+市代"
+        WHEN 5 THEN "省代+区代"
+        WHEN 6 THEN "市代+区代"
+        WHEN 7 THEN "省代+市代+区代"
+        END AS agentLevel,
+        ud.role_name AS roleName,
+        ud.role_level as roleLevel,
+        ud.province,
+        ud.city,
+        ud.region,
+        ud.company_name AS companyName,
+        CASE ud.station_master
+        WHEN 0 THEN "否"
+        WHEN 1 THEN "是"
+        END AS stationMaster,
+        CASE ud.sponsor
+        WHEN 0 THEN "否"
+        WHEN 1 THEN "是"
+        END AS sponsor,
+        CASE ud.terminal
+        WHEN 3 THEN "翼猫业务系统"
+        WHEN 2 THEN "经销商app"
+        END AS terminal,
+        CASE ud.source_type
+        WHEN 1 THEN "翼猫企业二维码"
+        WHEN 2 THEN "翼猫后台上线"
+        WHEN 3 THEN "经销商app创建账号"
+        WHEN 4 THEN "资讯分享"
+        WHEN 5 THEN "视频分享"
+        WHEN 6 THEN "权益卡分享"
+        WHEN 7 THEN "发展经销商二维码"
+        END AS sourceType,
+        ud.replacement_amount AS replacementAmount,
+        ud.remaining_replacement_amount AS remainingReplacementAmount,
+        ud.quota,
+        ud.remaining_quota AS remainingQuota,
+        u.real_name AS recommendName,
+        u.user_name AS recommendAccount,
+        u.id_card AS recommendIdCard,
+        CONCAT_WS("/", u.province,u.city,u.region) AS recommendArea,
+        CASE ud.forbidden
+        WHEN 0 THEN "否"
+        WHEN 1 THEN "是"
+        END AS forbidden,
+        CASE ud.forbidden_order
+        WHEN 0 THEN "否"
+        WHEN 1 THEN "是"
+        END AS forbiddenOrder,
+        DATE_FORMAT(ud.complete_time,"%Y-%m-%d %H:%i:%s") AS completeTime,
+        DATE_FORMAT(ud.provincial_time,"%Y-%m-%d %H:%i:%s") AS provinceTime,
+        DATE_FORMAT(ud.city_time,"%Y-%m-%d %H:%i:%s") AS cityTime,
+        DATE_FORMAT(ud.district_time,"%Y-%m-%d %H:%i:%s") AS regionTime,
+        if(ud.sponsor_level =1 or ud.sponsor_level =3 or ud.sponsor_level =5 or ud.sponsor_level =7,"是","否") as
+        isProvinceSponsor,
+        if(ud.sponsor_level =2 or ud.sponsor_level =3 or ud.sponsor_level =6 or ud.sponsor_level =7,"是","否") as
+        isCitySponsor,
+        if(ud.sponsor_level =4 or ud.sponsor_level =5 or ud.sponsor_level =6 or ud.sponsor_level =7,"是","否") as
+        isRegionSponsor,
+        DATE_FORMAT(ud.create_time,"%Y-%m-%d %H:%i:%s") AS createTime,
+        udb.real_name as mainName,
+        udb.user_name as mainUserName,
+        if(ud.role_level is not null and ud.role_level = 950,(SELECT COUNT(1) from user_distributor temp where temp.pid
+        = ud.id and temp.role_level = 1000 ) ,null) as count
+        from user_distributor ud
+        left join user_distributor u on ud.recommend_id = u.id
+        left join user_distributor udb on udb.id = ud.pid
+        LEFT JOIN `user` us ON us.id = ud.user_id
+        where ud.deleted = 0
+        <if test="id!=null">
+            and us.id like CONCAT(#{id},'%')
+        </if>
+        <if test="account!=null and account!=''">
+            and ud.user_name like CONCAT(#{account},'%')
+        </if>
+        <if test="name!=null and name!=''">
+            and ud.real_name like CONCAT(#{name},'%')
+        </if>
+        <if test="phone!=null and phone!=''">
+            and ud.phone = #{phone}
+        </if>
+        <if test="province!=null and province!=''">
+            and ud.province = #{province}
+        </if>
+        <if test="region!=null and region!=''">
+            and ud.region = #{region}
+        </if>
+        <if test="city!=null and city!=''">
+            and ud.city = #{city}
+        </if>
+        <if test="terminal!=null">
+            and ud.terminal = #{terminal}
+        </if>
+
+        <if test="stationMaster!=null">
+            and ud.station_master = #{stationMaster}
+        </if>
+        <if test="originator!=null">
+            and ud.sponsor = #{originator}
+        </if>
+        <if test="referrer!=null and referrer!=''">
+            and u.user_name like CONCAT(#{referrer},'%')
+        </if>
+        <if test="startTime!=null and startTime!=''">
+            and ud.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            and ud.create_time &lt;= #{endTime}
+        </if>
+        <if test="mainAccount!=null and mainAccount!=''">
+            and udb.user_name = #{mainAccount}
+        </if>
+        <if test="mainName!=null and mainName!=''">
+            and udb.real_name = #{mainName}
+        </if>
+
+        <if test="type!=null">
+            and ud.role_level = #{type}
+        </if>
+        <if test="sourceType!=null">
+            and ud.source_type = #{sourceType}
+        </if>
+        <choose>
+            <when test="subAccount!=null and subAccount">
+                and ud.role_level = 1000
+            </when>
+            <otherwise>
+                and (ud.role_level != 1000 or ud.role_level is null)
+            </otherwise>
+        </choose>
+        <if test="flag != null and flag">
+            and ud.type in
+            <foreach collection="types" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="flag != null and !flag">
+            and ud.type not in
+            <foreach collection="types" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="selectSonDistributorById" resultType="com.yimao.cloud.pojo.dto.user.DistributorDTO">
+        SELECT
+            ud.id ,
+            ud.real_name as realName,
+            u.id as userId,
+            ud.user_name as userName
+        FROM
+            user_distributor ud
+        LEFT JOIN `user` u ON u.mid = ud.id
+        WHERE
+            ud.pid = #{mid}
+        and ud.role_level = 1000 and deleted = 0 and forbidden = 0;
+    </select>
+
+    <select id="selectRecommendByAddress" resultType="com.yimao.cloud.pojo.dto.user.DistributorDTO">
+        SELECT
+        ud.id ,
+        ud.real_name as realName,
+        u.id as userId,
+        ud.user_name as userName,
+        ud.id_card as idCard,
+        ud.phone as phone,
+        ud.province as province,
+        ud.city as city,
+        ud.region as region
+        FROM
+        user_distributor ud
+        LEFT JOIN `user` u ON u.mid = ud.id
+        WHERE 1=1
+        <if test="province!=null and province!=''">
+            and ud.province = #{province}
+        </if>
+        <if test="region!=null and region!=''">
+            and ud.region = #{region}
+        </if>
+        <if test="city!=null and city!=''">
+            and ud.city = #{city}
+        </if>
+        and deleted = 0 and forbidden = 0
+        and (agent_level = 4 or agent_level = 5 or agent_level = 6 or agent_level = 7)
+    </select>
+
+
+    <select id="getDistributorByParams" resultType="com.yimao.cloud.pojo.dto.user.DistributorDTO">
+        SELECT
+        u.id,
+        u.phone as phone,
+        u.real_name AS realName,
+        u.id_card AS idCard,
+        u.user_name as userName
+        FROM
+        `user_distributor` u
+        WHERE
+        u.deleted = 0 and u.forbidden = 0
+        <if test="param != null and param != ''">
+            and (u.real_name LIKE CONCAT('%',trim(#{param}),'%') or
+            u.phone like CONCAT('%',trim(#{param}),'%') or
+            u.phone like CONCAT('%',trim(#{param}),'%'))
+        </if>
+        <if test="provinces != null and provinces.size() > 0 ">
+            and u.province in
+            <foreach collection="provinces" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="citys != null and citys.size() > 0">
+            and u.city in
+            <foreach collection="citys" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="regions != null and regions.size() > 0">
+            and u.region in
+            <foreach collection="regions" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <!--经销商的代理级别设置为空-->
+    <update id="updateAgentLevelToNull">
+        update user_distributor set agent_level = null where type = 2
+    </update>
+
+
+    <!--主账号下子账号数量 -->
+    <select id="getSonAccountNum" resultType="java.lang.Integer">
+      SELECT
+        COUNT(*)
+      FROM
+      user_distributor ud
+      WHERE ud.pid = #{id}
+    </select>
+
+    <select id="selectTotalDistributorNum" resultType="java.lang.Integer">
+        select count(*) from user_distributor ud where ud.recommend_id = #{id}
+    </select>
+
+    <select id="selectEnterpriseDistributorNum" resultType="java.lang.Integer">
+        select count(*) from user_distributor ud where ud.recommend_id = #{id} and ud.role_level in ('950','1000')
+    </select>
+
+    <select id="selectPersonalDistributorNum" resultType="java.lang.Integer">
+        select count(*) from user_distributor ud where ud.recommend_id = #{id} and ud.role_level = '650'
+    </select>
+
+    <select id="selectMinimalDistributorNum" resultType="java.lang.Integer">
+        select count(*) from user_distributor ud where ud.recommend_id = #{id} and ud.role_level = '350'
+    </select>
+
+    <!--区代-我的经销商 -->
+    <select id="getMyDistributors" parameterType="java.util.Map"
+            resultType="com.yimao.cloud.pojo.dto.user.DistributorDTO">
+        select
+        u.id,
+        u.user_id as userId,
+        u.user_name as userName,
+        u.nick_name as nickName,
+        u.real_name as realName,
+        u.sex,
+        u.phone,
+        u.province,
+        u.city,
+        u.region,
+        u.address,
+        u.terminal,
+        u.source_type as sourceType,
+        u.complete_time as completeTime,
+        u.type,
+        u.company_id as companyId,
+        u.role_level as roleLevel,
+        u.role_name as roleName
+        from
+        `user_distributor` u
+        where 1=1
+        <if test="province != null and province != ''">
+            and u.province = #{province}
+        </if>
+        <if test="city != null and city != ''">
+            and u.city = #{city}
+        </if>
+        <if test="region != null and region != ''">
+            and u.region = #{region}
+        </if>
+        <if test="type != null and type != ''">
+            and u.type = #{type}
+        </if>
+        <if test="roleLevel != null and roleLevel != ''">
+            and u.role_level = #{roleLevel}
+        </if>
+        <if test="distributorId != null and distributorId != ''">
+            and u.recommend_id = #{distributorId}
+        </if>
+        and u.type in ('2','3')
+        and u.role_level &lt;&gt; '1000'
+    </select>
+
+    <select id="queryDistributors" parameterType="java.util.Map"
+            resultType="com.yimao.cloud.pojo.dto.user.UserAccountDTO">
+        select
+        u.id,
+        u.user_id as userId,
+        u.user_name as userName,
+        u.role_name as roleName
+        from `user_distributor` u
+        where 1=1
+        <if test="distributorIds != null and distributorIds.size > 0">
+            and u.id in
+            <foreach collection="distributorIds" item="item" open="(" close=")" index="index" separator=",">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="queryAgentByIdCard" resultType="com.yimao.cloud.pojo.dto.user.DistributorDTO">
+      select
+        u.user_name as userName,
+        u.id_card as idCard,
+        u.type,
+        u.agent_level as agentLevel,
+        u.recommend_id as recommendId,
+        u.recommend_name as recommendName,
+        u.district_time as districtTime
+      from `user_distributor` u
+      where
+        u.id_card = #{idCard}
+      and u.agent_level in ('4','5','6','7')
+      order by u.district_time
+    </select>
+
+    <select id="getDistributorByUserId" resultType="com.yimao.cloud.pojo.dto.user.DistributorDTO">
+      select
+        u.id,
+        u.user_id as userId,
+        u.user_name as userName,
+        u.nick_name as nickName,
+        u.real_name as realName,
+        u.sex,
+        u.phone,
+        u.province,
+        u.city,
+        u.region,
+        u.address,
+        u.company_name as companyName,
+        u.source_type as sourceType,
+        u.complete_time as completeTime,
+        u.type,
+        u.role_id as roleId,
+        u.role_level as roleLevel,
+        u.role_name as roleName
+      from
+      `user_distributor` u
+      where u.user_id = #{userId}
+      and u.type in ('2','3')
+    </select>
+
+    <update id="updateAgentLevelAndRecommend" parameterType="com.yimao.cloud.user.po.Distributor">
+        update
+        user_distributor
+        <set>
+            <if test="type == 2">
+                recommend_id = #{updatedistributor.recommendId},
+                recommend_name = #{updatedistributor.recommendName},
+            </if>
+            <if test="type == 1">
+                sponsor_level = #{updatedistributor.sponsorLevel},
+                province_ranking = #{updatedistributor.provinceRanking},
+                city_ranking = #{updatedistributor.cityRanking},
+                region_ranking = #{updatedistributor.regionRanking}
+            </if>
+        </set>
+        where
+        id=#{updatedistributor.id}
+
+    </update>
+
+    <update id="updateDistributorById" parameterType="com.yimao.cloud.user.po.Distributor">
+        update
+        user_distributor
+        <set>
+            attachment = #{attachment},
+            city = #{city},
+            founder = #{founder},
+            fuhuishun = #{fuhuishun},
+            id_card = #{idCard},
+            phone = #{phone},
+            province = #{province},
+            real_name = #{realName},
+            region = #{region},
+            remark = #{remark},
+            sex = #{sex},
+            update_time = #{updateTime},
+            updater = #{updater},
+            user_name = #{userName},
+            <if test="agentLevel != null">
+                agent_level = #{agentLevel},
+            </if>
+            <if test="recommendId != null">
+                recommend_id = #{recommendId},
+            </if>
+            <if test="recommendName !=null and recommendName !=''">
+                recommend_name = #{recommendName},
+            </if>
+            <if test="sponsorLevel != null">
+                sponsor_level = #{sponsorLevel},
+            </if>
+            <if test="provinceRanking != null">
+                province_ranking = #{provinceRanking},
+            </if>
+            <if test="cityRanking != null">
+                city_ranking = #{cityRanking},
+            </if>
+            <if test="regionRanking != null">
+                region_ranking = #{regionRanking},
+            </if>
+            <if test="provincialTime != null">
+                provincial_time = #{provincialTime},
+            </if>
+            <if test="cityTime != null">
+                city_time = #{cityTime},
+            </if>
+            <if test="districtTime != null">
+                district_time = #{districtTime},
+            </if>
+        </set>
+        where
+        id=#{id}
+
+    </update>
+
+    <update id="updatePasswordById">
+        update user_distributor set password = #{password} where id = #{id}
+    </update>
+    <update id="updateAppTypeByUserId">
+        update user_distributor set app_type = #{appType} where user_id = #{userId}
+    </update>
+
+    <select id="selectByUserNameForAppLogin" resultType="com.yimao.cloud.user.po.Distributor">
+        select
+            id,
+            user_id as userId,
+            user_name as userName,
+            password,
+            forbidden
+        from
+            user_distributor
+        where
+            deleted = 0 and user_name = #{userName}
+    </select>
+    <select id="checkForbiddenByUserName" resultType="java.lang.Boolean">
+        select
+            forbidden
+        from
+            user_distributor
+        where
+            user_name = #{userName}
+    </select>
+
+    <select id="selectDistributorBasicInfoByUserName" resultType="com.yimao.cloud.pojo.dto.user.DistributorDTO">
+        select
+            id,
+            user_id as userId,
+            user_name as userName,
+            password,
+            phone,
+            forbidden,
+            station_master as stationMaster,
+            role_level as roleLevel
+        from
+            user_distributor
+        where
+            user_name = #{userName}
+            order by create_time desc limit 1
+    </select>
+
+
+    <select id="getAgentByUserId" resultType="com.yimao.cloud.pojo.dto.user.DistributorDTO">
+        select
+        u.id,
+        u.user_id as userId,
+        u.user_name as userName,
+        u.nick_name as nickName,
+        u.real_name as realName,
+        u.sex,
+        u.phone,
+        u.province,
+        u.city,
+        u.region,
+        u.address,
+        u.company_name as companyName,
+        u.source_type as sourceType,
+        u.complete_time as completeTime,
+        u.type,
+        u.role_id as roleId,
+        u.role_level as roleLevel,
+        u.role_name as roleName,
+        u.agent_level as agentLevel
+      from
+      `user_distributor` u
+      where u.user_id = #{userId}
+      and u.type in ('1','3')
+    </select>
+    <select id="getDistributorByIdForFillIntoUser" resultType="com.yimao.cloud.user.po.Distributor">
+        select
+            id,
+            user_id as userId,
+            nick_name as nickName,
+            user_name as userName,
+            real_name as realName,
+            phone,
+            id_card as idCard,
+            type,
+            role_name as roleName,
+            company_id as companyId
+        from
+            `user_distributor`
+        where
+            id = #{id}
+    </select>
+    <!--根据经销商ID查询经销商（消息推送时只需获取很少的几个字段）-->
+    <select id="selectBasicInfoByIdForMsgPushInfo" resultType="com.yimao.cloud.pojo.dto.user.DistributorDTO">
+        select
+            id,
+            real_name as realName,
+            app_type as appType,
+            phone,
+            user_id as userId,
+            user_name as userName
+        from
+            `user_distributor`
+        where
+            id = #{id}
+    </select>
+
+
+    <select id="querySubAccountList" resultType="com.yimao.cloud.pojo.dto.user.DistributorDTO">
+        select
+            ud.id,
+            ud.nick_name as nickName,
+            ud.real_name as realName,
+            ud.user_id as userId,
+            ud.phone,
+            ud.pid,
+            ud.complete_time as completeTime,
+            ud.create_time as createTime,
+            u.head_img as headImg
+        from
+            `user_distributor` ud
+        left join `user` u on u.id = ud.user_id
+        where ud.pid = #{id}
+        order by ud.create_time desc
+    </select>
+
+    <select id="checkDiscountDistributor" resultType="java.lang.Boolean">
+        SELECT
+            CASE WHEN COUNT(*)  > 0 THEN 1 ELSE 0 END AS result
+        from
+            `user_distributor`
+        where
+            id = #{id} and role_level = -50
+    </select>
+    <select id="getDistInfoById" resultType="com.yimao.cloud.pojo.dto.user.DistributorDTO">
+        select
+        id,
+        complete_time as completeTime,
+        id_card as idCard,
+        phone,
+        real_name as realName,
+        email,
+        province,
+        city,
+        region,
+        role_id as roleId,
+        user_name as userName,
+        company_name as companyName
+        from user_distributor
+        where id = #{id}
+    </select>
+
+    <select id="getDistributorIdsByAreaIds" resultType="java.lang.Integer">
+        select
+        id
+        from user_distributor
+        where deleted = 0 and area_id in
+        <foreach collection="areaIds" item="areaId" index="index" separator="," open="(" close=")">
+            #{areaId}
+        </foreach>
+    </select>
+
+    <select id="getDistributorSaleData" resultType="com.yimao.cloud.pojo.dto.station.UserStatisticsDTO">
+        SELECT
+        a.areaId,
+        a.experienceDistributorNum,
+        a.microinvasiveDistributorNum,
+        a.personageDistributorNum,
+        a.enterpriseDistributorNum,
+        a.enterpriseDistributorNum + a.experienceDistributorNum + a.personageDistributorNum +
+        a.microinvasiveDistributorNum
+        AS distributorTotalNum
+        FROM
+        (
+        SELECT
+        area_id AS areaId,
+        ifnull(
+        count(
+        CASE
+        WHEN role_level = 50 THEN
+        id
+        END
+        ),
+        0
+        ) AS experienceDistributorNum,
+        ifnull(
+        count(
+        CASE
+        WHEN role_level = 350 THEN
+        id
+        END
+        ),
+        0
+        ) AS microinvasiveDistributorNum,
+        ifnull(
+        count(
+        CASE
+        WHEN role_level = 650 THEN
+        id
+        END
+        ),
+        0
+        ) AS personageDistributorNum,
+        ifnull(
+        count(
+        CASE
+        WHEN role_level = 950 THEN
+        id
+        END
+        ),
+        0
+        ) AS enterpriseDistributorNum
+        FROM
+        user_distributor
+        where deleted = 0
+        <if test="startTime != null">
+            and create_time <![CDATA[>=]]> #{startTime}
+        </if>
+        <if test="endTime !=null">
+            and create_time <![CDATA[<=]]> #{endTime}
+        </if>
+        <if test="areas != null and areas.size() > 0">
+            AND area_id IN
+            <foreach collection="areas" item="areaId" index="index" separator="," open="(" close=")">
+                #{areaId}
+            </foreach>
+        </if>
+        GROUP BY
+        area_id
+        ) a
+    </select>
+
+    <select id="getAgentSaleData" resultType="com.yimao.cloud.pojo.dto.station.UserStatisticsDTO">
+        SELECT
+        a.areaId,
+        a.districtAgentNum,
+        a.districtAgentNum AS agentTotalNum
+        FROM
+        (
+        SELECT
+        area_id as areaId,
+        ifnull(
+        count(
+        CASE
+        WHEN (type = 1 OR type = 3)
+        AND (
+        agent_level = 4
+        OR agent_level = 5
+        OR agent_level = 6
+        OR agent_level = 7
+        ) THEN
+        id
+        END
+        ),
+        0
+        ) AS districtAgentNum
+        FROM
+        user_distributor
+        where deleted = 0
+        <if test="startTime != null">
+            and create_time <![CDATA[>=]]> #{startTime}
+        </if>
+        <if test="endTime !=null">
+            and create_time <![CDATA[<=]]> #{endTime}
+        </if>
+        <if test="areas != null and areas.size() > 0">
+            AND area_id IN
+            <foreach collection="areas" item="areaId" index="index" separator="," open="(" close=")">
+                #{areaId}
+            </foreach>
+        </if>
+        GROUP BY
+        area_id
+        ) a
+    </select>
+
+    <select id="getDistributorSalePicData" resultType="com.yimao.cloud.pojo.dto.station.UserStatisticsDTO">
+        SELECT
+        a.createTime,
+        ifnull(
+        count(
+        CASE
+        WHEN a.roleLevel = 50
+        OR a.roleLevel = 350
+        OR a.roleLevel = 650
+        OR a.roleLevel = 950 THEN
+        a.id
+        END
+        ),
+        0
+        ) AS distributorTotalNum,
+        ifnull(
+        count(
+        CASE
+        WHEN a.roleLevel = 50 THEN
+        a.id
+        END
+        ),
+        0
+        ) AS experienceDistributorNum,
+        ifnull(
+        count(
+        CASE
+        WHEN a.roleLevel = 350 THEN
+        a.id
+        END
+        ),
+        0
+        ) AS microinvasiveDistributorNum,
+        ifnull(
+        count(
+        CASE
+        WHEN a.roleLevel = 650 THEN
+        a.id
+        END
+        ),
+        0
+        ) AS personageDistributorNum,
+        ifnull(
+        count(
+        CASE
+        WHEN a.roleLevel = 950 THEN
+        a.id
+        END
+        ),
+        0
+        ) AS enterpriseDistributorNum
+        FROM
+        (
+        SELECT
+        date_format(create_time, '%Y%m%d') AS createTime,
+        role_level AS roleLevel,
+        id
+        FROM
+        user_distributor
+        WHERE
+        deleted = 0
+        <if test="startTime != null">
+            and create_time <![CDATA[>=]]> #{startTime}
+        </if>
+        <if test="endTime !=null">
+            and create_time <![CDATA[<=]]> #{endTime}
+        </if>
+        <if test="areas != null and areas.size() > 0">
+            AND area_id IN
+            <foreach collection="areas" item="areaId" index="index" separator="," open="(" close=")">
+                #{areaId}
+            </foreach>
+        </if>
+        ) a
+        GROUP BY
+        a.createTime
+        ORDER BY
+        a.createTime ASC
+    </select>
+
+    <select id="getAgentSalePicData" resultType="com.yimao.cloud.pojo.dto.station.UserStatisticsDTO">
+        SELECT
+        a.createTime,
+        ifnull(
+        count(
+        CASE
+        WHEN (a.type = 1 OR a.type = 3)
+        AND (
+        a.agentLevel = 4
+        OR a.agentLevel = 5
+        OR a.agentLevel = 6
+        OR a.agentLevel = 7
+        ) THEN
+        a.id
+        END
+        ),
+        0
+        ) AS districtAgentNum,
+        ifnull(
+        count(
+        CASE
+        WHEN (a.type = 1 OR a.type = 3)
+        AND (
+        a.agentLevel = 4
+        OR a.agentLevel = 5
+        OR a.agentLevel = 6
+        OR a.agentLevel = 7
+        ) THEN
+        a.id
+        END
+        ),
+        0
+        ) AS agentTotalNum
+        FROM
+        (
+        SELECT
+        date_format(create_time, '%Y%m%d') AS createTime,
+        `type`,
+        agent_level AS agentLevel,
+        id
+        FROM
+        user_distributor
+        WHERE
+        deleted = 0
+        <if test="startTime != null">
+            and create_time <![CDATA[>=]]> #{startTime}
+        </if>
+        <if test="endTime !=null">
+            and create_time <![CDATA[<=]]> #{endTime}
+        </if>
+        <if test="areas != null and areas.size() > 0">
+            AND area_id IN
+            <foreach collection="areas" item="areaId" index="index" separator="," open="(" close=")">
+                #{areaId}
+            </foreach>
+        </if>
+        ) a
+        GROUP BY
+        a.createTime
+        ORDER BY
+        a.createTime ASC
+    </select>
+
+    <update id="updateNullFieldByDistributorId" parameterType="com.yimao.cloud.user.po.Distributor">
+	update user_distributor set recommend_id=#{recommendId},recommend_name=#{recommendName} where id=#{id}	
+	</update>
+
+    <select id="getStationDistributorNum" resultType="com.yimao.cloud.pojo.dto.station.StationScheduleDTO">
+        SELECT
+        count(
+        CASE
+        WHEN (ud.type = 2 OR ud.type = 3) THEN
+        ud.id
+        END
+        ) AS distributorNum,
+        count(
+        CASE
+        WHEN (
+        (ud.type = 1 OR ud.type = 3)
+        AND (
+        ud.agent_level = 4
+        OR ud.agent_level = 5
+        OR ud.agent_level = 6
+        OR ud.agent_level = 7
+        )
+        ) THEN
+        ud.id
+        END
+        ) AS agentNum
+        FROM
+        user_distributor ud
+        <where>
+            ud.deleted = 0
+            <if test="areaIds != null and areaIds.size() > 0">
+                and ud.area_id IN
+                <foreach collection="areaIds" item="areaId" index="index" separator="," open="(" close=")">
+                    #{areaId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getAllDistributorNumByAreaIds"
+            resultType="com.yimao.cloud.pojo.vo.station.UserGeneralSituationVO">
+        SELECT
+        ifnull(
+        count(
+        CASE
+        WHEN role_level = - 50 THEN
+        id
+        END
+        ),
+        0
+        ) AS discountDistributorNum,
+        ifnull(
+        count(
+        CASE
+        WHEN role_level = 1000 THEN
+        id
+        END
+        ),
+        0
+        ) AS enterpriseSonDistributorNum,
+        ifnull(
+        count(
+        CASE
+        WHEN role_level = 50 THEN
+        id
+        END
+        ),
+        0
+        ) AS experienceDistributorNum,
+        ifnull(
+        count(
+        CASE
+        WHEN role_level = 350 THEN
+        id
+        END
+        ),
+        0
+        ) AS microinvasiveDistributorNum,
+        ifnull(
+        count(
+        CASE
+        WHEN role_level = 650 THEN
+        id
+        END
+        ),
+        0
+        ) AS personageDistributorNum,
+        ifnull(
+        count(
+        CASE
+        WHEN role_level = 950 THEN
+        id
+        END
+        ),
+        0
+        ) AS enterpriseDistributorNum
+        FROM
+        user_distributor
+        WHERE
+        deleted = 0
+        <if test="areas != null and areas.size() > 0">
+            and area_id IN
+            <foreach collection="areas" item="areaId" index="index" separator="," open="(" close=")">
+                #{areaId}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="getDistrictAgentNumByAreaIds"
+            resultType="com.yimao.cloud.pojo.vo.station.UserGeneralSituationVO">
+        SELECT
+        ifnull(
+        count(
+        CASE
+        WHEN (`type` = 1 OR `type` = 3)
+        AND (
+        agent_level = 4
+        OR agent_level = 5
+        OR agent_level = 6
+        OR agent_level = 7
+        ) THEN
+        id
+        END
+        ),
+        0
+        ) AS districtAgentNum
+        FROM user_distributor
+        WHERE deleted = 0
+        <if test="areas != null and areas.size() > 0">
+            and area_id IN
+            <foreach collection="areas" item="areaId" index="index" separator="," open="(" close=")">
+                #{areaId}
+            </foreach>
+        </if>
+    </select>
+    
+    <select id="getDistributorIdsByAreaIdsForApp" resultType="java.lang.Integer">
+        select
+        id
+        from user_distributor
+        where deleted = 0 and  role_level in (50,350,650,950)
+        and area_id in 
+        <foreach collection="areaIds" item="areaId" index="index" separator="," open="(" close=")">
+            #{areaId}
+        </foreach>
+    </select>
+</mapper>

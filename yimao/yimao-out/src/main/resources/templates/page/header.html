@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<header th:fragment="header">
+    <div class="header" >
+        <i class="fa fa-angle-left" onclick="loadHistory()"></i>
+        <span class="headertitle">库存</span>
+        <span class="headerback" onclick="loadIndex()">返回首页</span>
+    </div>
+    <style>
+        .header{    height: 60px;
+            background-color: #0075bd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #fff;
+            position: fixed;
+            top: 0px;
+            width: 100%;
+            z-index: 999;
+        }
+        .header i{margin-left: 20px;font-size: 30px;}
+        .header .headerback{margin-right: 20px;}
+        .header .headertitle{font-size: 16px;font-weight: bold; margin-left: 30px;}
+    </style>
+    <input name="token" id="token" type="text" th:value="${token}" />
+    <script type="text/javascript">
+        /**
+         * 返回前一页（或关闭本页面）
+         * <li>如果没有前一页历史，则返回地址添加个标记</li>
+         */
+        function loadHistory() {
+            if (typeof(entrance) != "undefined" && entrance == "index") {
+                window.location.href = '/jumpApp?returnTag = ' + new Date();
+            } else {
+                window.history.go(-1);
+            }
+        }
+
+        /**
+         * 回到首页
+         */
+        function loadIndex() {
+            var token=document.getElementById("token").value;
+            window.location.href="./index?token="+token;
+        }
+
+        /**
+         * 更新标题的文本
+         */
+        function updateTitle(titleName) {
+            $('.header').find('.headertitle').text(titleName);
+        }
+    </script>
+    <script src="/javascript/jslib/jquery/jquery2.min.js"></script>
+    <script type="text/javascript" src="/javascript/jslib/jquery/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/javascript/jslib/jquery/global.js"></script>
+</header>
+</body>
+
+

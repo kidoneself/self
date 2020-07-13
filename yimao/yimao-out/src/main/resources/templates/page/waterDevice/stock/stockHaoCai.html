@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="format-detection" content="telephone=no"/>
+    <title>耗材详情</title>
+    <!-- zui -->
+    <link rel="stylesheet" href="/css/zui/zui.min.css">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/stock.css">
+    <link rel="stylesheet" href="/css/icon/iconfont.css">
+    <style type="text/css">
+        .material{height: 100%;}
+        .material-title{font-size: 1.4rem;color: #707070;display: inline-block;margin-left: 2rem;margin-top: 1.3rem;margin-bottom: 1.3rem;font-weight: bold;}
+        .material-list{background-color: #fafafa;margin-bottom:2rem;height: 100%; }
+        .material-list .material-list-item:last-child{border-bottom: none;}
+        .material-list-item{height: 10rem;background-color: #fafafa;display: flex;color: #707070;margin-left: 1.9rem;justify-content: space-around;flex-direction: column;border-bottom: 1px solid #ddd;padding-bottom: 1rem;}
+        .material-list-item-name{font-size: 1.6rem;color: #707070;padding-top: 1rem;padding-bottom: 1rem;}
+        .material-list-item-type,.material-list-item-time,.material-list-item-no{font-size: 1.4rem;color: #aaa;}
+    </style>
+</head>
+<body>
+<div th:include="header :: header"></div>
+<div class="container pl-0 pr-0">
+    <div class="material">
+        <span class="material-title">pp棉</span>
+        <div class="material-list">
+            <div class="material-list-item" th:each="entry:${materielResult}">
+                <span class="material-list-item-name" th:text="${entry.materielName}"></span>
+                <!--<span class="material-list-item-type">适用机型:1601T、1602t</span>-->
+                <span class="material-list-item-time" th:text="'入库时间:'+${entry.engineerPuDate}'"></span>
+                <span class="material-list-item-no" th:text="'生产批次码:'+${entry.batchCode}"></span>
+            </div>
+            <!-- <c:if test="${!empty materielResult}">
+                 <c:forEach items="${materielResult}" var="entry">
+                     <div class="material-list-item">
+                         <span class="material-list-item-name"><c:out value="${entry.materielName}"/></span>
+                         &lt;!&ndash;<span class="material-list-item-type">适用机型:1601T、1602t</span>&ndash;&gt;
+                         <span class="material-list-item-time">入库时间:<c:out value="${entry.engineerPuDate}"/></span>
+                         <span class="material-list-item-no">生产批次码:<c:out value="${entry.batchCode}"/></span>
+                     </div>
+                 </c:forEach>
+             </c:if>-->
+
+        </div>
+    </div>
+</div>
+</body>
+<script type="text/javascript">
+    $(function(){
+        updateTitle($('head title').text());
+    })
+</script>
+</html>

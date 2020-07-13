@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.system.mapper.StationServiceAreaMapper">
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        insert into station_service_area (
+        station_id,
+        station_name,
+        area_id,
+        province,
+        city,
+        region,
+        creator,
+        create_time,
+        updater,
+        update_time
+        )
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.stationId},
+            #{item.stationName},
+            #{item.areaId},
+            #{item.province},
+            #{item.city},
+            #{item.region},
+            #{item.creator},
+            #{item.createTime},
+            #{item.updater},
+            #{item.updateTime}
+            )
+        </foreach>
+    </insert>
+    <select id="getServiceAreaByStationId" resultType="com.yimao.cloud.pojo.dto.system.StationServiceAreaDTO">
+        SELECT
+            id,
+            station_id AS stationId,
+            area_id AS areaId,
+            province,
+            city,
+            region
+        FROM
+            station_service_area
+        WHERE
+            station_id = #{stationId}
+	</select>
+    <select id="getAfterServiceAreaByStationId"
+            resultType="com.yimao.cloud.pojo.dto.system.StationServiceAreaDTO">
+        SELECT
+            id,
+            station_id AS stationId,
+            area_id AS areaId,
+            province,
+            city,
+            region
+        FROM
+            station_service_area
+        WHERE
+            station_id = #{stationId}
+            and service_type in (0,2)
+    </select>
+
+</mapper>

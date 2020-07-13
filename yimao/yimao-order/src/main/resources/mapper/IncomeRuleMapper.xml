@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.order.mapper.IncomeRuleMapper">
+
+    <resultMap id="IncomeRuleWithPart" type="com.yimao.cloud.pojo.dto.order.IncomeRuleDTO">
+        <result column="c_id" property="id" jdbcType="INTEGER"/>
+        <collection property="incomeRuleParts" ofType="com.yimao.cloud.pojo.dto.order.IncomeRulePartDTO" select="selectIncomeRulePart"
+                    column="c_id">
+            <result column="c_id" property="ruleId" jdbcType="INTEGER"/>
+        </collection>
+    </resultMap>
+
+    <select id="listIncomeRuleWithPart" resultMap="IncomeRuleWithPart">
+        select distinct
+        id as c_id,
+        `name`,
+        code,
+        income_type as incomeType,
+        allot_type as allotType,
+        creator,
+        create_time as createTime,
+        updater,
+        update_time as updateTime
+        from income_rule
+        where 1=1
+        <if test="id != null">
+            and id = #{id}
+        </if>
+        <if test="name != null and name != ''">
+            and `name` like CONCAT('%', #{name}, '%')
+        </if>
+        <if test="incomeType != null">
+            and income_type = #{incomeType}
+        </if>
+        <if test="allotType != null">
+            and allot_type = #{allotType}
+        </if>
+        <if test="startTime != null">
+            and create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and create_time &lt;= #{endTime}
+        </if>
+        and deleted = 0
+    </select>
+
+    <select id="selectIncomeRulePart" parameterType="java.lang.Integer" resultType="com.yimao.cloud.pojo.dto.order.IncomeRulePartDTO">
+        select distinct
+        id as id,
+        rule_id as ruleId,
+        subject_id as subjectId,
+        `value`,
+        creator as creator,
+        create_time as createTime,
+        updater as updater,
+        update_time as updateTime
+        from income_rule_part
+        where rule_id = #{c_id} and deleted = 0
+    </select>
+
+    <!--根据产品ID获取收益分配规则列表-->
+    <select id="listIncomeRuleByProductId" resultType="com.yimao.cloud.pojo.dto.order.IncomeRuleDTO">
+        select distinct
+        ir.id,
+        ir.`name`,
+        ir.code,
+        ir.income_type as incomeType,
+        ir.allot_type as allotType,
+        ir.creator,
+        ir.create_time as createTime,
+        ir.updater,
+        ir.update_time as updateTime
+        from income_rule ir
+        inner join product__income_rule pir on pir.income_rule_id = ir.id
+        where deleted = 0
+        <if test="productId != null">
+            and pir.product_id = #{productId}
+        </if>
+    </select>
+
+</mapper>

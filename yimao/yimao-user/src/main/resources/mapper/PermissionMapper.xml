@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.user.mapper.PermissionMapper">
+
+    <select id="selectCodeAndMethodByRoleId" resultType="com.yimao.cloud.pojo.dto.user.PermissionCacheDTO">
+        select distinct
+        p.code as code,
+        p.method as method
+        from system_permission p inner join system_role__permission rp on p.id = rp.permission_id
+        where 1=1
+        <if test="roleId != null">
+            and rp.role_id = #{roleId}
+        </if>
+    </select>
+
+    <select id="selectPermissionByMenuId" resultType="com.yimao.cloud.pojo.dto.user.PermissionDTO">
+        SELECT DISTINCT
+        p.id as id,
+        p.name as name,
+        p.code as code,
+        p.method as method,
+        p.menu_id as menuId,
+        p.creator as creator,
+        p.create_time as createTime,
+        p.updater as updater,
+        p.update_time as updateTime
+        FROM
+        system_permission p
+        INNER JOIN system_role__permission rp ON p.id = rp.permission_id
+        INNER JOIN system_role__menu rm ON rp.role_id = rm.role_id
+        WHERE 1 = 1
+        <if test="menuId != null">
+            and rm.menu_id = #{menuId}
+        </if>
+    </select>
+
+    <select id="selectBySysType" resultType="com.yimao.cloud.pojo.dto.user.PermissionCacheDTO">
+        select distinct
+        code,
+        method
+        from system_permission
+        where 1=1
+        <if test="sysType != null">
+            and sys_type = #{sysType}
+        </if>
+    </select>
+
+</mapper>

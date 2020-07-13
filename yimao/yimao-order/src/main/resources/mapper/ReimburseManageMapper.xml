@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.order.mapper.ReimburseManageMapper">
+
+
+    <select id="onlineReimburseManagePage" parameterType="com.yimao.cloud.pojo.dto.order.OrderSubDTO"
+            resultType="com.yimao.cloud.pojo.dto.order.OrderSubDTO">
+        SELECT
+        aso.id AS afterSalesOrderId,
+        aso.main_order_id AS mainOrderId,
+        aso.order_id AS id,
+        aso.formalities_fee AS formalitiesFee,
+        os.terminal,
+        osd.product_first_category_name AS productOneCategoryName,
+        osd.product_two_category_name AS productTwoCategoryName,
+        osd.product_category_name AS productCategoryName,
+        aso.product_company_name AS productCompanyName,
+        os.pay_type AS payType,
+        osd.user_id AS userId,
+        osd.addressee_name AS addresseeName,
+        osd.distributor_name AS distributorName,
+        os.cancel_time AS cancelTime,
+        os.cancel_reason AS cancelReason,
+        os.count,
+        aso.real_refund_fee as realRefundFee,
+        aso.refund_fee as refundFee
+        FROM
+        after_sales_order aso
+        INNER JOIN order_sub os ON ( os.id = aso.order_id)
+        INNER JOIN order_sub_detail osd ON ( osd.sub_order_id = os.id )
+        WHERE
+        1 = 1
+        and os.status = 6
+        and os.sub_status = 3
+        <choose>
+            <when test="typePay == 1">
+                and os.pay_type in (1, 2)
+            </when>
+            <otherwise>
+                and os.pay_type in (3, 4)
+            </otherwise>
+        </choose>
+        <if test="status != null">
+            and os.status = #{status}
+        </if>
+        <if test="subStatus != null">
+            and os.sub_status = #{subStatus}
+        </if>
+        <if test="payType != null">
+            and os.pay_type = #{payType}
+        </if>
+        <if test="afterSalesOrderId != null">
+            and aso.id like CONCAT('%',trim(#{afterSalesOrderId}),'%')
+        </if>
+        <if test="id != null">
+            and (os.id like CONCAT('%',trim(#{id}),'%') or os.main_order_id like
+            CONCAT('%',trim(#{id}),'%'))
+        </if>
+        <if test="userId != null and userId !='' ">
+            and osd.user_id =#{userId}
+        </if>
+        <if test="addresseeName != null and addresseeName !=''">
+            and osd.addressee_name =#{addresseeName}
+        </if>
+        <if test="productCompanyName != null and productCompanyName != ''">
+            and aso.product_company_name = #{productCompanyName}
+        </if>
+        <if test="cancelStartTime!=null">
+            and os.cancel_time &gt;= #{cancelStartTime}
+        </if>
+        <if test="terminal !=null">
+            and os.terminal = #{terminal}
+        </if>
+        <if test="cancelEndTime!=null">
+            and os.cancel_time &lt;= #{cancelEndTime}
+        </if>
+        ORDER BY cancelTime DESC
+
+
+    </select>
+
+    <select id="onlineReimburseManageCount" resultType="java.lang.Integer">
+        SELECT count(aso.id)
+        FROM
+        after_sales_order aso
+        INNER JOIN order_sub os ON ( os.id = aso.order_id )
+        where os.status = 6
+        and os.sub_status = 3
+        <if test="typePay == 1">
+            and os.pay_type in (1, 2)
+        </if>
+        <if test="typePay == 2">
+            and os.pay_type in (3, 4)
+        </if>
+    </select>
+
+    <select id="refundRecord" resultType="com.yimao.cloud.pojo.dto.order.OrderSubDTO">
+        SELECT
+        aso.id AS afterSalesOrderId,
+        aso.main_order_id AS mainOrderId,
+        aso.order_id AS id,
+        aso.formalities_fee AS formalitiesFee,
+        os.terminal,
+        osd.product_first_category_name AS productOneCategoryName,
+        osd.product_two_category_name AS productTwoCategoryName,
+        osd.product_category_name AS productCategoryName,
+        osd.product_company_name AS productCompanyName,
+        os.pay_type AS payType,
+        osd.user_id AS userId,
+        osd.addressee_name AS addresseeName,
+        osd.distributor_name AS distributorName,
+        os.cancel_time AS cancelTime,
+        os.cancel_reason AS cancelReason,
+        os.count,
+        os.fee,
+        aso.real_refund_fee as realRefundFee,
+        aso.refund_fee as refundFee,
+        aso.finance_time as refundFinanceTime,
+        aso.financer as financer
+        FROM
+        after_sales_order aso
+        INNER JOIN order_sub os ON ( os.id = aso.order_id )
+        INNER JOIN order_sub_detail osd ON ( osd.sub_order_id = os.id )
+        WHERE
+        1 = 1
+        and aso.finance_audit_status in(1,2)
+        <if test="status != null">
+            and os.status = #{status}
+        </if>
+        <if test="subStatus != null">
+            and os.sub_status = #{subStatus}
+        </if>
+        <if test="payType != null">
+            and os.pay_type = #{payType}
+        </if>
+        <if test="afterSalesOrderId != null">
+            and aso.id like CONCAT('%',trim(#{afterSalesOrderId}),'%')
+        </if>
+        <if test="id != null">
+            and (os.id like CONCAT('%',trim(#{id}),'%') or os.main_order_id like
+            CONCAT('%',trim(#{id}),'%'))
+        </if>
+        <if test="userId != null and userId !='' ">
+            and osd.user_id =#{userId}
+        </if>
+        <if test="addresseeName != null and addresseeName !=''">
+            and osd.addressee_name =#{addresseeName}
+        </if>
+        <if test="productCompanyName != null and productCompanyName != ''">
+            and osd.product_company_name as #{productCompanyName},
+        </if>
+        <if test="cancelStartTime!=null">
+            and os.cancel_time &gt;= #{cancelStartTime}
+        </if>
+        <if test="terminal !=null">
+            and os.terminal = #{terminal}
+        </if>
+        <if test="cancelEndTime!=null">
+            and os.cancel_time &lt;= #{cancelEndTime}
+        </if>
+        ORDER BY refundFinanceTime DESC
+    </select>
+    <!--    线上导出-->
+    <select id="exportOnline" resultType="com.yimao.cloud.pojo.dto.order.refundManageExportDTO">
+        SELECT
+        aso.id AS afterSalesOrderId,
+        aso.main_order_id AS mainOrderId,
+        aso.order_id AS id,
+        aso.formalities_fee AS formalitiesFee,
+        CASE
+        os.terminal
+        WHEN 1 THEN
+        '终端app'
+        WHEN 2 THEN
+        '微信公众号'
+        WHEN 3 THEN
+        '经销商APP'
+        WHEN 4 THEN
+        '小程序'
+        END AS terminal,
+        osd.product_first_category_name AS productOneCategoryName,
+        osd.product_two_category_name AS productTwoCategoryName,
+        osd.product_category_name AS productCategoryName,
+        osd.product_company_name AS productCompanyName,
+        CASE
+        os.pay_type
+        WHEN 1 THEN
+        '微信'
+        WHEN 2 THEN
+        '支付宝'
+        WHEN 3 THEN
+        'POS机'
+        WHEN 4 THEN
+        '转账' ELSE ''
+        END AS payType,
+        osd.user_id AS userId,
+        osd.addressee_name AS addresseeName,
+        osd.distributor_account AS distributorAccount,
+        osd.distributor_name AS distributorName,
+        DATE_FORMAT( os.cancel_time,'%Y-%m-%d %H:%i:%s') AS cancelTime,
+        os.cancel_reason AS cancelReason,
+        os.count,
+        CASE
+        os.sub_status
+        WHEN 0 THEN
+        '待审核(经销商)'
+        WHEN 1 THEN
+        '待审核(总部)'
+        WHEN 2 THEN
+        '待退货入库'
+        WHEN 3 THEN
+        '待退款（财务）'
+        WHEN 4 THEN
+        '售后失败'
+        WHEN 5 THEN
+        '售后成功' ELSE ''
+        END AS subStatus,
+        os.fee,
+        IF
+        ( aso.formalities_fee = NULL, os.fee - aso.formalities_fee, os.fee - 0 ) AS shouldReturn
+        FROM
+        after_sales_order aso
+        INNER JOIN order_sub os ON ( os.id = aso.order_id )
+        INNER JOIN order_sub_detail osd ON ( osd.sub_order_id = os.id )
+        WHERE
+        1 = 1
+        AND os.STATUS = 6
+        AND os.sub_status = 3
+        <choose>
+            <when test="typePay == 1">
+                and os.pay_type in (1, 2)
+            </when>
+            <otherwise>
+                and os.pay_type in (3, 4)
+            </otherwise>
+        </choose>
+        <if test="status != null">
+            and os.status = #{status}
+        </if>
+        <if test="subStatus != null">
+            and os.sub_status = #{subStatus}
+        </if>
+        <if test="payType != null">
+            and os.pay_type = #{payType}
+        </if>
+        <if test="afterSalesOrderId != null">
+            and aso.id = #{afterSalesOrderId}
+        </if>
+        <if test="mainOrderId != null">
+            and aso.main_order_id = #{mainOrderId}
+        </if>
+        <if test="userId != null and userId !='' ">
+            and osd.user_id =#{userId}
+        </if>
+        <if test="addresseeName != null and addresseeName !=''">
+            and osd.addressee_name =#{addresseeName}
+        </if>
+        <if test="productCompanyName != null and productCompanyName != ''">
+            and osd.product_company_name as #{productCompanyName},
+        </if>
+        <if test="cancelStartTime!=null">
+            and os.cancel_time &gt;= #{cancelStartTime}
+        </if>
+        <if test="terminal !=null">
+            and os.terminal = #{terminal}
+        </if>
+        <if test="cancelEndTime!=null">
+            and os.cancel_time &lt;= #{cancelEndTime}
+        </if>
+        ORDER BY cancelTime DESC
+    </select>
+
+    <!--    记录导出-->
+    <select id="exportRefund" resultType="com.yimao.cloud.pojo.dto.order.refundManageExportDTO">
+        SELECT
+        aso.id AS afterSalesOrderId,
+        aso.main_order_id AS mainOrderId,
+        aso.order_id AS id,
+        aso.formalities_fee AS formalitiesFee,
+        CASE
+        os.terminal
+        WHEN 1 THEN
+        '终端app'
+        WHEN 2 THEN
+        '微信公众号'
+        WHEN 3 THEN
+        '经销商APP'
+        WHEN 4 THEN
+        '小程序'
+        END AS terminal,
+        osd.product_first_category_name AS productOneCategoryName,
+        osd.product_two_category_name AS productTwoCategoryName,
+        osd.product_category_name AS productCategoryName,
+        osd.product_company_name AS productCompanyName,
+        CASE
+        os.pay_type
+        WHEN 1 THEN
+        '微信'
+        WHEN 2 THEN
+        '支付宝'
+        WHEN 3 THEN
+        'POS机'
+        WHEN 4 THEN
+        '转账' ELSE ''
+        END AS payType,
+        osd.user_id AS userId,
+        CASE
+        os.sub_status
+        WHEN 0 THEN
+        '待审核(经销商)'
+        WHEN 1 THEN
+        '待审核(总部)'
+        WHEN 2 THEN
+        '待退货入库'
+        WHEN 3 THEN
+        '待退款(财务)'
+        WHEN 4 THEN
+        '售后失败'
+        WHEN 5 THEN
+        '售后成功'
+        WHEN 6 THEN
+        '退款中' ELSE ''
+        END AS subStatus,
+        osd.addressee_name AS addresseeName,
+        osd.distributor_account AS distributorAccount,
+        osd.distributor_name AS distributorName,
+        DATE_FORMAT( os.cancel_time,'%Y-%m-%d %H:%i:%s') AS cancelTime,
+        os.cancel_reason AS cancelReason,
+        os.count,
+        os.fee,
+        aso.refund_trade_no as refundTradeNo,
+        aso.financer,
+        DATE_FORMAT( aso.finance_time,'%Y-%m-%d %H:%i:%s') AS financeTime,
+        IF
+        ( aso.formalities_fee = NULL, os.fee - aso.formalities_fee, os.fee - 0 ) AS shouldReturn
+        FROM
+        after_sales_order aso
+        INNER JOIN order_sub os ON ( os.id = aso.order_id )
+        INNER JOIN order_sub_detail osd ON ( osd.sub_order_id = os.id )
+        WHERE
+        1 = 1
+        and aso.finance_audit_status in(1,2)
+        <if test="status != null">
+            and os.status = #{status}
+        </if>
+        <if test="subStatus != null">
+            and os.sub_status = #{subStatus}
+        </if>
+        <if test="payType != null">
+            and os.pay_type = #{payType}
+        </if>
+        <if test="afterSalesOrderId != null">
+            and aso.id = #{afterSalesOrderId}
+        </if>
+        <if test="mainOrderId != null">
+            and aso.main_order_id = #{mainOrderId}
+        </if>
+        <if test="userId != null and userId !='' ">
+            and osd.user_id =#{userId}
+        </if>
+        <if test="addresseeName != null and addresseeName !=''">
+            and osd.addressee_name =#{addresseeName}
+        </if>
+        <if test="productCompanyName != null and productCompanyName != ''">
+            and osd.product_company_name as #{productCompanyName},
+        </if>
+        <if test="cancelStartTime!=null">
+            and os.cancel_time &gt;= #{cancelStartTime}
+        </if>
+        <if test="terminal !=null">
+            and os.terminal = #{terminal}
+        </if>
+        <if test="cancelEndTime!=null">
+            and os.cancel_time &lt;= #{cancelEndTime}
+        </if>
+        ORDER BY financeTime DESC
+    </select>
+</mapper>

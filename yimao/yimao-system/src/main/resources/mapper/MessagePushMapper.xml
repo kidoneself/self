@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.system.mapper.MessagePushMapper">
+
+
+    <!-- 导出-->
+    <select id="exportMessagePush" parameterType="com.yimao.cloud.pojo.query.system.MessagePushQuery"
+            resultType="com.yimao.cloud.pojo.dto.system.MessagePushExportDTO">
+        SELECT
+        mp.title,
+        mp.content,
+        CASE
+        mp.devices
+        WHEN 0 THEN
+        '所有设备'
+        WHEN 1 THEN
+        'Android设备'
+        WHEN 2 THEN
+        'IOS设备' ELSE '' END as deviceTypeStr,
+        DATE_FORMAT(mp.create_time,'%Y-%m-%d %H:%i:%s') as createTimeStr
+        FROM
+        message_push as mp
+        where 1=1
+        <if test="userName != null and userName != ''">
+            and mp.user_name like CONCAT(trim(#{userName}),'%')
+        </if>
+        <if test="pushType != null">
+            and mp.push_type = #{pushType}
+        </if>
+        <if test="content != null and content != ''">
+            AND mp.content LIKE CONCAT('%',#{content},'%')
+        </if>
+        <if test="devices != null">
+            and mp.devices = #{devices}
+        </if>
+        <if test="startTime != null">
+            and mp.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and mp.create_time &lt;= #{endTime}
+        </if>
+        order by mp.create_time desc
+    </select>
+    
+    <select id="getStationMessage" parameterType="com.yimao.cloud.pojo.query.station.StationMessageQuery" resultType="com.yimao.cloud.pojo.dto.system.MessagePushDTO">
+    	select
+    	mp.id,
+        mp.title,
+        mp.content,
+        mp.push_type as pushType,
+        mp.read_status as readStatus,    
+        mp.create_time as createTime
+        from
+        message_push as mp
+        <where>
+        mp.app=6
+        and (
+        <choose>
+        	<when test="preReceiverIds.size >0 and afterReceiverIds.size == 0">
+       			mp.receiver_id in (
+	            <foreach collection="preReceiverIds" item="preReceiverId" index="index"
+	                     separator=",">
+	                #{preReceiverId}
+	            </foreach>
+	            )
+	            and mp.push_type = 13
+        	</when>
+        	<when test="preReceiverIds.size == 0 and afterReceiverIds.size >0">
+       			mp.receiver_id in (
+	            <foreach collection="afterReceiverIds" item="afterReceiverId" index="index"
+	                     separator=",">
+	                #{afterReceiverId}
+	            </foreach>
+	            )
+	            <choose>
+			        <when test="pushType != null">
+			            and mp.push_type = #{pushType}
+			        </when>
+			        <otherwise>
+			        	and mp.push_type in(1,2,3,5,6,12)
+			        </otherwise>
+		        </choose>
+        	</when>
+	        <when test="preReceiverIds.size >0 and afterReceiverIds.size >0">	            	        	
+	        	(
+		            mp.receiver_id in (
+		            <foreach collection="preReceiverIds" item="preReceiverId" index="index"
+		                     separator=",">
+		                #{preReceiverId}
+		            </foreach>
+		            )
+		            and mp.push_type = 13
+	        	)
+	        	or
+		        (     	
+		            mp.receiver_id in (
+		            <foreach collection="afterReceiverIds" item="afterReceiverId" index="index"
+		                     separator=",">
+		                #{afterReceiverId}
+		            </foreach>
+		            )
+		            <choose>
+				        <when test="pushType != null">
+				            and mp.push_type = #{pushType}
+				        </when>
+				        <otherwise>
+				        	and mp.push_type in(1,2,3,5,6,12)
+				        </otherwise>
+			        </choose>
+			     )	        	
+	        </when>
+        	<otherwise>
+        		1=0
+        	</otherwise>
+        </choose>
+        )      
+        <if test="content != null and content != ''">
+            and mp.content LIKE CONCAT('%',#{content},'%')
+        </if>
+        <if test="readStatus != null">
+            and mp.read_status = #{readStatus}
+        </if>
+        <if test="startTime != null">
+            and mp.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and mp.create_time &lt;= #{endTime}
+        </if>
+        
+        </where>
+       
+         order by createTime ${sort}
+    </select>
+</mapper>

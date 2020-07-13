@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.system.mapper.TransferOperationLogMapper">
+
+    <select id="page" resultType="com.yimao.cloud.pojo.dto.system.TransferOperationLogDTO">
+        SELECT
+        tol.id,
+        sc1.`code` as origStationCompanyCode,
+        sc1.`name` as origStationCompanyName,
+        sc2.`code` as destStationCompanyCode,
+        sc2.`name` as destStationCompanyName,
+        tol.description,
+        tol.operator,
+        tol.create_time as createTime
+        FROM
+        transfer_operation_log tol
+        LEFT JOIN station_company sc1 ON tol.transferor_id = sc1.id
+        LEFT JOIN station_company sc2 ON tol.receiver_id = sc2.id
+        WHERE 1 = 1
+        <if test="origStationCompanyCode != null and origStationCompanyCode.trim() !=''">
+            and sc1.`code` = #{origStationCompanyCode}
+        </if>
+        <if test="origStationCompanyName != null and origStationCompanyName.trim() !=''">
+            and sc1.`name` = #{origStationCompanyName}
+        </if>
+        <if test="destStationCompanyCode != null and destStationCompanyCode.trim() !=''">
+            and sc2.`code` = #{destStationCompanyCode}
+        </if>
+        <if test="destStationCompanyName != null and destStationCompanyName.trim() !=''">
+            and sc2.`name` = #{destStationCompanyName}
+        </if>
+        <if test="description != null and description.trim() !=''">
+            and tol.description like CONCAT('%',#{description},'%')
+        </if>
+        and tol.operate_type = 1
+        order by tol.create_time desc
+    </select>
+
+    <select id="exportTransferOperationLog"
+            resultType="com.yimao.cloud.pojo.dto.system.TransferOperationLogExportDTO">
+        SELECT
+        tol.id,
+        sc1.`code` as origStationCompanyCode,
+        sc1.`name` as origStationCompanyName,
+        sc2.`code` as destStationCompanyCode,
+        sc2.`name` as destStationCompanyName,
+        tol.description,
+        tol.operator,
+        DATE_FORMAT(tol.create_time, "%Y-%m-%d %H:%i:%s" ) AS createTime
+        FROM
+        transfer_operation_log tol
+        LEFT JOIN station_company sc1 ON tol.transferor_id = sc1.id
+        LEFT JOIN station_company sc2 ON tol.receiver_id = sc2.id
+        WHERE 1 = 1
+        <if test="origStationCompanyCode != null and origStationCompanyCode.trim() !=''">
+            and sc1.`code` = #{origStationCompanyCode}
+        </if>
+        <if test="origStationCompanyName != null and origStationCompanyName.trim() !=''">
+            and sc1.`name` = #{origStationCompanyName}
+        </if>
+        <if test="destStationCompanyCode != null and destStationCompanyCode.trim() !=''">
+            and sc2.`code` = #{destStationCompanyCode}
+        </if>
+        <if test="destStationCompanyName != null and destStationCompanyName.trim() !=''">
+            and sc2.`name` = #{destStationCompanyName}
+        </if>
+        <if test="description != null and description.trim() !=''">
+            and tol.description like CONCAT('%',#{description},'%')
+        </if>
+        and tol.operate_type = 1
+        order by tol.create_time desc
+    </select>
+</mapper>

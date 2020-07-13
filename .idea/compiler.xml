@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="monitor-turbine" />
+        <module name="config-server" />
+        <module name="monitor-dashboard" />
+        <module name="yimao-water" />
+        <module name="component-base" />
+        <module name="yimao-task" />
+        <module name="monitor-admin" />
+        <module name="gateway" />
+        <module name="framework-mysql" />
+        <module name="gateway-zuul" />
+        <module name="yimao-station" />
+        <module name="yimao-product" />
+        <module name="framework-aop" />
+        <module name="framework-redis" />
+        <module name="yimao-engineer" />
+        <module name="yimao-openapi" />
+        <module name="framework-config" />
+        <module name="yimao-wechat" />
+        <module name="yimao-cms" />
+        <module name="eureka-server" />
+        <module name="yimao-app" />
+        <module name="component-pojo" />
+        <module name="yimao-out" />
+        <module name="yimao-system" />
+        <module name="yimao-cat" />
+        <module name="yimao-hra" />
+        <module name="yimao-user" />
+        <module name="yimao-order" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="cloud-root" target="1.8" />
+      <module name="component" target="1.8" />
+      <module name="component-base" target="1.8" />
+      <module name="component-pojo" target="1.8" />
+      <module name="config-server" target="1.8" />
+      <module name="eureka-server" target="1.8" />
+      <module name="framework" target="1.8" />
+      <module name="framework-aop" target="1.8" />
+      <module name="framework-config" target="1.8" />
+      <module name="framework-mysql" target="1.8" />
+      <module name="framework-redis" target="1.8" />
+      <module name="gateway" target="1.8" />
+      <module name="gateway-zuul" target="1.8" />
+      <module name="monitor" target="1.8" />
+      <module name="monitor-admin" target="1.8" />
+      <module name="monitor-dashboard" target="1.8" />
+      <module name="monitor-turbine" target="1.8" />
+      <module name="yimao" target="1.8" />
+      <module name="yimao-app" target="1.8" />
+      <module name="yimao-cat" target="1.8" />
+      <module name="yimao-cms" target="1.8" />
+      <module name="yimao-engineer" target="1.8" />
+      <module name="yimao-hra" target="1.8" />
+      <module name="yimao-openapi" target="1.8" />
+      <module name="yimao-order" target="1.8" />
+      <module name="yimao-out" target="1.8" />
+      <module name="yimao-product" target="1.8" />
+      <module name="yimao-showroom" target="1.8" />
+      <module name="yimao-station" target="1.8" />
+      <module name="yimao-system" target="1.8" />
+      <module name="yimao-task" target="1.8" />
+      <module name="yimao-user" target="1.8" />
+      <module name="yimao-water" target="1.8" />
+      <module name="yimao-wechat" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="component-base" options="-parameters" />
+      <module name="component-pojo" options="-parameters" />
+      <module name="config-server" options="-parameters" />
+      <module name="eureka-server" options="-parameters" />
+      <module name="framework-aop" options="-parameters" />
+      <module name="framework-config" options="-parameters" />
+      <module name="framework-mysql" options="-parameters" />
+      <module name="framework-redis" options="-parameters" />
+      <module name="gateway" options="-parameters" />
+      <module name="gateway-zuul" options="-parameters" />
+      <module name="monitor-admin" options="-parameters" />
+      <module name="monitor-dashboard" options="-parameters" />
+      <module name="monitor-turbine" options="-parameters" />
+      <module name="yimao-app" options="-parameters" />
+      <module name="yimao-cat" options="-parameters" />
+      <module name="yimao-cms" options="-parameters" />
+      <module name="yimao-engineer" options="-parameters" />
+      <module name="yimao-hra" options="-parameters" />
+      <module name="yimao-openapi" options="-parameters" />
+      <module name="yimao-order" options="-parameters" />
+      <module name="yimao-out" options="-parameters" />
+      <module name="yimao-product" options="-parameters" />
+      <module name="yimao-showroom" options="-parameters" />
+      <module name="yimao-station" options="-parameters" />
+      <module name="yimao-system" options="-parameters" />
+      <module name="yimao-task" options="-parameters" />
+      <module name="yimao-user" options="-parameters" />
+      <module name="yimao-water" options="-parameters" />
+      <module name="yimao-wechat" options="-parameters" />
+    </option>
+  </component>
+</project>

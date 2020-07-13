@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.user.mapper.UserDistributorApplyMapper">
+
+    <select id="getByOrderId" resultType="com.yimao.cloud.user.po.UserDistributorApply">
+        select
+        id,
+        id_card as idCard,
+        phone,
+        real_name as realName,
+        email,
+        province,
+        city,
+        region,
+        role_id as roleId,
+        creator
+        from user_distributor_apply
+        where order_id = #{orderId}
+    </select>
+</mapper>

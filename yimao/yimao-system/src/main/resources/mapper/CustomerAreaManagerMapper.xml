@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.system.mapper.CustomerAreaManagerMapper">
+
+    <select id="listCustomerAreaManager" resultType="com.yimao.cloud.pojo.dto.system.CustomerAreaManagerDTO">
+        select
+        tca.id,
+        tca.technical_name as technicalName,
+        tca.technical_area as technicalArea,
+        tca.mobile,
+        tca.province,
+        tca.delete_flag as deleteFlag
+        from t_customer_area_manager tca
+        WHERE 1=1
+        <if test="province!=null and province !='' ">
+            and tca.province = #{province}
+        </if>
+        <if test="name!=null  and name !='' ">
+            and tca.technical_name like CONCAT('%',#{name},'%')
+        </if>
+    </select>
+</mapper>

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.station.mapper.StationRoleMapper">
+
+    <resultMap id="BaseResultMap" type="com.yimao.cloud.station.po.StationRole">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="role_name" jdbcType="VARCHAR" property="roleName"/>
+        <result column="station_company_id" jdbcType="INTEGER" property="stationCompanyId"/>
+        <result column="discription" jdbcType="VARCHAR" property="discription"/>
+        <result column="creator" jdbcType="INTEGER" property="creator"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="updater" jdbcType="INTEGER" property="updater"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+    id, role_name, station_company_id, discription, creator, create_time, updater, 
+    update_time
+  </sql>
+
+    <select id="selectRolesByStationCompanyId" resultType="com.yimao.cloud.pojo.dto.station.StationRoleDTO">
+	  	select id,role_name as roleName from station_role 
+	  	<where>
+	  	<if test="stationCompanyId != null">
+	  	station_company_id = #{stationCompanyId} 
+	  	</if>
+	  	</where>
+  	
+  	</select>
+
+    <select id="selectCountByRoleName" resultType="java.lang.Integer">
+    select count(1) from station_role where role_name = #{roleName} and station_company_id = #{stationCompanyId}
+  </select>
+
+    <select id="selectCountByRoleNameAndId" resultType="java.lang.Integer">
+    select count(1) from station_role where role_name = #{roleName} and id not in (#{id}) and station_company_id = #{stationCompanyId}
+  </select>
+
+    <select id="selectByRoleNameAndStationCompanyId"
+            resultType="com.yimao.cloud.pojo.dto.station.StationRoleDTO">
+        SELECT DISTINCT
+        r.id,
+        r.role_name as roleName,
+        (SELECT COUNT(1) FROM station_admin a WHERE a.role_id = r.id) AS adminNum,
+        r.discription,
+        r.create_time as createTime,
+        r.update_time as updateTime,
+        r.station_company_id as stationCompanyId,
+        a1.real_name as creatorName,
+        a2.real_name as updaterName
+        from station_role r
+        left join station_admin a1 on r.creator = a1.id
+        left join station_admin a2 on r.updater = a2.id
+        <where>
+            <if test="stationCompanyId != null ">
+                r.station_company_id = #{stationCompanyId}
+            </if>
+            <if test="roleName != null and roleName.trim() != ''">
+                AND r.role_name like CONCAT('%',#{roleName},'%')
+            </if>
+            <if test="discription != null and discription.trim() != ''">
+                AND r.discription like CONCAT('%',#{discription},'%')
+            </if>
+        </where>
+    </select>
+
+    <select id="selectByQuery" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from station_role
+        <where>
+            <if test="id != null">
+                id = #{id,jdbcType=INTEGER}
+            </if>
+            <if test="roleName != null">
+                and role_name = #{roleName,jdbcType=VARCHAR},
+            </if>
+            <if test="stationCompanyId != null">
+                and station_company_id = #{stationCompanyId,jdbcType=INTEGER}
+            </if>
+            <if test="discription != null">
+                and discription = #{discription,jdbcType=VARCHAR}
+            </if>
+            <if test="creator != null">
+                and creator = #{creator,jdbcType=INTEGER}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime,jdbcType=TIMESTAMP}
+            </if>
+            <if test="updater != null">
+                and updater = #{updater,jdbcType=INTEGER}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime,jdbcType=TIMESTAMP}
+            </if>
+
+        </where>
+    </select>
+</mapper>

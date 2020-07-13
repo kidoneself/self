@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="format-detection" content="telephone=no"/>
+    <title>
+        <!-- 耗材<c:if test="${status != 0}">不</c:if>良品<c:if test="${isFrozen != 0}">冻结</c:if>库详情-->
+    </title>
+    <!-- zui -->
+    <link rel="stylesheet" href="/css/zui/zui.min.css">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/stock.css">
+    <link rel="stylesheet" href="/css/icon/iconfont.css">
+    <style type="text/css">
+        .material{height: 100%;}
+        .material-title{font-size: 1.4rem;color: #707070;display: inline-block;margin-left: 2rem;margin-top: 1.3rem;margin-bottom: 1.3rem;font-weight: bold;}
+        .material-list{background-color: #fafafa;margin-bottom:2rem;height: 100%; }
+        .material-list .material-list-item:last-child{border-bottom: none;}
+        .material-list-item{height: 10rem;background-color: #fafafa;display: flex;color: #707070;margin-left: 1.9rem;justify-content: space-around;flex-direction: column;border-bottom: 1px solid #ddd;padding-bottom: 1rem;}
+        .material-list-item-name{font-size: 1.6rem;color: #707070;padding-top: 1rem;padding-bottom: 1rem;}
+        .material-list-item-type,.material-list-item-time,.material-list-item-no{font-size: 1.4rem;color: #aaa;}
+    </style>
+</head>
+<body>
+<div th:include="header :: header"></div>
+<div class="container pl-0 pr-0">
+    <div class="material">
+        <span class="material-title">pp棉</span>
+        <div class="material-list">
+            <!--<div class="material-list-item">
+                <span class="material-list-item-name"></span>
+                <span class="material-list-item-type">适用机型:1601T、1602t</span>
+                <span class="material-list-item-time">入库时间:</span>
+                <span class="material-list-item-no">生产批次码:</span>
+            </div>-->
+        </div>
+    </div>
+</div>
+</body>
+<script type="text/javascript" th:inline="javascript">
+    $(function(){
+        var title=[[${status}!='0'?'耗材不良品':'耗材良品']]+[[${isFrozen}!= '0'?'冻结':'库详情']];
+        $('title').html(title);
+        var materielId= [[${materielId}]];
+        updateTitle($('head title').text());
+        var page = 1, //分页码
+            timers = null; //定时器(滚动加载方法 2 中用的)
+        var materielId= [[${materielId}]];
+        var stockOwnFlag= [[${stockOwnFlag}]];
+        var stockOwnId= [[${stockOwnId}]];
+        var status= [[${status}]];
+        var isFrozen= [[${isFrozen}]];
+        var data={"materielId":materielId,"stockOwnFlag":stockOwnFlag,"stockOwnId":stockOwnId,"status":status,"isFrozen":isFrozen,"page":page};
+        var dom = '';
+        var token = [[${token}}]];
+        alert(token);
+        //加载数据
+        var LoadingDataFn = function() {
+            $.ajax({
+                url:"./getMaterielStockInfoDetail?token="+token,
+                data:data,
+                method:"post",
+                success:function (result) {
+                    //console.log(result);
+                    var response = JSON.parse(result);
+                    for(var i = 0; i<response.length;i++){
+                        dom +='<div class="material-list-item"><span class="material-list-item-name">'+response[i].materielName+'</span><span class="material-list-item-type">适用机型:'+response[i].fitTypeName+'</span><span class="material-list-item-time">入库时间:'+response[i].engineerPuDate+'</span><span class="material-list-item-no">生产批次码:'+response[i].batchCode+'</span></div>';
+                    }
+                    //console.log(dom);
+                    $('.material-list').append(dom);
+                }
+            })
+        };
+        //初始化， 第一次加载
+        $(document).ready(function() {
+            LoadingDataFn();
+        });
+        $(window).scroll(function() {
+            //当时滚动条离底部60px时开始加载下一页的内容
+            if (($(window).height() + $(window).scrollTop() + 60) >= $(document).height()) {
+                clearTimeout(timers);
+                timers = setTimeout(function() {
+                    page++;
+                    console.log("第" + page + "页");
+                    LoadingDataFn();
+                }, 300);
+            }
+        });
+    })
+</script>
+</html>

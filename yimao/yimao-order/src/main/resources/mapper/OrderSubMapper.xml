@@ -1,0 +1,2189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.order.mapper.OrderSubMapper">
+
+    <select id="orderList" parameterType="com.yimao.cloud.pojo.dto.order.OrderConditionDTO"
+            resultType="com.yimao.cloud.pojo.dto.order.OrderSubDTO">
+        select
+        os.id as id,
+        os.main_order_id as mainOrderId,
+        os.user_id as userId,
+        os.status as status,
+        os.sub_status as subStatus,
+        os.pay as pay,
+        os.pay_status as payStatus,
+        os.pay_type as payType,
+        os.product_type as productType,
+        os.refer as refer,
+        os.create_time as createTime,
+        os.complete_time as completeTime,
+        os.terminal as terminal,
+        os.count,
+        os.distributor_id as distributorId,
+        os.fee as orderAmountFee,
+        os.pay_terminal as payTerminal,
+        osd.product_img as productImg,
+        osd.addressee_name as addresseeName,
+        osd.addressee_phone as addresseePhone,
+        osd.addressee_province as addresseeProvince,
+        osd.addressee_city as addresseeCity,
+        osd.addressee_region as addresseeRegion,
+        osd.addressee_street as addresseeStreet,
+        osd.product_category_name as productCategoryName,
+        osd.product_two_category_name as productTwoCategoryName,
+        osd.product_first_category_name as productOneCategoryName,
+        osd.vip_user_id as vipUserId,
+        osd.vip_user_has_income as vipUserHasIncome
+        from order_sub os
+        left join order_sub_detail osd on osd.sub_order_id = os.id
+        where 1=1
+        <if test="payTerminal != null">
+            and os.pay_terminal = #{payTerminal}
+        </if>
+        <if test="idKey != null">
+            and (os.id like CONCAT('%',trim(#{idKey}),'%') or os.main_order_id like CONCAT('%',trim(#{idKey}),'%'))
+        </if>
+        <if test="refer != null and refer != ''">
+            and os.refer like CONCAT('%',trim(#{refer}),'%')
+        </if>
+        <if test="productCategoryIdKey != null">
+            and (osd.product_category_id = #{productCategoryIdKey} or osd.product_first_category_id =
+            #{productCategoryIdKey} or
+            osd.product_two_category_id = #{productCategoryIdKey})
+        </if>
+        <if test="userId != null">
+            and os.user_id = #{userId}
+        </if>
+        <if test="userType != null">
+            and osd.user_type = #{userType}
+        </if>
+        <if test="receiver != null and receiver != ''">
+            and osd.addressee_name like CONCAT(trim(#{receiver}),'%')
+        </if>
+        <if test="receiveMobile != null and receiveMobile != ''">
+            and osd.addressee_phone like CONCAT('%',trim(#{receiveMobile}),'%')
+        </if>
+        <if test="receiveProvince != null and receiveProvince != ''">
+            and osd.addressee_province = #{receiveProvince}
+            <if test="receiveCity != null and receiveCity != ''">
+                and osd.addressee_city = #{receiveCity}
+                <if test="receiveRegion != null and receiveRegion != ''">
+                    and osd.addressee_region = #{receiveRegion}
+                </if>
+            </if>
+        </if>
+        <if test="distributorId!=null">
+            and os.distributor_id = #{distributorId}
+        </if>
+        <if test="vipUserId != null">
+            and osd.vip_user_id = #{vipUserId}
+        </if>
+        <if test="activityType != null">
+            and os.activity_type = #{activityType}
+        </if>
+        <if test="terminal != null">
+            and os.terminal = #{terminal}
+        </if>
+        <if test="payStatus != null">
+            and os.pay_status = #{payStatus}
+        </if>
+        <if test="payType != null">
+            and os.pay_type = #{payType}
+        </if>
+        <if test="status != null">
+            and os.status = #{status}
+        </if>
+        <if test="userSaleFlag != null and userSaleFlag == 1">
+            and os.vip_user_id is not null
+        </if>
+        <if test="userSaleFlag != null and userSaleFlag == 0">
+            and os.vip_user_id is null
+        </if>
+        <if test="stationProvince != null and stationProvince != ''">
+            and osd.station_province = #{stationProvince}
+            <if test="stationCity != null and stationCity != ''">
+                and osd.station_city = #{stationCity}
+                <if test="stationRegion != null and stationRegion != ''">
+                    and osd.station_region = #{stationRegion}
+                </if>
+            </if>
+        </if>
+        <if test="beginTime != null">
+            and os.create_time &gt;= #{beginTime}
+        </if>
+        <if test="endTime != null">
+            and os.create_time &lt;= #{endTime}
+        </if>
+        <if test="beginDeliveryTime != null">
+            and os.delivery_time &gt;= #{beginDeliveryTime}
+        </if>
+        <if test="endDeliveryTime != null">
+            and os.delivery_time &lt;= #{endDeliveryTime}
+        </if>
+        <if test="beginCompleteTime != null">
+            and os.complete_time &gt;= #{beginCompleteTime}
+        </if>
+        <if test="endCompleteTime != null">
+            and os.complete_time &lt;= #{endCompleteTime}
+        </if>
+        <if test="beginPayTime != null">
+            and os.pay_time &gt;= #{beginPayTime}
+        </if>
+        <if test="endPayTime != null">
+            and os.pay_time &lt;= #{endPayTime}
+        </if>
+        <if test="minAmountFee != null">
+            and os.fee &gt;= #{minAmountFee}
+        </if>
+        <if test="maxAmountFee != null">
+            and os.fee &lt;= #{maxAmountFee}
+        </if>
+        <if test="isValidOrder != null and isValidOrder">
+            and (
+            os.`status` = 1
+            OR os.`status` = 2
+            OR os.`status` = 3
+            OR os.`status` = 4
+            OR os.`status` = 5
+            )
+        </if>
+        <if test="areas != null and areas.size >0">
+            and osd.distributor_area_id in (
+            <foreach collection="areas" item="areaId" index="index"
+                     separator=",">
+                #{areaId}
+            </foreach>
+            )
+        </if>
+        order by createTime desc
+    </select>
+
+    <!--结果集 -->
+    <resultMap id="subOrders" type="com.yimao.cloud.pojo.dto.order.OrderSubListDTO">
+        <result property="mainOrderId" column="id" jdbcType="INTEGER"/>
+        <collection property="orderSubList" ofType="com.yimao.cloud.pojo.dto.order.OrderSubDTO"
+                    select="myOrderSubResult"
+                    column="{id=id,cstatus=cstatus,csubStatus=csubStatus,productType=productType}">
+            <result property="mainOrderId" column="id" jdbcType="INTEGER"/>
+        </collection>
+    </resultMap>
+
+    <select id="myOrderSubResult" parameterType="com.yimao.cloud.pojo.dto.order.OrderConditionDTO"
+            resultType="com.yimao.cloud.pojo.dto.order.OrderSubDTO">
+        select
+        os.id as id,
+        os.main_order_id as mainOrderId,
+        os.user_id as userId,
+        os.status as status,
+        os.sub_status as subStatus,
+        os.count as count,
+        os.pay as pay,
+        os.pay_time as payTime,
+        os.pay_type as payType,
+        os.pay_status as payStatus,
+        os.trade_no as tradeNo,
+        os.logistics_fee as logisticsFee,
+        os.pay_terminal as payTerminal,
+        os.create_time as createTime,
+        os.product_id as productId,
+        os.cancel_time as cancelTime,
+        os.cancel_reason as cancelReason,
+        os.product_price as productPrice,
+        os.product_type as productType,
+        os.product_model as productModel,
+        os.complete_time as completeTime,
+        os.receive_time as receiveTime,
+        os.update_time as updateTime,
+        os.terminal as terminal,
+        os.delivery_time as deliveryTime,
+        os.deleted as deleted,
+        os.station_id as stationId,
+        os.activity_type as activityType,
+        os.audit_time as auditTime,
+        os.refund_time as refundTime,
+        os.user_sale_flag as userSaleFlag,
+        os.is_look as isLook,
+        os.distributor_id as distributorId
+        from order_sub os
+        where 1=1
+        and os.deleted = 0 and os.main_order_id = #{id} and os.`status` = #{cstatus}
+        <if test="csubStatus!=null">
+            and os.sub_status =#{csubStatus}
+        </if>
+        and os.product_type=#{productType}
+        order by os.create_time desc
+    </select>
+
+    <update id="updateOrderStatusBatch">
+        update order_sub
+        set
+        status = #{orderSubDTO.status},
+        cancel_reason = #{orderSubDTO.cancelReason},
+        cancel_time = #{orderSubDTO.cancelTime},
+        remark = #{orderSubDTO.remark},
+        update_time = #{orderSubDTO.updateTime}
+        WHERE 1=1
+        <if test="ids!=null and ids.size>0">
+            and id in
+            <foreach collection="ids" item="item" index="index" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </update>
+
+    <update id="updateOrderDeleted">
+        update order_sub
+        set
+        deleted= #{deleted}
+        WHERE 1=1
+        <if test="ids!=null and ids.size>0">
+            and id in
+            <foreach collection="ids" item="item" index="index" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </update>
+
+    <update id="updateOrderIsLook">
+        update order_sub
+        set
+        is_look = #{isLook}
+        WHERE id = #{id}
+    </update>
+
+
+    <select id="selectOrderCountBySubStatus" parameterType="com.yimao.cloud.pojo.dto.order.OrderSubDTO"
+            resultType="java.lang.Integer">
+        select count(os.sub_status) as subStatusNum
+        from order_sub os where 1=1 and os.product_type=3
+        <if test="userId!=null  and userId!=''">
+            and os.user_id = #{userId}
+        </if>
+        <if test="status!=null and status!=''">
+            and os.status = #{status}
+        </if>
+        <if test="mainOrderId!=null and mainOrderId!='' ">
+            and os.main_order_id = #{mainOrderId}
+        </if>
+    </select>
+
+    <select id="selectOrderCountByDistributorId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+        select count(os.id) as orderNum
+        from order_sub os where 1=1
+        <if test="distributorId!=null  and distributorId!=''">
+            and (os.user_id = #{distributorId} or os.distributor_id = #{distributorId})
+        </if>
+    </select>
+
+    <update id="updateOrderInfo">
+        update order_sub
+        set
+        product_id = #{productId},
+        product_model = #{productModel},
+        product_category_name = #{productCategoryName},
+        product_category_id = #{productCategoryId},
+        product_category_id1 = #{productCategoryId1},
+        product_category_id2 = #{productCategoryId2},
+        receiver = #{receiver},
+        receive_mobile = #{receiveMobile},
+        receive_province = #{receiveProvince},
+        receive_city = #{receiveCity},
+        receive_region = #{receiveRegion},
+        receive_street = #{receiveStreet}
+        WHERE id = #{id}
+    </update>
+
+    <select id="countDeliveryOrder" resultType="java.util.Map">
+        SELECT
+            `status`,
+	        COUNT(1) as count
+	    FROM order_sub
+        WHERE `status` IN (3, 2) and product_type IN (1,2) and deleted = 0 GROUP BY `status` ORDER BY STATUS
+    </select>
+
+    <select id="selectTotalBusiness" resultType="java.util.Map">
+        SELECT sum(fee) as fee,COUNT(1) as count from order_sub
+        where `status` = 5
+        <if test="sign == 1">
+            and create_time > DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+        </if>
+    </select>
+
+    <select id="selectBusiness" resultType="com.yimao.cloud.pojo.dto.system.BusinessProfileDetailDTO">
+        SELECT osd.product_first_category_id as serviceId,
+        osd.product_first_category_name as serviceName,sum(os.fee) as salesTotal,COUNT(1) as serviceCount
+        from order_sub_detail osd
+        LEFT JOIN order_sub os ON os.id = osd.sub_order_id
+        GROUP BY osd.product_first_category_id,osd.product_first_category_name
+        ORDER BY salesTotal DESC
+    </select>
+
+    <select id="selectCount4Pay" resultType="java.lang.Integer">
+        SELECT COUNT(1) as count from order_sub
+        where pay_status = 3
+        and create_time > DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+    </select>
+
+    <select id="selectCount4Create" resultType="java.lang.Integer">
+        SELECT COUNT(1) as count from order_sub
+        where  create_time > DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+    </select>
+
+
+    <!--公众号：我的订单 -->
+    <select id="wxOrderList" resultType="com.yimao.cloud.pojo.dto.order.WxOrderDTO">
+        SELECT
+        os.id AS id,
+        os.main_order_id AS mainOrderId,
+        os.status,
+        os.pay AS pay,
+        os.pay_status AS payStatus,
+        os.pay_type AS payType,
+        os.pay_terminal AS payTerminal,
+        os.pay_time AS payTime,
+        os.trade_no AS tradeNo,
+        os.fee AS fee,
+        os.logistics_fee AS logisticsFee,
+        os.product_price AS price,
+        os.product_model AS productModel,
+        os.count,
+        os.terminal,
+        os.product_type AS productType,
+        os.activity_type AS activityType,
+        os.user_id AS userId,
+        os.create_time AS createTime,
+        osd.cost_id AS costId,
+        osd.cost_name AS costName,
+        osd.open_account_fee AS openAccountFee,
+        osd.product_id AS productId,
+        osd.product_name AS productName,
+        osd.product_img AS productImg,
+        osd.product_category_name AS categoryName,
+        osd.addressee_name AS addresseeName,
+        osd.addressee_phone AS addresseePhone
+        FROM
+        order_sub os
+        LEFT JOIN order_sub_detail osd ON os.id = osd.sub_order_id
+        where 1=1
+        <if test="userId != null">
+            AND os.user_id = #{userId}
+        </if>
+        <if test="orderId != null and orderId != '' ">
+            AND os.id LIKE CONCAT('%',trim(#{orderId}),'%')
+        </if>
+        <if test="beginTime != null and beginTime != '' ">
+            AND os.create_time &gt; #{beginTime}
+        </if>
+        <if test="endTime != null and endTime != '' ">
+            AND os.create_time &lt; #{endTime}
+        </if>
+        <if test="keys != null and keys != ''">
+            AND (osd.addressee_name LIKE CONCAT('%',trim(#{keys}),'%') or osd.addressee_phone LIKE
+            CONCAT('%',trim(#{keys}),'%'))
+        </if>
+        <if test="status != null">
+            <if test="status != 5">
+                AND os.product_model &lt;&gt; 'M'
+            </if>
+            AND os.status = #{status}
+        </if>
+        <if test="status == null">
+            AND os.product_model &lt;&gt; 'M'
+        </if>
+        AND os.deleted = 0
+        ORDER BY createTime DESC
+
+    </select>
+
+
+    <!--我的e家：待发货数量、待收货数量 -->
+    <select id="selectOrderCount" resultType="java.lang.Integer">
+        SELECT count(1) FROM order_sub os
+        where 1=1
+        <if test="userId != null">
+            and os.user_id = #{userId}
+        </if>
+        <if test="status != null">
+            /*待发货-》包含：待发货、待接单(同)、 支付审核中、待出库 */
+            <if test="status==2">
+                and ((os.status = 2 )
+                or (os.status = 1 and os.pay_type in (3,4) and os.pay_status = 2 and os.pay_terminal =1)
+                or (os.status = 3))
+            </if>
+            <if test="status!=2">
+                and os.status = #{status}
+            </if>
+
+        </if>
+        and os.deleted = 0
+    </select>
+
+    <select id="auditCount" resultType="java.lang.Integer">
+        select
+        count(1)
+        from order_sub os
+        where 1=1
+        <if test="list !=null and list.size() &gt; 0 ">
+            and os.user_id in
+            <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+
+    <!--客户订单列表 -->
+    <select id="auditList" resultType="com.yimao.cloud.pojo.dto.order.WxOrderDTO">
+        SELECT
+        os.id AS id,
+        os.main_order_id AS mainOrderId,
+        os.status,
+        os.pay AS pay,
+        os.pay_status AS payStatus,
+        os.pay_type AS payType,
+        os.pay_terminal AS payTerminal,
+        os.pay_time AS payTime,
+        os.trade_no AS tradeNo,
+        os.fee AS fee,
+        os.logistics_fee AS logisticsFee,
+        os.product_price AS price,
+        os.product_type AS productType,
+        os.product_model AS productModel,
+        os.count,
+        os.terminal,
+        os.activity_type AS activityType,
+        os.user_id AS userId,
+        os.create_time AS createTime,
+        osd.cost_id AS costId,
+        osd.user_id AS userId,
+        osd.user_name AS userName,
+        osd.user_phone AS userPhone,
+        osd.cost_name AS costName,
+        osd.open_account_fee AS openAccountFee,
+        osd.product_id AS productId,
+        osd.product_name AS productName,
+        osd.product_img AS productImg,
+        osd.product_category_name AS categoryName,
+        osd.addressee_name AS addresseeName,
+        osd.addressee_phone AS addresseePhone
+        FROM
+        order_sub os
+        LEFT JOIN order_sub_detail osd ON os.id = osd.sub_order_id
+        WHERE 1=1
+        <if test="list!=null and list.size() &gt; 0 ">
+            and os.user_id in
+            <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="list==null">
+            and os.user_id = -1
+        </if>
+        <if test="incomeList!=null and incomeList.size() &gt; 0 ">
+            and os.product_type in
+            <foreach collection="incomeList" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="flag==3">
+            and os.activity_type = 1
+        </if>
+        <if test="orderId != null and orderId != '' ">
+            AND os.id LIKE CONCAT('%',trim(#{orderId}),'%')
+        </if>
+        <if test="beginTime != null and beginTime != '' ">
+            AND os.create_time &gt; #{beginTime}
+        </if>
+        <if test="endTime != null and endTime != '' ">
+            AND os.create_time &lt; #{endTime}
+        </if>
+        <if test="keys != null and keys != ''">
+            AND (osd.addressee_name LIKE CONCAT('%',trim(#{keys}),'%') or osd.addressee_phone LIKE
+            CONCAT('%',trim(#{keys}),'%'))
+        </if>
+        <if test="orderKeys!=null and orderKeys!='' ">
+            and (osd.user_id like CONCAT('%',trim(#{orderKeys}),'%') or
+            osd.user_name like CONCAT('%',trim(#{orderKeys}),'%') or
+            osd.user_phone like CONCAT('%',trim(#{orderKeys}),'%')
+        </if>
+        AND (os.status =1 or os.status =2 or os.status =4 or os.status =5)
+        AND os.deleted = 0
+        ORDER BY payTime DESC
+    </select>
+
+    <!--对账列表 -->
+    <select id="listOrderBill" parameterType="com.yimao.cloud.pojo.query.order.OrderBillQuery"
+            resultType="com.yimao.cloud.pojo.vo.order.OrderBillVO">
+        select
+        os.main_order_id as mainOrderId,
+        os.id as id,
+        CASE os.terminal WHEN 1 THEN '终端app'
+        WHEN 2 THEN '微信公众号'
+        WHEN 3 THEN '翼猫APP'
+        WHEN 4 THEN '小程序' END as terminal,
+        CASE os.status
+        WHEN 2 THEN '待发货'
+        WHEN 3 THEN '待出库'
+        WHEN 4 THEN '待收货'
+        WHEN 5 THEN '交易成功'
+        WHEN 6 THEN '售后中'
+        WHEN 7 THEN '交易关闭' ELSE '' END as status,
+        osd.product_company_name as productCompanyName,
+        CONCAT_WS(' > ', osd.product_first_category_name, osd.product_two_category_name, osd.product_category_name) as
+        cascadeBackstageCategoryName,
+        os.count,
+        os.fee,
+        CASE os.pay_type
+        WHEN 1 THEN '微信'
+        WHEN 2 THEN '支付宝'
+        WHEN 3 THEN 'POS机'
+        WHEN 4 THEN '转账' ELSE '' END as payType,
+        os.pay_time as payTime,
+        os.trade_no as tradeNo,
+        os.user_id as userId,
+        os.refer as refer,
+        os.create_time as createTime,
+        osd.product_category_name as productCategoryName,
+        osd.user_type_name as userTypeName,
+        concat_ws('/', osd.sales_subject_province, osd.sales_subject_city, osd.sales_subject_region) as salesSubjectPCR,
+        osd.sales_subject_company_name as salesSubjectCompanyName,
+        concat('此款项代', osd.sales_subject_company_name, '收取') as feeDescription
+        from order_sub os
+        left join order_sub_detail osd on osd.sub_order_id = os.id
+        where 1=1
+        <if test="productCompanyId != null and productCompanyId != 0">
+            and osd.product_company_id = #{productCompanyId}
+        </if>
+        <if test="idKey != null and idKey != ''">
+            and (os.id like CONCAT('%',trim(#{idKey}),'%') or os.main_order_id like CONCAT('%',trim(#{idKey}),'%'))
+        </if>
+        <if test="status != null">
+            and os.status = #{status}
+        </if>
+        <if test="productCategoryId != null">
+            and osd.product_category_id = #{productCategoryId}
+            or osd.product_two_category_id = #{productCategoryId}
+            or osd.product_first_category_id = #{productCategoryId}
+        </if>
+        <if test="userId != null">
+            and os.user_id = #{userId}
+        </if>
+        <if test="terminal != null">
+            and os.terminal = #{terminal}
+        </if>
+        <if test="tradeNo != null and tradeNo != ''">
+            and os.trade_no like CONCAT('%',trim(#{tradeNo}),'%')
+        </if>
+        <if test="payType != null">
+            and os.pay_type = #{payType}
+        </if>
+        <if test="mode != null and mode != 0">
+            and os.product_type = #{mode}
+        </if>
+        <if test="beginPayTime != null and beginPayTime != ''">
+            and os.pay_time &gt;= #{beginPayTime}
+        </if>
+        <if test="endPayTime != null and endPayTime != ''">
+            and os.pay_time &lt;= #{endPayTime}
+        </if>
+        <!--不包含待付款和待审核的订单-->
+        and os.deleted = 0
+        and os.status &lt;&gt; 0
+        and os.status &lt;&gt; 1
+        and os.status &lt;&gt; 8
+        and os.pay_status = '3'
+        order by createTime desc
+    </select>
+
+
+    <!--订单对账 -->
+    <select id="exportOrderBill" parameterType="com.yimao.cloud.pojo.query.order.OrderBillQuery"
+            resultType="com.yimao.cloud.pojo.export.order.OrderBillExport">
+        select
+        os.main_order_id as mainOrderId,
+        os.id as id,
+        os.refer as refer,
+        CASE os.terminal WHEN 1 THEN '终端app'
+        WHEN 2 THEN '微信公众号'
+        WHEN 3 THEN '经销商APP'
+        WHEN 4 THEN '小程序' END as terminal,
+        CASE os.status
+        WHEN 0 THEN '待付款'
+        WHEN 1 THEN '待审核'
+        WHEN 2 THEN '待发货'
+        WHEN 3 THEN '待出库'
+        WHEN 4 THEN '待收货'
+        WHEN 5 THEN '交易成功'
+        WHEN 6 THEN '售后中'
+        WHEN 7 THEN '交易关闭'
+        WHEN 8 THEN '已取消' ELSE '' END as status,
+        os.user_id as userId,
+        osd.user_type_name as userTypeName,
+        osd.product_first_category_name as productFirstCategoryName,
+        osd.product_two_category_name as productSecondCategoryName,
+        osd.product_category_name as productThirdCategoryName,
+        osd.product_company_name as productCompanyName,
+        osd.cost_name as costName,
+        os.count,
+        os.fee,
+        os.trade_no as tradeNo,
+        DATE_FORMAT(os.pay_time,'%Y-%m-%d %H:%i:%s') as payTime,
+        CASE os.pay_type WHEN 1 THEN '微信'
+        WHEN 2 THEN '支付宝'
+        WHEN 3 THEN 'POS机'
+        WHEN 4 THEN '转账' END as payType,
+        DATE_FORMAT(os.create_time,'%Y-%m-%d %H:%i:%s') as createTime,
+        os.status as status,
+        osd.distributor_id as distributorId,
+        osd.distributor_type_name as distributorTypeName,
+        osd.distributor_name as distributorName,
+        osd.distributor_account as distributorAccount,
+        osd.distributor_province as distributorProvince,
+        osd.distributor_city as distributorCity,
+        osd.distributor_region as distributorRegion,
+        CASE WHEN osd.sub_distributor_name is not null THEN '是' ELSE '否' END AS hasSubDistributor,
+        osd.sub_distributor_account as subDistributorAccount,
+        osd.sub_distributor_name as subDistributorName,
+        osd.recommend_name as recommendName,
+        osd.recommend_account as recommendAccount,
+        osd.recommend_province as recommendProvince,
+        osd.recommend_city as recommendCity,
+        osd.recommend_region as recommendRegion,
+        concat_ws('/', osd.sales_subject_province, osd.sales_subject_city, osd.sales_subject_region) as
+        salesSubjectPCR,<!--销售主体省市区-->
+        osd.sales_subject_company_name as salesSubjectCompanyName,<!--销售主体公司名称-->
+        concat('此款项代', osd.sales_subject_company_name, '收取') as feeDescription<!--收款说明-->
+        from order_sub os
+        left join order_sub_detail osd on osd.sub_order_id = os.id
+        where 1=1
+        <if test="productCompanyId != null and productCompanyId != 0">
+            and osd.product_company_id = #{productCompanyId}
+        </if>
+        <if test="idKey != null and idKey != ''">
+            and (os.id like CONCAT(trim(#{idKey}),'%') or os.main_order_id like CONCAT(trim(#{idKey}),'%'))
+        </if>
+        <if test="status != null">
+            and os.status = #{status}
+        </if>
+        <if test="productCategoryId != null">
+            and (osd.product_category_id = #{productCategoryId}
+            or osd.product_two_category_id = #{productCategoryId}
+            or osd.product_first_category_id = #{productCategoryId})
+        </if>
+        <if test="userId != null">
+            and os.user_id = #{userId}
+        </if>
+        <if test="terminal != null">
+            and os.terminal = #{terminal}
+        </if>
+        <if test="tradeNo != null and tradeNo != ''">
+            and os.trade_no like CONCAT(trim(#{tradeNo}),'%')
+        </if>
+        <if test="payType != null">
+            and os.pay_type = #{payType}
+        </if>
+        <if test="mode != null and mode != 0">
+            and os.product_type = #{mode}
+        </if>
+        <if test="beginPayTime != null and beginPayTime != ''">
+            and os.pay_time &gt;= #{beginPayTime}
+        </if>
+        <if test="endPayTime != null and endPayTime != ''">
+            and os.pay_time &lt;= #{endPayTime}
+        </if>
+        <!--不包含待付款和待审核的订单-->
+        and os.deleted = 0
+        and os.status &lt;&gt; 0
+        and os.status &lt;&gt; 1
+        and os.pay_status = '3'
+        order by createTime desc
+    </select>
+
+    <!-- 订单列表导出-->
+    <select id="orderExportList" parameterType="com.yimao.cloud.pojo.dto.order.OrderConditionDTO"
+            resultType="com.yimao.cloud.pojo.dto.order.OrderExportDTO">
+        select
+        os.main_order_id as mainOrderId,
+        os.id as id,
+        os.refer as refer,
+        CASE os.terminal WHEN 1 THEN '终端app'
+        WHEN 2 THEN '微信公众号'
+        WHEN 3 THEN '翼猫APP'
+        WHEN 4 THEN '小程序' ELSE '' END as terminal,
+        CASE os.status
+        WHEN 0 THEN '待付款'
+        WHEN 1 THEN '待审核'
+        WHEN 2 THEN '待发货'
+        WHEN 3 THEN '待出库'
+        WHEN 4 THEN '待收货'
+        WHEN 5 THEN '交易成功'
+        WHEN 6 THEN '售后中'
+        WHEN 7 THEN '交易关闭'
+        WHEN 8 THEN '已取消' ELSE '' END as status,
+        DATE_FORMAT(os.create_time,'%Y-%m-%d %H:%i:%s') as createTime,
+        CASE os.pay_type
+        WHEN 1 THEN '微信'
+        WHEN 2 THEN '支付宝'
+        WHEN 3 THEN 'POS机'
+        WHEN 4 THEN '转账' ELSE '' END as payType,
+        CASE os.pay_status
+        WHEN 1 THEN '未支付'
+        WHEN 2 THEN '待审核'
+        WHEN 3 THEN '支付成功'
+        WHEN 4 THEN '支付失败' ELSE '' END as payStatus,
+        DATE_FORMAT(os.pay_time,'%Y-%m-%d %H:%i:%s') as payTime,
+        os.trade_no as tradeNo,
+        DATE_FORMAT(os.complete_time,'%Y-%m-%d %H:%i:%s') as completeTime,
+        osd.user_type_name as userType,
+        os.user_id as userId,
+        osd.addressee_name as addresseeName,
+        osd.addressee_phone as addresseePhone,
+        concat_ws('', osd.addressee_province, osd.addressee_city, osd.addressee_region, osd.addressee_street) as
+        addressee,
+        CASE os.activity_type
+        WHEN 1 THEN '普通商品'
+        WHEN 2 THEN '折机商品'
+        WHEN 3 THEN '180商品' ELSE '' END as activityType,
+        osd.product_name as productName,
+        osd.product_company_name as productCompanyName,
+        osd.product_first_category_name as productFirstCategoryName,
+        osd.product_two_category_name as productSecondCategoryName,
+        osd.product_category_name as productCategoryName,
+        os.count,
+        os.fee as orderAmountFee,
+        osd.distributor_type_name as distributorTypeName,
+        osd.distributor_name as distributorName,
+        osd.distributor_account as distributorAccount,
+        osd.distributor_province as distributorProvince,
+        osd.distributor_city as distributorCity,
+        osd.distributor_region as distributorRegion,
+        CASE WHEN osd.sub_distributor_name is not null THEN '是' ELSE '否' END AS hasSubDistributor,
+        osd.sub_distributor_account as subDistributorAccount,
+        osd.sub_distributor_name as subDistributorName,
+        osd.vip_user_id as vipUserId,
+        CASE WHEN osd.vip_user_id is not null THEN '是' ELSE '否' END AS vipUserHasIncomeTxt,
+        os.remark
+        from order_sub os
+        left join order_sub_detail osd on osd.sub_order_id = os.id
+        where 1=1
+        <if test="idKey != null">
+            and (os.id like CONCAT(trim(#{idKey}),'%') or os.main_order_id like CONCAT(trim(#{idKey}),'%'))
+        </if>
+        <if test="createTime != null and createTime != ''">
+            and os.create_time &lt;= #{createTime}
+        </if>
+        <if test="refer != null and refer != ''">
+            and os.refer like CONCAT(trim(#{refer}),'%')
+        </if>
+        <if test="productCategoryIdKey != null">
+            and (osd.product_category_id = #{productCategoryIdKey} or osd.product_first_category_id =
+            #{productCategoryIdKey} or
+            osd.product_two_category_id = #{productCategoryIdKey})
+        </if>
+        <if test="userId != null">
+            and os.user_id = #{userId}
+        </if>
+        <if test="userType != null">
+            and osd.user_type = #{userType}
+        </if>
+        <if test="receiver != null and receiver != ''">
+            and osd.addressee_name like CONCAT(trim(#{receiver}),'%')
+        </if>
+        <if test="receiveMobile != null and receiveMobile != ''">
+            and osd.addressee_phone like CONCAT(trim(#{receiver}),'%')
+        </if>
+        <if test="receiveProvince != null and receiveProvince != ''">
+            and osd.addressee_province = #{receiveProvince}
+            <if test="receiveCity != null and receiveCity != ''">
+                and osd.addressee_city = #{receiveCity}
+                <if test="receiveRegion != null and receiveRegion != ''">
+                    and osd.addressee_region = #{receiveRegion}
+                </if>
+            </if>
+        </if>
+        <if test="distributorId != null">
+            and os.distributor_id = #{distributorId}
+        </if>
+        <if test="vipUserId != null">
+            and osd.vip_user_id = #{vipUserId}
+        </if>
+        <if test="activityType != null">
+            and os.activity_type = #{activityType}
+        </if>
+        <if test="terminal != null">
+            and os.terminal = #{terminal}
+        </if>
+        <if test="payStatus != null">
+            and os.pay_status = #{payStatus}
+        </if>
+        <if test="payType != null">
+            and os.pay_type = #{payType}
+        </if>
+        <if test="status != null">
+            and os.status = #{status}
+        </if>
+        <if test="userSaleFlag != null and userSaleFlag == 1">
+            and os.vip_user_id is not null
+        </if>
+        <if test="userSaleFlag != null and userSaleFlag == 0">
+            and os.vip_user_id is null
+        </if>
+        <if test="stationProvince != null and stationProvince != ''">
+            and osd.station_province = #{stationProvince}
+            <if test="stationCity != null and stationCity != ''">
+                and osd.station_city = #{stationCity}
+                <if test="stationRegion != null and stationRegion != ''">
+                    and osd.station_region = #{stationRegion}
+                </if>
+            </if>
+        </if>
+        <if test="beginTime != null">
+            and os.create_time &gt;= #{beginTime}
+        </if>
+        <if test="endTime != null">
+            and os.create_time &lt;= #{endTime}
+        </if>
+        <if test="beginDeliveryTime != null">
+            and os.delivery_time &gt;= #{beginDeliveryTime}
+        </if>
+        <if test="endDeliveryTime != null">
+            and os.delivery_time &lt;= #{endDeliveryTime}
+        </if>
+        <if test="beginCompleteTime != null">
+            and os.complete_time &gt;= #{beginCompleteTime}
+        </if>
+        <if test="endCompleteTime != null">
+            and os.complete_time &lt;= #{endCompleteTime}
+        </if>
+        <if test="beginPayTime != null">
+            and os.pay_time &gt;= #{beginPayTime}
+        </if>
+        <if test="endPayTime != null">
+            and os.pay_time &lt;= #{endPayTime}
+        </if>
+        <if test="minAmountFee != null">
+            and os.fee &gt;= #{minAmountFee}
+        </if>
+        <if test="maxAmountFee != null">
+            and os.fee &lt;= #{maxAmountFee}
+        </if>
+        order by os.create_time desc
+        <if test="pageSize!=null and pageSize!='' and pageSize>0">
+            limit #{pageSize}
+        </if>
+    </select>
+
+
+    <!--订单列表导出总数-->
+    <select id="orderExportListCount" parameterType="com.yimao.cloud.pojo.dto.order.OrderConditionDTO"
+            resultType="java.lang.Integer">
+        select
+        count(1)
+        from order_sub os
+        left join order_sub_detail osd on osd.sub_order_id = os.id
+        where 1=1
+        <if test="idKey != null">
+            and (os.id like CONCAT(trim(#{idKey}),'%') or os.main_order_id like CONCAT(trim(#{idKey}),'%'))
+        </if>
+        <if test="refer != null and refer != ''">
+            and os.refer like CONCAT(trim(#{refer}),'%')
+        </if>
+        <if test="productCategoryIdKey != null">
+            and (osd.product_category_id = #{productCategoryIdKey} or osd.product_first_category_id =
+            #{productCategoryIdKey} or
+            osd.product_two_category_id = #{productCategoryIdKey})
+        </if>
+        <if test="userId != null">
+            and os.user_id like CONCAT('%',trim(#{userId}),'%')
+        </if>
+        <if test="userType != null">
+            and osd.user_type = #{userType}
+        </if>
+        <if test="receiver != null and receiver != ''">
+            and osd.addressee_name like CONCAT(trim(#{receiver}),'%')
+        </if>
+        <if test="receiveMobile != null and receiveMobile != ''">
+            and osd.addressee_phone like CONCAT(trim(#{receiver}),'%')
+        </if>
+        <if test="receiveProvince != null and receiveProvince != ''">
+            and osd.addressee_province = #{receiveProvince}
+            <if test="receiveCity != null and receiveCity != ''">
+                and osd.addressee_city = #{receiveCity}
+                <if test="receiveRegion != null and receiveRegion != ''">
+                    and osd.addressee_region = #{receiveRegion}
+                </if>
+            </if>
+        </if>
+        <if test="distributorId != null">
+            and os.distributor_id = #{distributorId}
+        </if>
+        <if test="vipUserId != null">
+            and osd.vip_user_id = #{vipUserId}
+        </if>
+        <if test="activityType != null">
+            and os.activity_type = #{activityType}
+        </if>
+        <if test="terminal != null">
+            and os.terminal = #{terminal}
+        </if>
+        <if test="payStatus != null">
+            and os.pay_status = #{payStatus}
+        </if>
+        <if test="payType != null">
+            and os.pay_type = #{payType}
+        </if>
+        <if test="status != null">
+            and os.status = #{status}
+        </if>
+        <if test="userSaleFlag != null and userSaleFlag == 1">
+            and os.vip_user_id is not null
+        </if>
+        <if test="userSaleFlag != null and userSaleFlag == 0">
+            and os.vip_user_id is null
+        </if>
+        <if test="stationProvince != null and stationProvince != ''">
+            and osd.station_province = #{stationProvince}
+            <if test="stationCity != null and stationCity != ''">
+                and osd.station_city = #{stationCity}
+                <if test="stationRegion != null and stationRegion != ''">
+                    and osd.station_region = #{stationRegion}
+                </if>
+            </if>
+        </if>
+        <if test="beginTime != null">
+            and os.create_time &gt;= #{beginTime}
+        </if>
+        <if test="endTime != null">
+            and os.create_time &lt;= #{endTime}
+        </if>
+        <if test="beginDeliveryTime != null">
+            and os.delivery_time &gt;= #{beginDeliveryTime}
+        </if>
+        <if test="endDeliveryTime != null">
+            and os.delivery_time &lt;= #{endDeliveryTime}
+        </if>
+        <if test="beginCompleteTime != null">
+            and os.complete_time &gt;= #{beginCompleteTime}
+        </if>
+        <if test="endCompleteTime != null">
+            and os.complete_time &lt;= #{endCompleteTime}
+        </if>
+        <if test="minAmountFee != null">
+            and os.fee &gt;= #{minAmountFee}
+        </if>
+        <if test="maxAmountFee != null">
+            and os.fee &lt;= #{maxAmountFee}
+        </if>
+    </select>
+
+
+    <update id="batchUpdateStatus" parameterType="java.util.Map">
+        update order_sub
+        <trim prefix="set" suffixOverrides=",">
+            update_time = NOW(),
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="completeTime != null">
+                complete_time = #{completeTime},
+            </if>
+        </trim>
+        where 1=1
+        <if test="list!=null and list.size>0">
+            and id in
+            <foreach collection="list" item="item" index="index" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </update>
+
+    <!--将超时未支付的订单状态设置为【交易关闭】-->
+    <update id="timeout">
+        update order_sub
+        set
+        status = #{status},
+        update_time = NOW()
+        WHERE status = 0 and create_time &lt; #{date}
+    </update>
+
+    <!--超时未支付的订单-->
+    <select id="timeoutOrder" resultType="com.yimao.cloud.order.po.OrderSub">
+        select os.id,os.`status`,
+        os.product_type as productType,
+        os.distributor_id as distributorId,
+        os.activity_type as activityType,
+        os.activity_id as activityId,
+        os.count
+        from order_sub os
+        where os.status = 0
+        and os.create_time &lt; #{date}
+    </select>
+
+    <select id="selectUserOrderCountByStatus" parameterType="java.lang.Integer"
+            resultType="com.yimao.cloud.pojo.dto.order.OrderCountDTO">
+        select count(1) as count, os.status
+        from order_main om
+        left join order_sub os on om.id = os.main_order_id
+        where os.deleted = 0
+        <if test="userId != null">
+            and os.user_id = #{userId}
+        </if>
+        group by os.`status`
+    </select>
+
+    <select id="selectCustomerOrderCount" resultType="java.lang.Integer">
+        select sum(1) as count
+        from order_main where id in (
+        select om.id
+        from order_main om
+        inner join order_sub os on om.id = os.main_order_id
+        inner join order_sub_detail osd on os.id = osd.sub_order_id
+        left join order_audit_log oal on os.id = oal.order_id
+        where 1=1
+        <if test="ids != null and ids.size() > 0">
+            and om.user_id in
+            <foreach collection="ids" item="id" index="index" separator="," open="(" close=")">
+                #{id}
+            </foreach>
+        </if>
+        GROUP BY om.id)
+    </select>
+
+    <!--订单状态设置为已完成时查询-->
+    <select id="selectForComplete" resultType="com.yimao.cloud.order.po.OrderSub">
+        select id, product_type as productType, user_id as userId from order_sub where id = #{id}
+    </select>
+
+    <!--查询发货超过15天的订单（实物商品）-->
+    <select id="selectDeliveryOrderForComplete" resultType="com.yimao.cloud.order.po.OrderSub">
+        select id,product_type as productType from order_sub where `status` = #{status} and delivery_time &lt;= #{time}
+        and deleted = 0
+    </select>
+
+    <!--根据累计的水机、健康产品已完成的工单数，发放HRA优惠卡-->
+    <select id="countDistributorCompletedOrder" resultType="java.lang.Integer">
+        select sum(`count`) from order_sub
+        where `status` = 5 and (product_type = 3 or product_type = 1) and distributor_id = #{distributorId} and complete_time &gt;= #{date}
+    </select>
+    <!--根据累计的水机、健康产品已完成的工单数，发放HRA优惠卡-->
+    <select id="countUserCompletedOrder" resultType="java.lang.Integer">
+        select sum(o.`count`) from order_sub o inner join order_sub_detail od on o.id = od.sub_order_id
+        where o.`status` = 5 and (o.product_type = 3 or o.product_type = 1) and od.addressee_phone = #{phone} and
+        o.complete_time &gt;= #{date}
+    </select>
+
+    <!--支付回调中根据主订单号获取子订单列表，只获取必要字段-->
+    <select id="selectByMainOrderIdForAfterPay" resultType="com.yimao.cloud.order.po.OrderSub">
+        SELECT
+        os.id,
+        os.main_order_id AS mainOrderId,
+        os.status,
+        os.refer,
+        os.pay,
+        os.pay_type AS payType,
+        os.terminal,
+        os.count,
+        os.product_id AS productId,
+        os.product_type AS productType,
+        os.product_model AS productModel
+        FROM
+        order_sub os
+        WHERE os.main_order_id = #{mainOrderId}
+    </select>
+
+    <select id="selectSubOrdersByMainOrderId" resultType="com.yimao.cloud.pojo.dto.order.OrderSubDTO">
+        SELECT
+        os.id,
+        os.main_order_id AS mainOrderId,
+        os.status,
+        os.pay,
+        os.pay_type AS payType,
+        os.count,
+        os.product_id AS productId,
+        os.product_type AS productType,
+        os.product_model AS productModel,
+        os.fee as fee
+        FROM
+        order_sub os
+        WHERE os.deleted=0 and os.main_order_id = #{mainOrderId}
+    </select>
+
+    <!-- 客户订单数量： 如果是退款/退货 =>对应两个状态 已完成和售后中 -->
+    <select id="customerOrderCountByDistributor" resultType="java.lang.Integer">
+        select
+        count(os.id)
+        from order_main om
+        inner join order_sub os on om.id = os.main_order_id
+        inner join order_sub_detail od on os.id = od.sub_order_id
+        where os.deleted = 0
+        <if test="firstProductCategoryId != null">
+            and od.product_first_category_id = #{firstProductCategoryId}
+        </if>
+        /*经销商身份*/
+        <if test="userIdentity==1">
+            and os.user_id != #{userId}
+            <if test="queryType != null and queryType == 0">
+                and (od.distributor_id = #{distributorId} or od.sub_distributor_id = #{distributorId})
+            </if>
+            <if test="queryType != null and queryType == 1">
+                and (od.distributor_id = #{distributorId} and od.sub_distributor_id is null)
+            </if>
+            <if test="queryType != null and queryType == 2">
+                and od.sub_distributor_id = #{subDistributorId}
+            </if>
+        </if>
+        /*非经销商身份*/
+        <if test="userIdentity==2">
+            and os.user_id != #{userId} and os.vip_user_id = #{userId} and user_sale_flag = 1
+        </if>
+        <if test="orderStatus!=6">
+            <if test="orderStatus==0">
+                and ((os.status = 0 and os.sub_status is null)
+                or(os.status = 0 and om.pay_type in (3,4) and os.pay_status = 4 and os.pay_terminal =1))
+            </if>
+            <if test="orderStatus==2">
+                and ((os.status = 2 )
+                or (os.status = 1 and om.pay_type in (3,4) and os.pay_status = 2 and os.pay_terminal =1)
+                or (os.status = 3))
+            </if>
+            <if test="orderStatus!=2 and orderStatus!=0 ">
+                and os.`status` in (#{orderStatus})
+            </if>
+        </if>
+        <if test="orderStatus==6">
+            and os.`status` in (6,7,8)
+        </if>
+    </select>
+
+    <update id="updateCheckSubOrderStatus" parameterType="com.yimao.cloud.order.po.OrderSub">
+        update order_sub
+        <set>
+            pay_status = #{payStatus},
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="pay != null">
+                pay= #{pay},
+            </if>
+            <if test="payTime != null">
+                pay_time = #{payTime},
+            </if>
+            <if test="completeTime != null">
+                complete_time = #{completeTime}
+            </if>
+        </set>
+        where
+        status = 1 and pay_status = 2
+        and id =#{id}
+    </update>
+
+    <update id="updateSubStatus" parameterType="com.yimao.cloud.order.po.OrderSub">
+        update order_sub
+        <set>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            sub_status = #{subStatus},
+            refund_time=#{refundTime},
+            update_time=#{updateTime}
+            where id =#{id}
+        </set>
+    </update>
+
+    <!--提交线下支付凭证，根据主订单号把所有子订单变为待审核状态-->
+    <update id="updateToWaitingAuditByMainOrderId">
+        update
+        order_sub
+        set
+        status = #{status},
+        pay_status = #{payStatus},
+        pay_type = #{payType},
+        pay_credential = #{payCredential},
+        pay_credential_submit_time = #{payCredentialSubmitTime},
+        update_time = #{updateTime}
+        where
+        main_order_id = #{mainOrderId}
+    </update>
+
+    <select id="customerOrderCountByUser" resultType="java.lang.Integer">
+        select
+        count(os.`status`)
+        from order_sub os
+        inner join order_sub_detail od on os.id = od.sub_order_id
+        where od.vip_user_id = #{userId}
+        and od.product_first_category_id = #{firstProductCategoryId}
+        and os.pay = 1
+
+    </select>
+
+    <!--我的订单 distinct -->
+    <select id="myOrderSubList" parameterType="com.yimao.cloud.pojo.dto.order.OrderConditionDTO" resultMap="subOrders">
+        select
+        distinct
+        om.id as id,
+        om.type as `type`,
+        om.sub_type as subType,
+        om.user_id as userId,
+        om.count as count,
+        om.pay as pay,
+        om.pay_time as payTime,
+        om.pay_type as payType,
+        om.trade_no as tradeNo,
+        om.logistics_fee as logisticsFee,
+        om.create_time as createTime,
+        om.pay_credential as payCredential,
+        om.product_amount_fee as productAmountFee,
+        om.order_amount_fee as orderAmountFee,
+        IF(os.sub_status=0,NOW(),om.create_time) as cdate,
+        os.product_type as productType,
+        os.sub_status as csubStatus,
+        os.status as cstatus
+        from order_main om
+        inner join order_sub os on om.id = os.main_order_id
+        inner join order_sub_detail osd on os.id = osd.sub_order_id
+        where om.deleted = 0 and om.user_id = #{userId}
+        /*操作类型: -1-全部 0-待付款 1-待发货 2-待收货 3-已完成 4-退款/退货/待审核 5-待退货 6-待退款 7-取消记录 */
+        /*主状态： 0-待付款 1-待审核 2-待发货 3-待出库 4-待收货 5-交易成功 6-售后中 7-交易关闭 8-已取消*/
+        /*子状态(售后中状态):0-待审核(经销商)；1-待审核(总部)；2-待退货入库；3-待退款（财务）；4-售后失败；5-售后成功；*/
+        <if test="operationType != null">
+            /*待付款： 正常代付款、支付审核失败*/
+            <if test="operationType == 0">
+                and ((os.status = 0 and os.sub_status is null)
+                or (os.status = 0 and om.pay_type in (3,4) and os.pay_status = 4 and os.pay_terminal =1))
+            </if>
+            /*待发货-》包含：待发货、待接单(同)、 支付审核中、待出库 */
+            <if test="operationType==1">
+                and ((os.status = 2 )
+                or (os.status = 1 and om.pay_type in (3,4) and os.pay_status = 2 and os.pay_terminal =1)
+                or (os.status = 3))
+            </if>
+            /*待收货/已完成-》正常待收货/交易成功的单 */
+            <if test="operationType==2">
+                and (os.status = 4)
+            </if>
+            <if test="operationType==3">
+                and (os.status = 5)
+            </if>
+            /*待审核 包含：经销商审核，总部审核(待发货总部审核，待收货总部审核)*/
+            <if test="operationType == 4">
+                and ((os.status = 6 and os.sub_status = 0)
+                or (os.status = 6 and os.sub_status = 1))
+            </if>
+            /*待退货 -》 待退货入库 */
+            <if test="operationType == 5">
+                and (os.status = 6 and os.sub_status = 2)
+            </if>
+            /*待退款 -》 待退款 */
+            <if test="operationType == 6">
+                and (os.status = 6 and os.sub_status = 3)
+            </if>
+            /*取消记录-》 已退款、已取消、取消失败*/
+            <if test="operationType == 7">
+                and ((os.status = 7 and os.sub_status = 5)
+                or (os.status = 8)
+                or (os.status = 6 and os.sub_status = 4))
+            </if>
+        </if>
+        <if test="productFirstCategoryId != null">
+            and osd.product_first_category_id = #{productFirstCategoryId}
+        </if>
+        <if test="beginTime != null">
+            and om.create_time &gt;= #{beginTime}
+        </if>
+        <if test="endTime != null">
+            and om.create_time &lt;= #{endTime}
+        </if>
+        <if test="productName != null and productName != '' ">
+            and osd.product_name LIKE CONCAT('%',trim(#{productName}),'%')
+        </if>
+        <if test="receiver != null and receiver != ''">
+            and osd.addressee_name LIKE CONCAT('%',trim(#{receiver}),'%')
+        </if>
+        <if test="receiveMobile != null and receiveMobile != ''">
+            and osd.addressee_phone LIKE CONCAT('%',trim(#{receiveMobile}),'%')
+        </if>
+        order by cdate desc,om.create_time desc
+    </select>
+
+    <!-- 我的客户订单 -->
+    <select id="myCustomerOrderSubList" parameterType="com.yimao.cloud.pojo.dto.order.OrderConditionDTO"
+            resultMap="subOrders">
+        select
+        distinct
+        om.id as id,
+        om.type as `type`,
+        om.sub_type as subType,
+        om.user_id as userId,
+        om.count as count,
+        om.pay as pay,
+        om.pay_time as payTime,
+        om.pay_type as payType,
+        om.trade_no as tradeNo,
+        om.logistics_fee as logisticsFee,
+        om.create_time as createTime,
+        om.update_time as updateTime,
+        om.pay_credential as payCredential,
+        om.product_amount_fee as productAmountFee,
+        om.order_amount_fee as orderAmountFee,
+        IF(os.sub_status=0,NOW(),om.create_time) as cdate,
+        os.product_type as productType,
+        os.sub_status as csubStatus,
+        os.status as cstatus
+        from order_sub os
+        inner join order_main om on om.id = os.main_order_id
+        inner join order_sub_detail osd on os.id = osd.sub_order_id
+        where os.deleted = 0
+        <if test="productFirstCategoryId != null">
+            and osd.product_first_category_id = #{productFirstCategoryId}
+        </if>
+        /*经销商身份*/
+        <if test="userIdentity==1">
+            and os.user_id != #{userId}
+            <if test="queryType != null and queryType == 0">
+                and (osd.distributor_id in
+                <foreach collection="distributorIds" item="id" index="index" separator="," open="(" close=")">
+                    #{id}
+                </foreach>
+                or osd.sub_distributor_id in
+                <foreach collection="distributorIds" item="id" index="index" separator="," open="(" close=")">
+                    #{id}
+                </foreach>)
+            </if>
+            <if test="queryType != null and queryType == 1">
+                and (osd.distributor_id in
+                <foreach collection="distributorIds" item="id" index="index" separator="," open="(" close=")">
+                    #{id}
+                </foreach> and osd.sub_distributor_id is null)
+            </if>
+            <if test="queryType != null and queryType == 2">
+                and osd.sub_distributor_id in
+                <foreach collection="distributorIds" item="id" index="index" separator="," open="(" close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </if>
+        /*非经销商身份*/
+        <if test="userIdentity==2">
+            and os.user_id != #{userId} and os.vip_user_id = #{userId} and user_sale_flag = 1
+        </if>
+        /*主状态： 0-待付款 1-待审核 2-待发货 3-待出库 4-待收货 5-交易成功 6-售后中 7-交易关闭 8-已取消*/
+        /*子状态(售后中状态):0-待审核(经销商)；1-待审核(总部)；2-待退货入库；3-待退款（财务）；4-售后失败；5-售后成功；*/
+        /* 租赁商品：【特殊】*/
+        <if test="productType!=null">
+            <if test="productType==3">
+                <if test="operationType != null">
+                    /*待付款： 正常待付款、支付审核失败*/
+                    <if test="operationType == 0">
+                        and ((os.status = 0 and os.sub_status is null)
+                        or(os.status = 0 and om.pay_type in (3,4) and os.pay_status = 4 and os.pay_terminal =1))
+                    </if>
+                    /*待接单-》包含正常待接单、 支付审核中 */
+                    <if test="operationType==1">
+                        and ((os.status = 2)
+                        or (os.status = 1 and om.pay_type in (3,4) and os.pay_status = 2 and os.pay_terminal =1))
+                    </if>
+                    /*待收货/已完成-》正常待收货/交易成功的单 */
+                    <if test="operationType==2">
+                        and (os.status = 4)
+                    </if>
+                    <if test="operationType==3">
+                        and (os.status = 5)
+                    </if>
+                    /*退款/退货-》 包含：待经销商审核(安装工退单)，总部审核(待发货审核，待收货审核)、财务审核(待发货退款，待收货退款)、已退款、已取消、取消失败(待发货取消失败，待收货取消失败)*/
+                    <if test="operationType == 4">
+                        and ((os.status = 6 and os.sub_status = 0)
+                        or (os.status = 6 and os.sub_status = 1)
+                        or (os.status = 6 and os.sub_status = 3)
+                        or (os.status = 7 and os.sub_status = 5)
+                        or (os.status = 8)
+                        or (os.status = 6 and os.sub_status = 4))
+                    </if>
+                </if>
+            </if>
+            /* 其他商品*/
+            <if test="productType!=3">
+                <if test="operationType != null">
+                    /*待付款： 正常代付款、支付审核失败*/
+                    <if test="operationType == 0">
+                        and ((os.status = 0 and os.sub_status is null)
+                        or(os.status = 0 and om.pay_type in (3,4) and os.pay_status = 4 and os.pay_terminal =1))
+                    </if>
+                    /*待发货-》包含正常待发货、 支付审核中(等待财务审核)、待出库 */
+                    <if test="operationType==1">
+                        and ((os.status = 2)
+                        or (os.status = 1 and om.pay_type in (3,4) and os.pay_status = 2 and os.pay_terminal =1)
+                        or (os.status = 3))
+                    </if>
+                    /*待收货/已完成-》正常待收货/交易成功的单 */
+                    <if test="operationType==2">
+                        and (os.status = 4)
+                    </if>
+                    <if test="operationType==3">
+                        and (os.status = 5)
+                    </if>
+                    /*退款/退货-》 待退货、待退款、已退款、已取消、取消失败（待发货取消失败，待收货取消失败） */
+                    <if test="operationType == 4">
+                        and ((os.status = 6 and os.sub_status = 1)
+                        or (os.status = 6 and os.sub_status = 2)
+                        or (os.status = 6 and os.sub_status = 3)
+                        or (os.status = 7 and os.sub_status = 5)
+                        or (os.status = 8 )
+                        or (os.status = 6 and os.sub_status = 4 ))
+                    </if>
+                </if>
+            </if>
+        </if>
+        /* 表示从公众号进来 */
+        <if test="productType==null">
+            <if test="operationType != null">
+                /*代付款-》正常代付款 */
+                <if test="operationType == 0">
+                    and (os.status = 0 and os.sub_status is null)
+                </if>
+                /*待接单-》正常待接单、 待发货 */
+                <if test="operationType==1">
+                    and (os.status = 2)
+                </if>
+                /*待收货/已完成-》正常待收货/交易成功的单 */
+                <if test="operationType==2">
+                    and (os.status = 4)
+                </if>
+                <if test="operationType==3">
+                    and (os.status = 5)
+                </if>
+            </if>
+        </if>
+        <if test="beginTime != null">
+            and om.create_time &gt;= #{beginTime}
+        </if>
+        <if test="endTime != null">
+            and om.create_time &lt;= #{endTime}
+        </if>
+        <if test="productType != null">
+            and os.product_type = #{productType}
+        </if>
+        <if test="productName != null and productName != '' ">
+            and osd.product_name LIKE CONCAT('%',trim(#{productName}),'%')
+        </if>
+        <if test="receiver != null and receiver != ''">
+            and osd.addressee_name LIKE CONCAT('%',trim(#{receiver}),'%')
+        </if>
+        <if test="receiveMobile != null and receiveMobile != ''">
+            and osd.addressee_phone LIKE CONCAT('%',trim(#{receiveMobile}),'%')
+        </if>
+        order by cdate desc,om.create_time desc
+    </select>
+
+    <select id="getProductCompanyIdByMainOrderId" resultType="java.lang.Integer">
+        select product_company_id from order_sub_detail where sub_order_id = (select id from order_sub where
+        main_order_id = #{mainOrderId} limit 1)
+    </select>
+
+    <!--有收益的客户订单数-->
+    <select id="myCustomerOrderCount" resultType="java.lang.Integer">
+        select
+        count(os.id)
+        from order_main om
+        inner join order_sub os on om.id = os.main_order_id
+        inner join order_sub_detail osd on os.id = osd.sub_order_id
+        where os.deleted = 0
+        <if test="userIdentity==1">
+            and ((osd.distributor_id = #{mid} or osd.sub_distributor_id = #{mid})
+            and os.user_id != #{userId})
+        </if>
+        <if test="userIdentity==2">
+            and os.user_id != #{userId} and os.vip_user_id = #{userId} and user_sale_flag = 1
+        </if>
+    </select>
+
+    <!--数据迁移用-->
+    <select id="existsWithRefer" resultType="java.lang.Boolean">
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END AS result
+        from order_sub
+        where refer = #{refer} and product_type = 1
+    </select>
+    <select id="selectWaitSendOrder" resultType="com.yimao.cloud.order.po.OrderSub">
+	select os.id,max(odr.create_time) as deliveryTime from order_sub os left join order_delivery_record odr on os.id=odr.order_id where
+	os.status =4 and os.product_type =1 and os.deleted=0 and odr.create_time is not null group by os.id
+	</select>
+
+    <!--订单对账 -->
+    <select id="exportOrderBillPage" parameterType="com.yimao.cloud.pojo.query.order.OrderBillQuery"
+            resultType="com.yimao.cloud.pojo.export.order.OrderBillExport">
+        select
+        os.main_order_id as mainOrderId,
+        os.id as id,
+        os.refer as refer,
+        CASE os.terminal WHEN 1 THEN '终端app'
+        WHEN 2 THEN '微信公众号'
+        WHEN 3 THEN '翼猫APP'
+        WHEN 4 THEN '小程序' END as terminal,
+        CASE os.status
+        WHEN 0 THEN '待付款'
+        WHEN 1 THEN '待审核'
+        WHEN 2 THEN '待发货'
+        WHEN 3 THEN '待出库'
+        WHEN 4 THEN '待收货'
+        WHEN 5 THEN '交易成功'
+        WHEN 6 THEN '售后中'
+        WHEN 7 THEN '交易关闭'
+        WHEN 8 THEN '已取消' ELSE '' END as status,
+        os.user_id as userId,
+        osd.user_type_name as userTypeName,
+        osd.product_first_category_name as productFirstCategoryName,
+        osd.product_two_category_name as productSecondCategoryName,
+        osd.product_category_name as productThirdCategoryName,
+        osd.product_company_name as productCompanyName,
+        osd.cost_name as costName,
+        os.count,
+        os.fee,
+        os.trade_no as tradeNo,
+        DATE_FORMAT(os.pay_time,'%Y-%m-%d %H:%i:%s') as payTime,
+        CASE os.pay_type WHEN 1 THEN '微信'
+        WHEN 2 THEN '支付宝'
+        WHEN 3 THEN 'POS机'
+        WHEN 4 THEN '转账' END as payType,
+        DATE_FORMAT(os.create_time,'%Y-%m-%d %H:%i:%s') as createTime,
+        osd.distributor_id as distributorId,
+        osd.distributor_type_name as distributorTypeName,
+        osd.distributor_name as distributorName,
+        osd.distributor_account as distributorAccount,
+        osd.distributor_province as distributorProvince,
+        osd.distributor_city as distributorCity,
+        osd.distributor_region as distributorRegion,
+        CASE WHEN osd.sub_distributor_name is not null THEN '是' ELSE '否' END AS hasSubDistributor,
+        osd.sub_distributor_account as subDistributorAccount,
+        osd.sub_distributor_name as subDistributorName,
+        osd.recommend_name as recommendName,
+        osd.recommend_account as recommendAccount,
+        osd.recommend_province as recommendProvince,
+        osd.recommend_city as recommendCity,
+        osd.recommend_region as recommendRegion,
+        concat_ws('/', osd.sales_subject_province, osd.sales_subject_city, osd.sales_subject_region) as salesSubjectPCR,
+        osd.sales_subject_company_name as salesSubjectCompanyName,
+        concat('此款项代', osd.sales_subject_company_name, '收取') as feeDescription
+        from order_sub os
+        left join order_sub_detail osd on osd.sub_order_id = os.id
+        where 1=1
+        <if test="productCompanyId != null and productCompanyId != 0">
+            and osd.product_company_id = #{productCompanyId}
+        </if>
+        <if test="idKey != null and idKey != ''">
+            and (os.id like CONCAT(trim(#{idKey}),'%') or os.main_order_id like CONCAT(trim(#{idKey}),'%'))
+        </if>
+        <if test="status != null">
+            and os.status = #{status}
+        </if>
+        <if test="productCategoryId != null">
+            and (osd.product_category_id = #{productCategoryId}
+            or osd.product_two_category_id = #{productCategoryId}
+            or osd.product_first_category_id = #{productCategoryId})
+        </if>
+        <if test="userId != null">
+            and os.user_id = #{userId}
+        </if>
+        <if test="terminal != null">
+            and os.terminal = #{terminal}
+        </if>
+        <if test="tradeNo != null and tradeNo != ''">
+            and os.trade_no like CONCAT(trim(#{tradeNo}),'%')
+        </if>
+        <if test="payType != null">
+            and os.pay_type = #{payType}
+        </if>
+        <if test="mode != null and mode != 0">
+            and os.product_type = #{mode}
+        </if>
+        <if test="beginPayTime != null and beginPayTime != ''">
+            and os.pay_time &gt;= #{beginPayTime}
+        </if>
+        <if test="endPayTime != null and endPayTime != ''">
+            and os.pay_time &lt;= #{endPayTime}
+        </if>
+        and os.deleted = 0
+        and os.status &lt;&gt; 0
+        and os.status &lt;&gt; 1
+        and os.pay_status = '3'
+        order by createTime desc
+    </select>
+
+    <!-- 分销用户有收益的订单数量 -->
+    <select id="vipUserCount" resultType="java.lang.Integer">
+        select
+        count(1)
+        from order_sub os
+        inner join order_main om on om.id = os.main_order_id
+        inner join order_sub_detail osd on os.id = osd.sub_order_id
+        where os.deleted = 0
+        and os.user_id != #{userId} and os.vip_user_id = #{userId} and user_sale_flag = 1
+    </select>
+
+    <select id="getProductSaleData" parameterType="com.yimao.cloud.pojo.query.station.StatisticsQuery"
+            resultType="com.yimao.cloud.pojo.dto.station.FlowStatisticsDTO">
+        select
+        areaId,
+        jsfwSaleNum,
+        ywlSaleNum,
+        swkjSaleNum,
+        jsfwSaleFee,
+        ywlSaleFee,
+        swkjSaleFee,
+        jsfwSaleNum+ywlSaleNum+swkjSaleNum as productTotalSaleNum,
+        jsfwSaleFee+ywlSaleFee+swkjSaleFee as productTotalSaleFee
+        from
+        (select
+        distributor_area_id as areaId,
+        ifnull(sum(case when osd.product_company_id=10000 then os.count end),0) as jsfwSaleNum,
+        ifnull(sum(case when osd.product_company_id=20000 then os.count end),0) as ywlSaleNum,
+        ifnull(sum(case when osd.product_company_id=30000 then os.count end),0) as swkjSaleNum,
+        ifnull(sum(case when osd.product_company_id=10000 then os.fee end),0) as jsfwSaleFee,
+        ifnull(sum(case when osd.product_company_id=20000 then os.fee end),0) as ywlSaleFee,
+        ifnull(sum(case when osd.product_company_id=30000 then os.fee end),0) as swkjSaleFee
+        from
+        order_sub os
+        left join order_sub_detail osd ON os.id = osd.sub_order_id
+        <where>
+            os.status = 5
+            <if test="startTime != null">
+                and os.complete_time <![CDATA[>=]]> #{startTime}
+            </if>
+            <if test="endTime !=null">
+                and os.complete_time <![CDATA[<=]]> #{endTime}
+            </if>
+            <if test="areas != null and areas.size >0">
+                and osd.distributor_area_id in (
+                <foreach collection="areas" item="areaId" index="index"
+                         separator=",">
+                    #{areaId}
+                </foreach>
+                )
+            </if>
+        </where>
+        group by
+        osd.distributor_area_id
+        ) a
+    </select>
+
+    <select id="getHraSaleData" parameterType="com.yimao.cloud.pojo.query.station.StatisticsQuery"
+            resultType="com.yimao.cloud.pojo.dto.station.FlowStatisticsDTO">
+        select
+        areaId,
+        pgSaleNum,
+        yhSaleNum,
+        pgSaleFee,
+        yhSaleFee,
+        pgSaleNum+yhSaleNum as hraTotalSaleNum,
+        pgSaleFee+yhSaleFee as hraTotalSaleFee
+        from
+        (select
+        distributor_area_id as areaId,
+        ifnull(sum(case when osd.product_two_category_name="评估卡" then os.count end),0) as pgSaleNum,
+        ifnull(sum(case when osd.product_two_category_name="优惠卡" then os.count end),0) as yhSaleNum,
+        ifnull(sum(case when osd.product_two_category_name="评估卡" then os.fee end),0) as pgSaleFee,
+        ifnull(sum(case when osd.product_two_category_name="优惠卡" then os.fee end),0) as yhSaleFee
+        from
+        order_sub os
+        left join order_sub_detail osd ON os.id = osd.sub_order_id
+        <where>
+            os.status = 5
+            and osd.product_company_id=50000
+            <if test="startTime != null">
+                and os.complete_time <![CDATA[>=]]> #{startTime}
+            </if>
+            <if test="endTime !=null">
+                and os.complete_time <![CDATA[<=]]> #{endTime}
+            </if>
+            <if test="areas != null and areas.size >0">
+                and osd.distributor_area_id in (
+                <foreach collection="areas" item="areaId" index="index"
+                         separator=",">
+                    #{areaId}
+                </foreach>
+                )
+            </if>
+        </where>
+        group by
+        osd.distributor_area_id
+        ) a
+
+    </select>
+
+    <select id="getProductSalePicData" parameterType="com.yimao.cloud.pojo.query.station.StatisticsQuery"
+            resultType="com.yimao.cloud.pojo.dto.station.FlowStatisticsDTO">
+        select
+        completeTime,
+        ifnull(sum(case when a.productCompanyId=10000 then a.count end),0) as jsfwSaleNum,
+        ifnull(sum(case when a.productCompanyId=20000 then a.count end),0) as ywlSaleNum,
+        ifnull(sum(case when a.productCompanyId=30000 then a.count end),0) as swkjSaleNum
+        from
+        (select
+        date_format(os.complete_time, '%Y%m%d') as completeTime,
+        osd.product_company_id as productCompanyId,
+        os.count as count
+        from
+        order_sub os
+        left join order_sub_detail osd ON os.id = osd.sub_order_id
+        <where>
+            os.status = 5
+            and os.complete_time is not null
+            <if test="startTime != null">
+                and os.complete_time <![CDATA[>=]]> #{startTime}
+            </if>
+            <if test="endTime !=null">
+                and os.complete_time <![CDATA[<=]]> #{endTime}
+            </if>
+            <if test="areas != null and areas.size >0">
+                and osd.distributor_area_id in (
+                <foreach collection="areas" item="areaId" index="index"
+                         separator=",">
+                    #{areaId}
+                </foreach>
+                )
+            </if>
+        </where>
+        ) a
+        group by
+        a.completeTime
+    </select>
+
+    <select id="getHraSalePicData" parameterType="com.yimao.cloud.pojo.query.station.StatisticsQuery"
+            resultType="com.yimao.cloud.pojo.dto.station.FlowStatisticsDTO">
+        select
+        completeTime,
+        ifnull(sum(case when a.productTwoCategoryName="评估卡" then a.count end),0) as pgSaleNum,
+        ifnull(sum(case when a.productTwoCategoryName="优惠卡" then a.count end),0) as yhSaleNum
+        from
+        (select
+        date_format(os.complete_time, '%Y%m%d') as completeTime,
+        osd.product_two_category_name as productTwoCategoryName,
+        os.count as count
+        from
+        order_sub os
+        left join order_sub_detail osd ON os.id = osd.sub_order_id
+        <where>
+            os.status = 5
+            and osd.product_company_id=50000
+            and os.complete_time is not null
+            <if test="startTime != null">
+                and os.complete_time <![CDATA[>=]]> #{startTime}
+            </if>
+            <if test="endTime !=null">
+                and os.complete_time <![CDATA[<=]]> #{endTime}
+            </if>
+            <if test="areas != null and areas.size >0">
+                and osd.distributor_area_id in (
+                <foreach collection="areas" item="areaId" index="index"
+                         separator=",">
+                    #{areaId}
+                </foreach>
+                )
+            </if>
+        </where>
+        ) a
+        group by
+        a.completeTime
+        order by completeTime asc
+    </select>
+
+    <select id="getTotalProductAndHraPicData" parameterType="com.yimao.cloud.pojo.query.station.StatisticsQuery"
+            resultType="com.yimao.cloud.pojo.dto.station.FlowStatisticsDTO">
+        select
+        completeTime,
+        ifnull(sum(case when a.productCompanyId in(10000,20000,30000) then a.count end),0) as productTotalSaleNum,
+        ifnull(sum(case when a.productCompanyId=50000 then a.count end),0) as hraTotalSaleNum
+        from
+        (select
+        date_format(os.complete_time, '%Y%m%d') as completeTime,
+        osd.product_company_id as productCompanyId,
+        os.count as count
+        from
+        order_sub os
+        left join order_sub_detail osd ON os.id = osd.sub_order_id
+        <where>
+            os.status = 5
+            and os.complete_time is not null
+            <if test="startTime != null">
+                and os.complete_time <![CDATA[>=]]> #{startTime}
+            </if>
+            <if test="endTime !=null">
+                and os.complete_time <![CDATA[<=]]> #{endTime}
+            </if>
+            <if test="areas != null and areas.size >0">
+                and osd.distributor_area_id in (
+                <foreach collection="areas" item="areaId" index="index"
+                         separator=",">
+                    #{areaId}
+                </foreach>
+                )
+            </if>
+        </where>
+        ) a
+        group by
+        a.completeTime
+        order by completeTime asc
+    </select>
+
+    <select id="getProductTabulateData" resultType="com.yimao.cloud.pojo.dto.station.ProductTabulateDataDTO">
+        SELECT
+        SUM(os.fee) AS sale,
+        osd.product_first_category_name AS categoryName,
+        count(0) AS salesQuantity
+        FROM
+        order_sub os
+        LEFT JOIN order_sub_detail osd ON os.id = osd.sub_order_id
+        <where>
+            os.status = 5
+            <if test="startTime != null">
+                and os.complete_time <![CDATA[>=]]> #{startTime}
+            </if>
+            <if test="endTime !=null">
+                and os.complete_time <![CDATA[<=]]> #{endTime}
+            </if>
+            <if test="areas != null and areas.size >0">
+                and osd.distributor_area_id in (
+                <foreach collection="areas" item="areaId" index="index"
+                         separator=",">
+                    #{areaId}
+                </foreach>
+                )
+            </if>
+        </where>
+        GROUP BY
+        osd.product_first_category_name
+    </select>
+
+    <select id="getProductSalesStatus" resultType="com.yimao.cloud.pojo.dto.station.ProductSalesStatusDTO">
+        SELECT
+        osd.product_name as productName,
+        count(0) AS salesQuantity,
+        SUM(os.fee) AS sale
+        FROM
+        order_sub os
+        LEFT JOIN order_sub_detail osd ON os.id = osd.sub_order_id
+        WHERE
+        os.`status` = 5
+        AND osd.product_first_category_name = #{categoryName}
+        <if test="startTime != null">
+            and os.complete_time <![CDATA[>=]]> #{startTime}
+        </if>
+        <if test="endTime !=null">
+            and os.complete_time <![CDATA[<=]]> #{endTime}
+        </if>
+        <if test="areas != null and areas.size >0">
+            and osd.distributor_area_id in (
+            <foreach collection="areas" item="areaId" index="index"
+                     separator=",">
+                #{areaId}
+            </foreach>
+            )
+        </if>
+        GROUP BY osd.product_name
+    </select>
+
+    <select id="getProductTwoCategoryPicRes"
+            resultType="com.yimao.cloud.pojo.dto.station.ProductTwoCategoryPicResDTO">
+        SELECT
+        osd.product_two_category_name AS categoryName,
+        SUM(os.fee) AS sale
+        FROM
+        order_sub os
+        LEFT JOIN order_sub_detail osd ON os.id = osd.sub_order_id
+        WHERE
+        os.`status` = 5
+        AND osd.product_first_category_name = #{categoryName}
+        <if test="startTime != null">
+            and os.complete_time <![CDATA[>=]]> #{startTime}
+        </if>
+        <if test="endTime !=null">
+            and os.complete_time <![CDATA[<=]]> #{endTime}
+        </if>
+        <if test="areas != null and areas.size >0">
+            and osd.distributor_area_id in (
+            <foreach collection="areas" item="areaId" index="index"
+                     separator=",">
+                #{areaId}
+            </foreach>
+            )
+        </if>
+        GROUP BY
+        osd.product_two_category_name
+    </select>
+
+    <select id="getOrderGeneralSituation" resultType="com.yimao.cloud.pojo.vo.station.OrderGeneralSituationVO">
+        SELECT
+        ifnull(
+        count(
+        CASE
+        WHEN os.`status` = 1
+        OR os.`status` = 2
+        OR os.`status` = 3
+        OR os.`status` = 4
+        OR os.`status` = 5 THEN
+        os.id
+        END
+        ),
+        0
+        ) AS validOrderNum
+        FROM
+        order_sub os
+        LEFT JOIN order_sub_detail osd ON os.id = osd.sub_order_id
+        where 1 = 1
+        <choose>
+            <when test="areas != null and areas.size >0">
+                and osd.distributor_area_id in (
+                <foreach collection="areas" item="areaId" index="index"
+                         separator=",">
+                    #{areaId}
+                </foreach>
+                )
+            </when>
+            <otherwise>
+                and 0 = 1
+            </otherwise>
+        </choose>
+    </select>
+
+    <!--获取用户已经下单的活动商品的数量-->
+    <select id="getAlreadyBuyCount" resultType="java.lang.Integer">
+        SELECT sum(`count`) FROM order_sub
+        where
+        product_id = #{productId}
+        and user_id = #{userId}
+        and create_time &gt;= #{startTime}
+        and create_time &lt;= #{endTime}
+        and `status` in (0,1,2,3,4,5,6)
+    </select>
+
+    <select id="listForCancelWhenOffshelf" resultType="com.yimao.cloud.order.po.OrderSub">
+        SELECT
+            id,
+            product_type as productType,
+            distributor_id as distributorId,
+            fee,
+            activity_type as activityType,
+            activity_id as activityId,
+            `count`
+        FROM
+            order_sub
+        where
+            product_id = #{productId}
+            and `status` = 0
+    </select>
+
+    <update id="cancelWhenOffshelf">
+        update order_sub
+        set status = 8, update_time = NOW()
+        WHERE id = #{id} and status = 0
+    </update>
+ 	
+ 	<!-- 根据开始时间和结束时间计算产品销售排行数据 -->
+ 	<select id="getProductOrderPerformRank" resultType="com.yimao.cloud.pojo.dto.user.SalePerformRankDTO">
+ 		SELECT
+			osd.station_company_id as stationCompanyId,
+			osd.distributor_id as distributorId,
+			osd.distributor_name as distributorName,
+			sum(os.fee) as salesAmount,
+			COUNT(1) as num
+		FROM
+			order_sub_detail osd
+		INNER JOIN order_sub os ON osd.sub_order_id = os.id
+		WHERE
+			os.`status` = 5
+		AND activity_type = 1
+		AND osd.station_company_id IS NOT NULL
+		AND osd.distributor_id IS NOT NULL
+		AND os.complete_time BETWEEN #{startTime}
+		AND #{endTime}
+		GROUP BY
+			osd.station_company_id,
+			osd.distributor_id,
+			osd.distributor_name
+ 	</select>
+
+
+    <select id="getOrderSalesHomeReport" parameterType="com.yimao.cloud.pojo.dto.order.SalesStatsQueryDTO"
+            resultType="com.yimao.cloud.pojo.dto.station.FlowStatisticsDTO">
+        select
+        ifnull(sum(case when osd.product_company_id=10000 then os.fee end),0) as jsfwSaleFee,
+        ifnull(sum(case when osd.product_company_id=20000 then os.fee end),0) as ywlSaleFee,
+        ifnull(sum(case when osd.product_company_id=30000 then os.fee end),0) as swkjSaleFee,
+        ifnull(sum(case when osd.product_company_id=50000 then os.fee end),0) as hraTotalSaleFee,
+        osd.product_first_category_name as categoryName
+        from
+        order_sub_detail osd
+        inner join order_sub os on osd.sub_order_id = os.id
+        <where>
+            os.status = 5
+            and os.complete_time IS not null
+            and osd.distributor_id is not null
+            and os.activity_type=1
+            <if test="ids !=null and ids.size()>0 and type==1">
+                and osd.distributor_id in
+                <foreach collection="ids" item="id" index="index" separator="," open="(" close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="productIds != null and productIds.size >0">
+                and os.product_id  in (
+                <foreach collection="productIds" item="productId" index="index"
+                         separator=",">
+                    #{productId}
+                </foreach>
+                )
+            </if>
+            <if test="areaIds !=null and areaIds.size()>0 and type==2">
+                and osd.distributor_area_id  in (
+                <foreach collection="areaIds" item="id" index="index"
+                         separator=",">
+                    #{id}
+                </foreach>
+                )
+            </if>
+        </where>
+        group by osd.product_first_category_name
+    </select>
+
+    <!-- app2.2产品销售统计开始 -->
+
+    <!-- 统计产品销售额 -->
+ 	<select id="getProdSalesData" resultType="com.yimao.cloud.pojo.dto.order.SalesStatsDTO">
+ 		SELECT
+			<if test="timeType != null and timeType == 1">
+            	DATE_FORMAT(os.complete_time,'%Y-%m-%d')
+	        </if>
+	        <if test="timeType != null and timeType == 2">
+	            DATE_FORMAT(os.complete_time,'%Y-%m')
+	        </if>
+	        <if test="timeType != null and timeType == 3">
+	            DATE_FORMAT(os.complete_time,'%Y')
+	        </if>
+	         as completeTime,
+			ifnull(SUM(os.fee), 0) as saleAmount
+		FROM
+			order_sub_detail osd
+		INNER JOIN order_sub os ON osd.sub_order_id = os.id
+		WHERE 1=1
+		<include refid="prodStatWhere"/>
+		group by
+        <if test="timeType != null and timeType == 1">
+            DATE_FORMAT(os.complete_time,'%Y-%m-%d')
+        </if>
+        <if test="timeType != null and timeType == 2">
+            DATE_FORMAT(os.complete_time,'%Y-%m')
+        </if>
+        <if test="timeType != null and timeType == 3">
+            DATE_FORMAT(os.complete_time,'%Y')
+        </if>
+ 	</select>
+
+ 	<!--按照日期统计订单增长量  -->
+ 	<select id="getTradeOrderData" resultType="com.yimao.cloud.pojo.dto.order.SalesStatsDTO">
+ 		SELECT
+		  	osd.product_first_category_name as firstCategoryName,
+			<if test="timeType != null and timeType == 1">
+	           	DATE_FORMAT(os.complete_time,'%Y-%m-%d')
+	        </if>
+	        <if test="timeType != null and timeType == 2">
+	            DATE_FORMAT(os.complete_time,'%Y-%m')
+	        </if>
+	        <if test="timeType != null and timeType == 3">
+	            DATE_FORMAT(os.complete_time,'%Y')
+	        </if>
+			as completeTime,
+			ifnull(count(1), 0) as increaseNum
+		FROM
+			order_sub_detail osd
+		INNER JOIN order_sub os ON osd.sub_order_id = os.id
+		WHERE
+			product_first_category_name is not null
+			<include refid="prodStatWhere"/>
+        GROUP BY
+		osd.product_first_category_name,
+		<if test="timeType != null and timeType == 1">
+            DATE_FORMAT(os.complete_time,'%Y-%m-%d')
+        </if>
+        <if test="timeType != null and timeType == 2">
+            DATE_FORMAT(os.complete_time,'%Y-%m')
+        </if>
+        <if test="timeType != null and timeType == 3">
+            DATE_FORMAT(os.complete_time,'%Y')
+        </if>
+ 	</select>
+
+ 	<!-- 统计各型号净水设备占比 -->
+ 	<select id="getwaterModelPropData" resultType="com.yimao.cloud.pojo.dto.order.SalesStatsDTO">
+ 		SELECT
+        osd.product_category_name as categoryName,
+			ifnull(count(1), 0) AS categoryNum
+		FROM
+			order_sub_detail osd
+		INNER JOIN order_sub os ON osd.sub_order_id = os.id
+		WHERE
+			os.product_type = 3
+		and os.status = 5
+		and os.complete_time IS not null
+		and osd.distributor_id is not null
+		and os.activity_type=1
+		<if test="ids !=null and ids.size()>0 and type==1">
+			and osd.distributor_id in
+			<foreach collection="ids" item="id" index="index" separator="," open="(" close=")">
+	                    #{id}
+	        </foreach>
+        </if>
+        
+        <if test="areaIds !=null and areaIds.size()>0 and type==2">
+           and osd.distributor_area_id  in (
+            <foreach collection="areaIds" item="id" index="index"
+                     separator=",">
+                #{id}
+            </foreach>
+            )
+        </if>
+        GROUP BY
+		osd.product_category_name
+ 	</select>
+ 	<sql id="prodStatWhere">
+ 		and os.status = 5
+		and os.complete_time IS not null
+		and osd.distributor_id is not null
+		and os.activity_type=1
+		<if test="ids !=null and ids.size()>0 and type==1">
+			and osd.distributor_id in
+			<foreach collection="ids" item="id" index="index" separator="," open="(" close=")">
+	                    #{id}
+	        </foreach>
+        </if>
+        <if test="productIds != null and productIds.size >0">
+            and os.product_id  in (
+            <foreach collection="productIds" item="productId" index="index"
+                     separator=",">
+                #{productId}
+            </foreach>
+            )
+        </if>
+        <if test="areaIds !=null and areaIds.size()>0 and type==2">
+           and osd.distributor_area_id  in (
+            <foreach collection="areaIds" item="id" index="index"
+                     separator=",">
+                #{id}
+            </foreach>
+            )
+        </if>
+		<!-- 按日统计取传入日期前7天数据 -->
+        <if test="timeType != null and timeType == 1">
+                and DATE_FORMAT(os.complete_time,'%Y-%m-%d') BETWEEN DATE_SUB(#{completeTime},INTERVAL #{day} day) and
+                #{completeTime}
+        </if>
+        <!-- 按月统计取传入日期前12个月数据 -->
+        <if test="timeType != null and timeType == 2">
+            and DATE_FORMAT(os.complete_time,'%Y-%m') BETWEEN DATE_FORMAT(DATE_SUB(CONCAT(#{completeTime},'-01'),
+            interval 11 MONTH),'%Y-%m') and #{completeTime}
+        </if>
+        <!-- 按年统计 -->
+        <if test="timeType != null and timeType == 3">
+            and DATE_FORMAT(os.complete_time,'%Y') &lt;=#{completeTime}
+        </if>
+ 	</sql>
+ 	<!-- app2.2产品销售统计结束 -->
+</mapper>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.order.mapper.RepairWorkOrderMapper">
+
+    <select id="getRepairWorkOrderList" resultType="com.yimao.cloud.pojo.dto.order.RenewDTO">
+        SELECT
+            wr.product_name AS costNameType,
+            osd.product_two_category_name AS categoryName,
+            count( 1 ) AS orderNum
+        FROM
+            `workorder_repair` wr
+            INNER JOIN `order_sub_detail` osd ON osd.sub_order_id = wr.work_order_id
+        WHERE
+            wr.state = 4
+        <if test="engineerId != null">
+            and engineer_id= #{engineerId}
+        </if>
+        <if test="timeType != null and timeType == 1">
+            DATE_FORMAT(wr.work_order_complete_time,'%Y-%m-%d') = #{completeTime}
+        </if>
+        <if test="timeType != null and timeType == 2">
+            DATE_FORMAT(wr.work_order_complete_time,'%Y-%m') = #{completeTime}
+        </if>
+        <if test="timeType != null and timeType == 3">
+            DATE_FORMAT(wr.work_order_complete_time,'%Y') = #{completeTime}
+        </if>
+        GROUP BY
+            wr.product_name,
+            osd.product_two_category_name
+    </select>
+</mapper>

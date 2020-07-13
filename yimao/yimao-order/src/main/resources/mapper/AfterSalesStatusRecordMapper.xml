@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.order.mapper.AfterSalesStatusRecordMapper">
+	<resultMap id="payRecordResultMap" type="com.yimao.cloud.order.po.AfterSalesStatusRecord">
+		  <id column="id" property="id"  />
+		  <result column="after_sales_order_id" property="afterSalesOrderId"  />
+		  <result column="orig_status" property="origStatus" />
+		  <result column="dest_status" property="destStatus"  />
+		  <result column="create_time" property="createTime"  />
+		  <result column="creator" property="creator"  />
+		  <result column="remark" property="remark"  />
+		</resultMap>
+
+    <!--保存售后单状态变更记录 -->
+    <insert id="saveAfterSalesStatusRecord" parameterType="com.yimao.cloud.order.po.AfterSalesStatusRecord">
+        INSERT INTO after_sales_status_record 
+         (after_sales_order_id, 
+          orig_status, 
+          dest_status, 
+          create_time, 
+          creator, 
+          remark
+          )
+          VALUES
+	      (#{afterSalesOrderId}, 
+	       #{origStatus}, 
+	       #{destStatus}, 
+	       #{createTime}, 
+	       #{creator}, 
+	       #{remark} 
+	      )
+	      
+    </insert>
+</mapper>

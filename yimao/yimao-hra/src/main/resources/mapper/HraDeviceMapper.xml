@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.hra.mapper.HraDeviceMapper">
+
+
+    <select id="listHraDevice" resultType="com.yimao.cloud.hra.po.HraDevice">
+        SELECT DISTINCT
+        ts.id as id,
+        ts.name as stationName,
+        ts.address as stationAddress,
+        ts.phone as stationTel,
+        ts.lng,
+        ts.lat,
+        ts.sorts,
+        ts.create_time
+        FROM
+        station ts
+        INNER JOIN hra_device hd ON hd.station_id = ts.id
+        <trim prefix="where" prefixOverrides="and | or">
+            hd.device_status = 1
+            <if test="province!=null and province!='' ">
+                and ts.province = #{province}
+                <if test="city!=null and city!='' ">
+                    and ts.city = #{city}
+                    <if test="region!=null and region!='' ">
+                        and ts.region = #{region}
+                    </if>
+                </if>
+            </if>
+            <if test="recommended!=null">
+                and ts.recommended = #{recommended}
+            </if>
+        </trim>
+        order by ts.sort desc
+    </select>
+
+
+    <!--批量删除 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE FROM hra_device WHERE hra_device.id in
+        <foreach collection="list" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="findHraDevice" parameterType="com.yimao.cloud.pojo.dto.hra.HraDeviceQuery" resultType="com.yimao.cloud.hra.po.HraDevice">
+        SELECT
+        hd.id AS id,
+        hd.device_id AS deviceId,
+        hd.device_type AS deviceType,
+        hd.device_status AS deviceStatus,
+        hd.device_desc AS deviceDesc,
+        hd.product_type AS productType,
+        hd.station_id AS stationId,
+        hd.station_name AS stationName,
+        hd.station_address AS stationAddress,
+        hd.station_tel AS stationTel,
+        hd.remark AS remark,
+        hd.creator AS creator,
+        hd.updater AS updater,
+        DATE_FORMAT(hd.create_time,"%Y-%m-%d %H:%i:%s") AS createTime,
+        DATE_FORMAT(hd.update_time,"%Y-%m-%d %H:%i:%s") AS updateTime,
+        hd.province AS province,
+        hd.city AS city,
+        hd.region AS region
+        FROM
+        hra_device hd
+        where 1=1
+        <if test="province != null and province != '' ">
+            and hd.province = #{province}
+            <if test="city != null and city != '' ">
+                and hd.city = #{city}
+                <if test="region != null and region != '' ">
+                    and hd.region = #{region}
+                </if>
+            </if>
+        </if>
+        <if test="deviceType != null">
+            and hd.device_type = #{deviceType}
+        </if>
+        <if test="deviceId != null and deviceId != '' ">
+            and hd.device_id like CONCAT('%',trim(#{deviceId}),'%')
+        </if>
+        <if test="name != null and name != ''">
+            and hd.station_name like CONCAT('%',trim(#{name}),'%')
+        </if>
+        <if test="online != null">
+            and hd.device_status = #{online}
+        </if>
+        <if test="minTime != null and minTime != '' ">
+            and hd.create_time &gt;= #{minTime}
+        </if>
+        <if test="maxTime != null and maxTime != '' ">
+            and hd.create_time &lt;= #{maxTime}
+        </if>
+        order by hd.create_time desc
+    </select>
+
+    <select id="exportDevice" parameterType="com.yimao.cloud.pojo.dto.hra.HraDeviceQuery"
+            resultType="com.yimao.cloud.pojo.dto.hra.HraDeviceExportDTO">
+        SELECT
+        hd.id AS id,
+        hd.device_id AS deviceId,
+        CASE hd.device_type
+        WHEN 1 THEN "I型"
+        WHEN 2 THEN "II型"
+        END AS deviceType,
+        hd.device_desc AS deviceDesc,
+        CASE hd.device_status
+        WHEN 1 THEN "可用"
+        WHEN 2 THEN "锁定"
+        END AS deviceStatus,
+        hd.station_id AS stationId,
+        hd.station_name AS stationName,
+        hd.station_address AS stationAddress,
+        hd.station_tel AS stationTel,
+        hd.remark AS remark,
+        hd.creator AS creator,
+        hd.updater AS updater,
+        DATE_FORMAT(hd.create_time,"%Y-%m-%d %H:%i:%s") AS createTime,
+        DATE_FORMAT(hd.update_time,"%Y-%m-%d %H:%i:%s") AS updateTime,
+        hd.province AS province,
+        hd.city AS city,
+        hd.region AS region
+        FROM
+        hra_device hd
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="province != null and province != '' ">
+                and hd.province = #{province}
+                <if test="city != null and city != '' ">
+                    and hd.city = #{city}
+                    <if test="region != null and region != '' ">
+                        and hd.region = #{region}
+                    </if>
+                </if>
+            </if>
+            <if test="deviceType != null">
+                and hd.device_type = #{deviceType}
+            </if>
+            <if test="deviceId != null and deviceId != '' ">
+                and hd.device_id = #{deviceId}
+            </if>
+            <if test="online != null">
+                and hd.device_status = #{online}
+            </if>
+            <if test="minTime != null and minTime != '' ">
+                and hd.create_time &gt;= #{minTime}
+            </if>
+            <if test="maxTime != null and maxTime != '' ">
+                and hd.create_time &lt;= #{maxTime}
+            </if>
+        </trim>
+        order by hd.create_time desc
+    </select>
+
+    <select id="getDeviceStatus" resultType="java.lang.Integer">
+
+        SELECT device_status FROM hra_device WHERE station_id = #{stationId}
+
+    </select>
+
+    <select id="getHraStationIds" resultType="java.lang.Integer">
+        SELECT station_id FROM hra_device WHERE  device_status= 1
+    </select>
+
+</mapper>

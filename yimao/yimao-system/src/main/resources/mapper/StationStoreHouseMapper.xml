@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.system.mapper.StationStoreHouseMapper">
+
+    <update id="addStockCountById">
+        update station_store_house
+        set stock_count = stock_count + #{count}
+        where id = #{id}
+    </update>
+
+    <update id="addDefectiveStockCountById">
+		update station_store_house
+        set defective_stock_count = defective_stock_count + #{count}
+        where id = #{id}
+	</update>
+
+    <select id="pageStationStoreHouse" resultMap="adaptionModelMap">
+        select
+        ssh.id,
+        gm.id AS goodsId,
+        s.`name` AS stationName,
+        s.`code` AS stationCode,
+        s.province,
+        s.city,
+        s.region,
+        max(sc.`name`) AS stationCompanyName,
+        gc1.`name` AS firstCategoryName,
+        gc2.`name` AS twoCategoryName,
+        gm.`name` AS goodsName,
+        ssh.stock_count AS stockCount,
+        ssh.occupy_stock_count AS occupyStockCount,
+        ssh.defective_stock_count as defectiveStockCount
+        FROM
+        station_store_house ssh
+        LEFT JOIN goods_materials gm ON ssh.goods_id = gm.id
+        left join materials_adaptation_model mam on gm.id = mam.goods_materials_id
+        LEFT JOIN goods_category gc1 ON gm.goods_category_id = gc1.id
+        LEFT JOIN goods_category gc2 ON gc1.pid = gc2.id
+        LEFT JOIN station s ON ssh.station_id = s.id
+        LEFT JOIN station_company__station scs ON ssh.station_id = scs.station_id
+        LEFT JOIN station_company sc ON sc.id = scs.station_company_id
+        <where>
+        <if test="adaptationModel != null and adaptationModel.trim() != ''">
+            and mam.device_model_name like CONCAT('%', #{adaptationModel}, '%')
+        </if>
+        <if test="province != null and province.trim() != ''">
+            and s.province = #{province}
+        </if>
+        <if test="city != null and city.trim() != ''">
+            and s.city = #{city}
+        </if>
+        <if test="region != null and region.trim() != ''">
+            and s.region = #{region}
+        </if>
+        <if test="stationName != null and stationName.trim() != ''">
+            and s.`name` like CONCAT('%', #{stationName}, '%')
+        </if>
+        <if test="stationCompanyName != null and stationCompanyName.trim() != ''">
+            and sc.`name` like CONCAT('%', #{stationCompanyName}, '%')
+        </if>
+        <if test="categoryId != null">
+            and (gc1.id = #{categoryId} or gc2.id = #{categoryId})
+        </if>
+        <if test="type != null">
+            and gm.type = #{type}
+        </if>
+        <if test="isDefective != null and isDefective">
+            and ssh.defective_stock_count <![CDATA[>]]> 0
+        </if>
+        <if test="stationIds != null">
+            and ssh.station_id in (
+            <foreach collection="stationIds" item="stationId" index="index"
+                     separator=",">
+                #{stationId}
+            </foreach>
+            )
+        </if>
+        group by ssh.id
+        </where>
+        order by ssh.station_id asc,gm.create_time desc
+    </select>
+
+    <select id="availableStationDeviceStock" resultType="com.yimao.cloud.pojo.dto.system.StationStoreHouseDTO">
+    	SELECT
+        gm.`name` AS goodsName,
+        ssh.stock_count AS stockCount
+        from
+        station_store_house ssh
+        left join goods_materials gm ON ssh.goods_id = gm.id
+        where 
+        gm.type = 1
+        and ssh.station_id=#{stationId}
+    </select>
+
+    <select id="availableStationMaterialStock" resultMap="adaptionModelMap">
+    	select
+        gm.id as goodsId,
+        gm.`name` AS goodsName,
+        max(ssh.stock_count) AS stockCount,
+        gc1.`name` AS twoCategoryName,
+        gc1.id as goodsCategoryId,
+        gc1.sorts as goodsCategorySorts
+        from
+        station_store_house ssh
+        left join goods_materials gm ON ssh.goods_id = gm.id
+        left join materials_adaptation_model mam on gm.id = mam.goods_materials_id
+        left join goods_category gc1 ON gm.goods_category_id = gc1.id
+        where
+        gm.type = 2
+        and ssh.station_id=#{stationId}
+        <if test="adaptionModel != null and adaptionModel != ''">
+            and mam.device_model_name = #{adaptionModel}
+        </if>
+        group by ssh.goods_id
+    </select>
+
+    <resultMap type="com.yimao.cloud.pojo.dto.system.StationStoreHouseDTO" id="adaptionModelMap" autoMapping="true">
+        <collection property="materialsAdaptationList"
+                    ofType="com.yimao.cloud.pojo.dto.system.MaterialsAdaptationModelDTO"
+                    select="selectMaterialsAdaptationById" column="{goodsMaterialsId = goodsId}"/>
+    </resultMap>
+
+    <select id="selectMaterialsAdaptationById" resultType="com.yimao.cloud.pojo.dto.system.MaterialsAdaptationModelDTO">
+		select
+		device_model_name as deviceModelName,
+		product_category_id as productCategoryId
+		from materials_adaptation_model
+		where goods_materials_id=#{goodsMaterialsId}
+	</select>
+
+    <insert id="insertStationStoreHouseUnique">
+    	insert into station_store_house(station_id,goods_id,stock_count,occupy_stock_count,defective_stock_count)
+		select #{stationId}, #{goodsId} ,#{stockCount} ,#{occupyStockCount} ,#{defectiveStockCount}
+		from DUAL
+		where not exists(select id from station_store_house where station_id=#{stationId} and goods_id = #{goodsId})    
+    </insert>
+
+    <update id="addOccupyStockCount">
+        update station_store_house
+        set occupy_stock_count = occupy_stock_count + #{count}
+        where id = #{id}
+    </update>
+
+    <update id="reduceStationStock">
+    	update station_store_house set stock_count = (stock_count - #{transferStockCount}) 
+    	where station_id = #{transferOutStationId} and goods_id = #{goodsMaterialsId} and (stock_count - #{transferStockCount}) <![CDATA[>=]]> 0
+    </update>
+
+    <update id="addInStationStock">
+    	update station_store_house set stock_count = (stock_count + #{transferStockCount}) 
+    	where station_id = #{transferInStationId} and goods_id = #{goodsMaterialsId}
+    </update>
+
+    <update id="reduceDefectiveStationStock">
+    	update station_store_house set defective_stock_count = (defective_stock_count - #{transferStockCount})
+    	where station_id = #{transferOutStationId} and goods_id = #{goodsMaterialsId} and (defective_stock_count - #{transferStockCount}) <![CDATA[>=]]> 0
+    </update>
+
+    <update id="addInDefectiveStationStock">
+    	update station_store_house set defective_stock_count = (defective_stock_count + #{transferStockCount})
+    	where station_id = #{transferInStationId} and goods_id = #{goodsMaterialsId}
+    </update>
+
+    <update id="reduceOccupyStockCount">
+        update station_store_house set occupy_stock_count = (occupy_stock_count - #{count})
+    	where id = #{id} and (occupy_stock_count - #{count}) <![CDATA[>=]]> 0
+    </update>
+</mapper>

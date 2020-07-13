@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.order.mapper.PayRecordMapper">
+    <resultMap id="payRecordResultMap" type="com.yimao.cloud.pojo.dto.order.PayRecordDTO">
+        <id column="id" property="id"/>
+        <result column="main_order_id" property="mainOrderId"/>
+        <result column="order_id" property="orderId"/>
+        <result column="order_type" property="orderType"/>
+        <result column="openid" property="openid"/>
+        <result column="user_id" property="userId"/>
+        <result column="trade_no" property="tradeNo"/>
+        <result column="pay_type" property="payType"/>
+        <result column="terminal" property="terminal"/>
+        <result column="amount_total" property="amountTotal"/>
+        <result column="pay_time" property="payTime"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <!-- 查询支付记录 -->
+    <select id="queryPayRecordListByPayRecord" resultMap="payRecordResultMap" parameterType="com.yimao.cloud.pojo.dto.order.PayRecordDTO">
+        SELECT
+        id,
+        main_order_id,
+        order_type,
+        openid,
+        user_id,
+        trade_no,
+        pay_type,
+        terminal,
+        amount_total,
+        pay_time,
+        create_time,
+        FROM
+        finance_pay_record
+        <where>
+            <if test="mainOrderId != null">
+                main_order_id = #{mainOrderId}
+            </if>
+            <if test="orderId != null">
+                AND order_id = #{orderId}
+            </if>
+        </where>
+    </select>
+    <select id="existsWithOutTradeNo" resultType="java.lang.Boolean">
+        SELECT
+            CASE WHEN COUNT(*)  > 0 THEN 1 ELSE 0 END AS result
+        from
+            finance_pay_record
+        where
+            main_order_id = #{outTradeNo}
+    </select>
+
+    <select id="selectByOutTradeNo" resultType="com.yimao.cloud.pojo.dto.order.PayRecordDTO">
+        select
+            id,
+            main_order_id as mainOrderId,
+            trade_no as tradeNo,
+            pay_type as payType,
+            pay_time as payTime,
+            amount_total as amountTotal,
+            company_id as companyId,
+            platform as platform,
+            client_type as clientType,
+            receive_type as receiveType
+        from
+            finance_pay_record
+        where
+            main_order_id = #{outTradeNo}
+    </select>
+
+    <!--根据支付流水号，获取支付记录-->
+    <select id="findPayRecordByPayTradeNo" resultType="com.yimao.cloud.pojo.dto.order.PayRecordDTO">
+        select
+            id,
+            main_order_id as mainOrderId,
+            trade_no as tradeNo,
+            pay_type as payType,
+            pay_time as payTime,
+            amount_total as amountTotal,
+            company_id as companyId,
+            platform as platform,
+            client_type as clientType,
+            receive_type as receiveType
+        from
+            finance_pay_record
+        where
+            trade_no = #{payTradeNo} limit 1
+    </select>
+</mapper>

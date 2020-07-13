@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yimao.cloud.water.mapper.WaterDeviceFilterChangeRecordMapper">
+
+
+    <select id="findPage" resultType="com.yimao.cloud.pojo.dto.water.WaterDeviceFilterChangeRecordDTO"
+            parameterType="com.yimao.cloud.pojo.dto.water.WaterDeviceFilterChangeRecordQueryDTO">
+        SELECT
+        t1.id,
+        t1.maintenance_work_order_id as maintenanceWorkOrderId,
+        t1.activating_time activatingTime,
+        t1.province,
+        t1.city,
+        t1.region,
+        t1.address,
+        t1.filter_name as filterName,
+        t1.sn,
+        t2.device_user_id as consumerId,
+        t2.device_user_name as consumerName,
+        t2.device_user_phone as consumerPhone,
+        t2.logistics_code as deviceBatchCode,
+        t2.device_model as deviceModelName,
+        t2.device_scope as deviceScope,
+        t2.iccid as deviceSimcard,
+        t1.source,
+        t1.create_time as createTime,
+        t1.effective
+        FROM
+        water_device_filter_change_record as t1 LEFT JOIN water_device as t2 on t1.sn= t2.sn
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="sn != null and sn != ''">
+                and t1.sn = #{sn}
+            </if>
+            <if test="null!=maintenanceWorkOrderId  and consumerName!=''">
+                and t1.maintenance_work_order_id like CONCAT('%', #{maintenanceWorkOrderId}, '%')
+            </if>
+            <if test="null!=consumerName and consumerName!=''">
+                and t2.device_user_name like CONCAT('%', #{consumerName}, '%')
+            </if>
+            <if test="null!=consumerPhone and consumerPhone!=''">
+                and t2.device_user_phone like CONCAT('%', #{consumerPhone}, '%')
+            </if>
+            <if test="null!=deviceSncode and deviceSncode!=''">
+                and t1.sn = #{deviceSncode}
+            </if>
+            <if test="null!=province and province!=''">
+                and t1.province = #{province}
+            </if>
+            <if test="null!=city and city!=''">
+                and t1.city = #{city}
+            </if>
+            <if test="null!=region and region!=''">
+                and t1.region = #{region}
+            </if>
+
+            <if test="null!=source">
+                and t1.source = #{source}
+            </if>
+            <if test="null!=effective">
+                and t1.effective = #{effective}
+            </if>
+
+            <if test="startTime != null">
+                and t1.create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and t1.create_time &lt;= #{endTime}
+            </if>
+        </trim>
+        order by t1.create_time DESC
+    </select>
+
+
+    <select id="waterDeviceFilterChangeRecordExport"
+            resultType="com.yimao.cloud.pojo.dto.water.WaterDeviceFilterChangeRecordExportDTO"
+            parameterType="com.yimao.cloud.pojo.dto.water.WaterDeviceFilterChangeRecordQueryDTO">
+        SELECT
+        t1.id,
+        t1.maintenance_work_order_id AS maintenanceWorkOrderId,
+        DATE_FORMAT( t1.activating_time, '%Y-%m-%d %H:%i:%s' ) AS activatingTime,
+        t1.province,
+        t1.city,
+        t1.region,
+        t1.address,
+        t1.filter_name AS filterName,
+        t1.sn as deviceSncode,
+        t2.device_user_id AS consumerId,
+        t2.device_user_name AS consumerName,
+        t2.device_user_phone AS consumerPhone,
+        t2.logistics_code AS deviceBatchCode,
+        t2.device_model AS deviceModelName,
+        t2.device_scope AS deviceScope,
+        t2.iccid AS deviceSimcard,
+        CASE
+        t1.source
+        WHEN 1 THEN
+        '安装工提交'
+        WHEN 2 THEN
+        '用户提交'
+        WHEN 3 THEN
+        '自动生成' ELSE '未知'
+        END AS sourceTxt,
+        t1.create_time AS createTime,
+        DATE_FORMAT( t1.create_time, '%Y-%m-%d %H:%i:%s' ) AS createTimeTxt,
+        CASE
+        t1.effective
+        WHEN 1 THEN
+        '有效' ELSE '无效'
+        END AS effectiveTxt
+        FROM
+        water_device_filter_change_record AS t1
+        LEFT JOIN water_device AS t2 ON t1.sn = t2.sn
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="sn != null and sn != ''">
+                and t1.sn = #{sn}
+            </if>
+            <if test="maintenanceWorkOrderId!= null  and maintenanceWorkOrderId!=''">
+                and t1.maintenance_work_order_id like CONCAT('%', #{maintenanceWorkOrderId}, '%')
+            </if>
+            <if test="consumerName!= null and consumerName!=''">
+                and t2.device_user_name like CONCAT('%', #{consumerName}, '%')
+            </if>
+            <if test="consumerPhone!= null and consumerPhone!=''">
+                and t2.device_user_phone like CONCAT('%', #{consumerPhone}, '%')
+            </if>
+            <if test="deviceSncode!= null and deviceSncode!=''">
+                and t1.sn = #{deviceSncode}
+            </if>
+            <if test="province!= null and province!=''">
+                and t1.province = #{province}
+            </if>
+            <if test="city!= null and city!=''">
+                and t1.city = #{city}
+            </if>
+            <if test="region!= null and region!=''">
+                and t1.region = #{region}
+            </if>
+            <if test="source!= null">
+                and t1.source = #{source}
+            </if>
+            <if test="effective!= null">
+                and t1.effective = #{effective}
+            </if>
+
+            <if test="startTime != null">
+                and t1.create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and t1.create_time &lt;= #{endTime}
+            </if>
+        </trim>
+        order by t1.create_time DESC
+    </select>
+
+
+    <select id="getFilterChangeRecordById" parameterType="java.lang.Integer"
+            resultType="com.yimao.cloud.pojo.dto.water.WaterDeviceFilterChangeRecordDTO">
+        SELECT
+            t1.id,
+            t1.maintenance_work_order_id AS maintenanceWorkOrderId,
+            t1.activating_time activatingTime,
+            t1.province,
+            t1.city,
+            t1.region,
+            t1.address,
+            t1.filter_name AS filterName,
+            t1.sn AS sn,
+            t2.device_user_id AS consumerId,
+            t2.device_user_name AS consumerName,
+            t2.device_user_phone AS consumerPhone,
+            t2.logistics_code AS deviceBatchCode,
+            t2.device_model AS deviceModelName,
+            t2.device_scope AS deviceScope,
+            t2.iccid AS deviceSimcard,
+            t1.source,
+            t1.create_time AS createTime,
+            t1.effective
+        FROM
+            water_device_filter_change_record t1
+        LEFT JOIN water_device t2 ON t1.sn = t2.sn
+            WHERE
+            t1.id = #{id}
+
+    </select>
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO `water_device_filter_change_record` (
+        `sn`,
+        `filter_name`,
+        `province`,
+        `city`,
+        `region`,
+        `address`,
+        `activating_time` ,
+        `create_time` ,
+        `effective`,
+        `source`,
+        `maintenance_work_order_id`
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.sn},
+            #{item.filterName},
+            #{item.province},
+            #{item.city},
+            #{item.region},
+            #{item.address},
+            #{item.activatingTime},
+            #{item.createTime},
+            #{item.effective},
+            #{item.source},
+            #{item.maintenanceWorkOrderId}
+            )
+        </foreach>
+    </insert>
+</mapper>

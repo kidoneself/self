@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.yimao.cloud.water.mapper.DeductionPlanChangeRecordMapper">
+
+    <select id="listAll" resultType="com.yimao.cloud.water.po.DeductionPlanChangeRecord">
+        select
+            id,
+            device_id as deviceId,
+            operation as operation,
+            creator as creator,
+            create_time as createTime
+        from
+            water_device_deduction_plan_change_record
+        where
+            device_id = #{deviceId}
+        order by
+            create_time
+    </select>
+
+</mapper>

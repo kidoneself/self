@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.water.mapper.AdslotMapper">
+
+    <select id="pageQueryList" parameterType="com.yimao.cloud.pojo.dto.water.AdslotDTO"
+            resultType="com.yimao.cloud.pojo.dto.water.AdslotDTO">
+        SELECT
+        ad.id,
+        ad.`name`,
+        ad.forbidden,
+        ad.duration,
+        ad.adslot_id as adslotId,
+        ad.position
+        FROM
+        ad_adslot ad
+        <where>
+             ad.deleted = 0
+            <if test="id !=null and id !='' ">
+                and  ad.id= #{id}
+            </if>
+            <if test="adslotId != null and adslotId !='' ">
+                and ad.adslot_id = #{adslotId}
+            </if>
+            <if test="name !=null and name !='' ">
+                and  ad.`name` like CONCAT('%',trim(#{name}),'%')
+            </if>
+            order by ad.create_time desc
+        </where>
+    </select>
+
+
+    <select id="selectMaxId"  resultType="java.lang.Integer">
+         select max(id) from ad_adslot
+    </select>
+</mapper>

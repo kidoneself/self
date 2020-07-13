@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.system.mapper.SuggestTypeMapper">
+
+    <select id="pageSuggestType" resultType="com.yimao.cloud.pojo.dto.system.SuggestTypeDTO">
+        select
+        id,
+        terminal,
+        `name`,
+        sort
+        from suggest_type
+        where 1 = 1
+        <if test="terminal != null">
+            and terminal = #{terminal}
+        </if>
+        order by create_time desc
+    </select>
+
+    <select id="querySuggestTypeGroupByTerminal" resultType="com.yimao.cloud.pojo.dto.system.SuggestTypeDTO">
+    select distinct
+    terminal
+    from suggest_type
+    group by terminal
+    </select>
+
+    <select id="querySuggestTypeByTerminal" resultType="com.yimao.cloud.pojo.dto.system.SuggestTypeDTO">
+    select
+    id,
+    `name`
+    from suggest_type where terminal = #{terminal}
+    order by sort desc
+    </select>
+</mapper>

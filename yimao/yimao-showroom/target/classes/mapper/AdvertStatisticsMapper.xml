@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.showroom.mapper.AdvertStatisticsMapper">
+
+    <!-- 按省市时间查询汇总统计-->
+    <select id="getAdStatistics" resultType="com.yimao.cloud.showroom.po.AdvertStatistics">
+        SELECT
+        ass.id,
+        ifnull(ass.big_click_count,0) AS bigClickCount,
+        ifnull(ass.little_play_count,0) AS littlePlayCount,
+        ifnull(ass.big_play_count,0) AS bigPlayCount,
+        ifnull(ass.little_click_count,0) AS littleClickCount
+        FROM
+        advert_statistics ass
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="province  != null and  province != ''">
+                and ass.province =#{province}
+            </if>
+            <if test="city  != null and  city != ''">
+                and ass.city =#{city}
+            </if>
+            <if test="region  != null and  region != ''">
+                and ass.region =#{region}
+            </if>
+            <if test="playTime  != null">
+                and ass.play_time=#{playTime}
+            </if>
+        </trim>
+        group by ass.id,ass.province,ass.city,ass.play_time limit 1
+    </select>
+
+    <select id="getAdStatisticsAllCount" resultType="com.yimao.cloud.pojo.dto.showRoom.AdvertStatisticsDTO">
+        SELECT
+        ifnull(sum(ass.big_play_count),0) AS bigPlayCount,
+        ifnull(sum(ass.big_click_count),0) AS bigClickCount,
+        ifnull(sum(ass.little_play_count),0) AS littlePlayCount,
+        ifnull(sum(ass.little_click_count),0) AS littleClickCount
+        FROM
+        advert_statistics ass
+    </select>
+    <!-- 根据城市汇总统计-->
+    <select id="getAdStatisticsGroupByCity" resultType="com.yimao.cloud.pojo.dto.showRoom.AdvertStatisticsDTO">
+        SELECT
+        ass.province as province,
+        ass.city as city,
+        <!--  ifnull(sum(ass.little_play_count),0) AS littlePlayCount, -->
+        ifnull(sum(ass.big_play_count),0) AS bigPlayCount
+        <!-- ifnull(sum(ass.little_click_count),0) AS littleClickCount -->
+        FROM
+        advert_statistics ass
+        group by ass.province,ass.city
+    </select>
+
+    <!-- 根据当日时间汇总统计-->
+    <select id="getTodayAdStatisticsGroupByDay" resultType="com.yimao.cloud.pojo.dto.showRoom.AdvertStatisticsDTO">
+        SELECT
+        DATE_FORMAT(ass.play_time, '%Y-%m-%d' ) playTime,
+        ifnull(sum(ass.little_play_count),0) AS littlePlayCount,
+        ifnull(sum(ass.big_play_count),0) AS bigPlayCount,
+        ifnull(sum(ass.little_click_count),0) AS littleClickCount
+        FROM
+        advert_statistics ass
+        where ass.play_time >DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+        group by playTime
+    </select>
+</mapper>

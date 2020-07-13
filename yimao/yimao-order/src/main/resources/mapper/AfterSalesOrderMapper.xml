@@ -1,0 +1,621 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.order.mapper.AfterSalesOrderMapper">
+
+    <select id="refundAudit" resultType="com.yimao.cloud.pojo.dto.order.AfterSalesOrderDTO">
+        SELECT
+        aso.id as id,
+        aso.order_id as orderId,
+        aso.main_order_id as mainOrderId,
+        os.terminal as orderResource,
+        aso.product_category_name as productCategoryName,
+        aso.product_company_name as productCompanyName,
+        aso.pay_type as payType,
+        osd.user_id as userId,
+        osd.addressee_name as userName,
+        aso.create_time as createTime,
+        aso.refund_reason as refundReason,
+        aso.num ,
+        aso.refund_fee as refundFee,
+        aso.formalities_fee as formalitiesFee,
+        aso.real_refund_fee as realRefundFee
+        FROM
+        after_sales_order aso
+        LEFT JOIN order_sub os ON os.id = aso.order_id
+        LEFT JOIN order_sub_detail osd ON osd.sub_order_id = aso.order_id
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="id!=null">
+                and aso.id = #{id}
+            </if>
+            <if test="orderId!=null">
+                and ( aso.order_id = #{orderId}
+                or aso.main_order_id = #{orderId} )
+            </if>
+            <if test="userId!=null">
+                and aso.user_id = #{userId}
+            </if>
+            <if test="phone!=null and phone!=''">
+                and osd.user_phone = #{phone}
+            </if>
+
+            <if test="applyBeginTime!=null and applyBeginTime!=''">
+                and aso.create_time &gt;= #{applyBeginTime}
+            </if>
+            <if test="applyEndTime!=null and applyEndTime!=''">
+                and aso.create_time &lt;= #{applyEndTime}
+            </if>
+            <if test="userId!=null">
+                and os.terminal = #{orderResource}
+            </if>
+
+            <if test="payType!=null">
+                and os.pay_type = #{payType}
+            </if>
+
+            <choose>
+                <when test="terminal=1">
+                    and os.pay_type in (1,2)
+                </when>
+                <otherwise>
+                    and os.pay_type in (3,4)
+                </otherwise>
+            </choose>
+            and aso.status = 3
+        </trim>
+    </select>
+
+    <select id="refundRecord" resultType="com.yimao.cloud.pojo.dto.order.AfterSalesOrderDTO">
+        SELECT
+        aso.id AS id,
+        aso.order_id AS orderId,
+        aso.main_order_id AS mainOrderId,
+        os.terminal AS orderResource,
+        aso.product_category_name AS productCategoryName,
+        aso.product_company_name AS productCompanyName,
+        aso.pay_type AS payType,
+        aso.user_id AS userId,
+        osd.addressee_name,
+        osd.distributor_name AS distributorName,
+        aso.create_time AS createTime,
+        aso.refund_reason AS refundReason,
+        aso.num,
+        aso.refund_fee AS refundFee,
+        aso.formalities_fee AS formalitiesFee,
+        aso.real_refund_fee AS realRefundFee,
+        aso.finance_audit_status as financeAuditStatus,
+        aso.status as status
+        FROM
+        after_sales_order aso
+        LEFT JOIN order_sub os ON os.id = aso.order_id
+        LEFT JOIN order_sub_detail osd ON osd.sub_order_id = aso.order_id
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="id!=null">
+                and aso.id = #{id}
+            </if>
+            <if test="orderId!=null">
+                and ( aso.order_id = #{orderId}
+                or aso.main_order_id = #{orderId} )
+            </if>
+            <if test="userId!=null">
+                and aso.user_id = #{userId}
+            </if>
+            <if test="phone!=null and phone!=''">
+                and osd.user_phone = #{phone}
+            </if>
+
+            <if test="applyBeginTime!=null and applyBeginTime!=''">
+                and aso.create_time &gt;= #{applyBeginTime}
+            </if>
+            <if test="applyEndTime!=null and applyEndTime!=''">
+                and aso.create_time &lt;= #{applyEndTime}
+            </if>
+            <if test="userId!=null">
+                and os.terminal = #{orderResource}
+            </if>
+            <if test="payType!=null">
+                and os.pay_type = #{payType}
+            </if>
+            and (aso.status = 4 or aso.status = 5)
+        </trim>
+    </select>
+
+    <select id="refundLog" resultType="com.yimao.cloud.pojo.dto.order.AfterSalesOrderDTO">
+        SELECT
+        aso.order_id as orderId,
+        aso.finance_audit_status as financeAuditStatus,
+        aso.financer as financer,
+        aso.finance_time as financeTime,
+        aso.finance_reason as financeReason
+        FROM
+        after_sales_order aso
+        <trim prefix="where" prefixOverrides="and | or">
+            <if test="orderId!=null">
+                and aso.order_id = #{orderId}
+            </if>
+            <if test="startTime!=null and startTime!=''">
+                and aso.finance_time &gt;= #{startTime}
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                and aso.finance_time &lt;= #{endTime}
+            </if>
+            <if test="operation!=null">
+                and aso.finance_audit_status = #{operation}
+            </if>
+
+            and (aso.status = 4 or aso.status = 5)
+        </trim>
+    </select>
+
+    <select id="countReturn4Audit" resultType="java.lang.Long">
+        SELECT count(1) from after_sales_order aso
+        LEFT JOIN order_sub os ON os.id = aso.order_id
+        where aso.status = 3
+        <choose>
+            <when test="terminal=1">
+                and os.pay_type in (1,2)
+            </when>
+            <otherwise>
+                and os.pay_type in (3,4)
+            </otherwise>
+        </choose>
+    </select>
+
+
+    <select id="rentalGoodsList" parameterType="com.yimao.cloud.pojo.dto.order.AfterSalesConditionDTO"
+            resultType="com.yimao.cloud.pojo.dto.order.AfterSalesOrderDTO">
+        SELECT
+        aso.id,
+        os.refer,
+        aso.order_id as orderId,
+        aso.main_order_id as mainOrderId,
+        os.terminal as orderResource,
+        os.cancel_reason AS cancelReason,
+        osd.product_img as productImg,
+        aso.product_category_name as productCategoryName,
+        aso.user_id as userId,
+        osd.addressee_name as userName,
+        osd.distributor_name as distributorName,
+        osd.engineer_name as engineerName,
+        aso.terminal,
+        aso.num,
+        aso.create_time as createTime,
+        aso.refund_reason as refundReason,
+        aso.status,
+        aso.product_type as productType,
+        aso.auditee
+        FROM
+        after_sales_order aso
+        LEFT JOIN order_sub os ON os.id = aso.order_id
+        LEFT JOIN order_sub_detail osd ON osd.sub_order_id = aso.order_id
+        WHERE 1=1
+        <if test="salesId != null and salesId != ''">
+            and aso.id like concat('%',#{salesId},'%')
+        </if>
+        <if test="orderId != null">
+            and (aso.order_id like concat('%',#{orderId},'%') or aso.main_order_id like concat('%',#{orderId},'%') or
+            os.refer like concat(#{orderId},'%'))
+        </if>
+        <if test="terminal != null and terminal != ''">
+            and os.terminal = #{terminal}
+        </if>
+        <if test="startTime != null and startTime != '' ">
+            and aso.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != '' ">
+            and aso.create_time &lt;= #{endTime}
+        </if>
+        <if test="status != null and status != ''">
+            and aso.status = #{status}
+        </if>
+        <if test="afterApplicationTerminal != null">
+            and aso.terminal = #{afterApplicationTerminal}
+        </if>
+        <if test="userId != null">
+            and os.user_id = #{userId}
+        </if>
+        <if test="areas != null and areas.size >0">
+            and osd.distributor_area_id in (
+            <foreach collection="areas" item="areaId" index="index"
+                     separator=",">
+                #{areaId}
+            </foreach>
+            )
+        </if>
+        and aso.product_type = #{productType}
+        and os.status in (6,7)
+        order by aso.create_time desc
+    </select>
+
+    <!--租赁商品 全部 -->
+    <select id="exportRentalGoods" parameterType="com.yimao.cloud.pojo.dto.order.AfterSalesConditionDTO"
+            resultType="com.yimao.cloud.pojo.dto.order.RentalGoodsExportDTO">
+        select
+        aso.id as salesId,
+        os.refer,
+        os.cancel_reason AS cancelReason,
+        aso.order_id as orderId,
+        aso.main_order_id as mainOrderId,
+        CASE os.terminal WHEN 1 THEN '终端app'
+        WHEN 2 THEN '微信公众号'
+        WHEN 3 THEN '翼猫APP'
+        WHEN 4 THEN '小程序' END as terminal,
+        osd.product_category_name as productCategoryName,
+        osd.user_id as userId,
+        osd.addressee_name as addresseeName,
+        osd.distributor_account as distributorAccount,
+        osd.distributor_name as distributorName,
+        osd.engineer_name as engineerName,
+        CASE aso.terminal WHEN 1 THEN '终端app'
+        WHEN 2 THEN '微信公众号'
+        WHEN 3 THEN '翼猫APP'
+        WHEN 4 THEN '小程序' END as salesTerminal,
+        aso.num,
+        DATE_FORMAT(aso.create_time,'%Y-%m-%d %H:%i:%s') as createTime,
+        CASE aso.status WHEN 1 THEN '待审核(总部)'
+        WHEN 2 THEN '待退货入库'
+        WHEN 3 THEN '待退款(财务)'
+        WHEN 4 THEN '售后失败'
+        WHEN 5 THEN '售后成功' END as status,
+        aso.auditee,
+        aso.remark
+        from
+        after_sales_order aso
+        left join order_sub_detail osd on osd.sub_order_id = aso.order_id
+        left join order_sub os on os.id = aso.order_id
+        where 1=1
+        <if test="salesId != null and salesId != ''">
+            and aso.id = #{salesId}
+        </if>
+        <if test="orderId != null and orderId != ''">
+            and (os.refer like concat('%',trim(#{orderId}),'%') or aso.order_id like concat('%',trim(#{orderId}),'%') or
+            aso.main_order_id like concat('%',trim(#{orderId}),'%'))
+        </if>
+        <if test="status != null and status != ''">
+            and aso.status = #{status}
+        </if>
+        <if test="terminal != null and terminal != ''">
+            and os.terminal = #{terminal}
+        </if>
+        <if test="startTime != null and startTime != ''">
+            and aso.create_time &gt; #{startTime}
+        </if>
+        <if test="endTime != null and endTime != '' ">
+            and aso.create_time &lt; #{endTime}
+        </if>
+        and aso.product_type = #{productType}
+        and os.status in (6,7)
+    </select>
+
+
+    <select id="exportAuditedRentalGoods" parameterType="com.yimao.cloud.pojo.dto.order.AfterSalesConditionDTO"
+            resultType="com.yimao.cloud.pojo.dto.order.RentalGoodsExportDTO">
+        select
+        aso.id as salesId,
+        os.refer,
+        aso.order_id as orderId,
+        aso.main_order_id as mainOrderId,
+        CASE os.terminal WHEN 1 THEN '终端app'
+        WHEN 2 THEN '微信公众号'
+        WHEN 3 THEN '翼猫APP'
+        WHEN 4 THEN '小程序' END as terminal,
+        osd.product_category_name as productCategoryName,
+        osd.user_id as userId,
+        osd.addressee_name as addresseeName,
+        osd.distributor_account as distributorAccount,
+        osd.distributor_name as distributorName,
+        osd.engineer_name as engineerName,
+        CASE aso.terminal WHEN 1 THEN '终端app'
+        WHEN 2 THEN '微信公众号'
+        WHEN 3 THEN '翼猫APP'
+        WHEN 4 THEN '小程序' END as salesTerminal,
+        aso.num,
+        DATE_FORMAT(aso.create_time,'%Y-%m-%d %H:%i:%s') as createTime,
+        os.cancel_reason as cancelReason,
+        aso.remark
+        from
+        after_sales_order aso
+        left join order_sub_detail osd on osd.sub_order_id = aso.order_id
+        left join order_sub os on os.id = aso.order_id
+        where 1=1
+        <if test="salesId != null and salesId != ''">
+            and aso.id = #{salesId}
+        </if>
+        <if test="orderId != null and orderId != ''">
+            and (os.refer like concat('%',trim(#{orderId}),'%') or aso.order_id like concat('%',trim(#{orderId}),'%') or
+            aso.main_order_id like concat('%',trim(#{orderId}),'%'))
+        </if>
+        <if test="terminal != null and terminal != ''">
+            and os.terminal = #{terminal}
+        </if>
+        <if test="startTime != null and startTime != ''">
+            and aso.create_time &gt; #{startTime}
+        </if>
+        <if test="endTime != null and endTime != '' ">
+            and aso.create_time &lt; #{endTime}
+        </if>
+        and aso.product_type = '3'
+        and os.STATUS in ( 6, 7 )
+        and aso.STATUS = '1'
+    </select>
+
+    <!--审核记录 -->
+    <select id="exportAuditedRecord" parameterType="com.yimao.cloud.pojo.dto.order.AfterSalesConditionDTO"
+            resultType="com.yimao.cloud.pojo.dto.order.RentalGoodsExportDTO">
+        select
+        oal.sales_id as salesId,
+        os.refer,
+        oal.order_id as orderId,
+        aso.main_order_id as mainOrderId,
+        DATE_FORMAT(aso.create_time,'%Y-%m-%d %H:%i:%s') as createTime,
+        os.cancel_reason as cancelReason,
+        /*aso.buyer,*/
+        oal.creator as buyer,
+        DATE_FORMAT(oal.create_time,'%Y-%m-%d %H:%i:%s') as handleTime,
+        CASE oal.operation_status WHEN 0 THEN '审核不通过'
+        WHEN 1 THEN '审核通过' END as operationStatus,
+        oal.audit_reason as auditReason,
+        aso.remark
+        from
+        order_audit_log oal
+        left join order_sub_detail osd on osd.sub_order_id = oal.order_id
+        left join after_sales_order aso on aso.id = oal.sales_id
+        left join order_sub os on os.id = oal.order_id
+        where 1=1
+        <if test="salesId != null and salesId != ''">
+            and aso.id = #{salesId}
+        </if>
+        <if test="terminal != null and terminal != ''">
+            and os.terminal = #{terminal}
+        </if>
+        <if test="startTime != null and startTime != ''">
+            and aso.create_time &gt; #{startTime}
+        </if>
+        <if test="endTime != null and endTime != '' ">
+            and aso.create_time &lt; #{endTime}
+        </if>
+        <if test="orderId != null and orderId != ''">
+            and (os.refer like concat('%',trim(#{orderId}),'%') or aso.order_id like concat('%',trim(#{orderId}),'%') or
+            aso.main_order_id like concat('%',trim(#{orderId}),'%'))
+        </if>
+        <if test="operationStatus != null">
+            and oal.operation_status = #{operationStatus}
+        </if>
+        and aso.product_type = '3'
+    </select>
+
+
+    <select id="exportAllMatterGoods" parameterType="com.yimao.cloud.pojo.dto.order.AfterSalesConditionDTO"
+            resultType="com.yimao.cloud.pojo.dto.order.RentalGoodsExportDTO">
+        select
+        aso.id as salesId,
+        aso.order_id as orderId,
+        aso.main_order_id as mainOrderId,
+        CASE os.terminal WHEN 1 THEN '终端app'
+        WHEN 2 THEN '微信公众号'
+        WHEN 3 THEN '翼猫APP'
+        WHEN 4 THEN '小程序' END as terminal,
+        osd.product_category_name as productCategoryName,
+        osd.user_id as userId,
+        osd.addressee_name as addresseeName,
+        osd.distributor_account as distributorAccount,
+        osd.distributor_name as distributorName,
+        CASE aso.terminal WHEN 1 THEN '终端app'
+        WHEN 2 THEN '微信公众号'
+        WHEN 3 THEN '翼猫APP'
+        WHEN 4 THEN '小程序' END as salesTerminal,
+        aso.num,
+        DATE_FORMAT(aso.create_time,'%Y-%m-%d %H:%i:%s') as createTime,
+        os.cancel_reason as cancelReason,
+        CASE aso.status WHEN 1 THEN '待审核(总部)'
+        WHEN 2 THEN '待退货入库'
+        WHEN 3 THEN '待退款(财务)'
+        WHEN 4 THEN '售后失败'
+        WHEN 5 THEN '售后成功' END as status
+        from
+        after_sales_order aso
+        left join order_sub_detail osd on osd.sub_order_id = aso.order_id
+        left join order_sub os on os.id = aso.order_id
+        where 1=1
+        <if test="salesId != null and salesId != ''">
+            and aso.id = #{salesId}
+        </if>
+        <if test="orderId != null and orderId != ''">
+            and (os.refer like concat('%',trim(#{orderId}),'%') or aso.order_id like concat('%',trim(#{orderId}),'%') or
+            aso.main_order_id like concat('%',trim(#{orderId}),'%'))
+        </if>
+        <if test="status != null and status != ''">
+            and aso.status = #{status}
+        </if>
+        <if test="terminal != null and terminal != ''">
+            and os.terminal = #{terminal}
+        </if>
+        <if test="startTime != null and startTime != ''">
+            and aso.create_time &gt; #{startTime}
+        </if>
+        <if test="endTime != null and endTime != '' ">
+            and aso.create_time &lt; #{endTime}
+        </if>
+        and aso.product_type = '1'
+        and os.STATUS in ( 6, 7 )
+    </select>
+
+    <select id="exportAuditMatterGoods" parameterType="com.yimao.cloud.pojo.dto.order.AfterSalesConditionDTO"
+            resultType="com.yimao.cloud.pojo.dto.order.RentalGoodsExportDTO">
+        select
+        aso.id as salesId,
+        aso.order_id as orderId,
+        aso.main_order_id as mainOrderId,
+        CASE os.terminal WHEN 1 THEN '终端app'
+        WHEN 2 THEN '微信公众号'
+        WHEN 3 THEN '翼猫APP'
+        WHEN 4 THEN '小程序' END as terminal,
+        osd.product_category_name as productCategoryName,
+        osd.user_id as userId,
+        osd.addressee_name as addresseeName,
+        osd.distributor_account as distributorAccount,
+        osd.distributor_name as distributorName,
+        CASE aso.terminal WHEN 1 THEN '终端app'
+        WHEN 2 THEN '微信公众号'
+        WHEN 3 THEN '翼猫APP'
+        WHEN 4 THEN '小程序' END as salesTerminal,
+        aso.num,
+        DATE_FORMAT(aso.create_time,'%Y-%m-%d %H:%i:%s') as createTime,
+        os.cancel_reason as cancelReason,
+        aso.remark
+        from
+        after_sales_order aso
+        left join order_sub_detail osd on osd.sub_order_id = aso.order_id
+        left join order_sub os on os.id = aso.order_id
+        where 1=1
+        <if test="salesId != null and salesId != ''">
+            and aso.id = #{salesId}
+        </if>
+        <if test="orderId != null and orderId != ''">
+            and (os.refer like concat('%',trim(#{orderId}),'%') or aso.order_id like concat('%',trim(#{orderId}),'%') or
+            aso.main_order_id like concat('%',trim(#{orderId}),'%'))
+        </if>
+        <if test="terminal != null and terminal != ''">
+            and os.terminal = #{terminal}
+        </if>
+        <if test="startTime != null and startTime != ''">
+            and aso.create_time &gt; #{startTime}
+        </if>
+        <if test="endTime != null and endTime != '' ">
+            and aso.create_time &lt; #{endTime}
+        </if>
+        <if test="afterApplicationTerminal != null">
+            and aso.terminal = #{afterApplicationTerminal}
+        </if>
+        <if test="userId != null">
+            and os.user_id = #{userId}
+        </if>
+        and aso.product_type = '1'
+        and aso.status = '1'
+    </select>
+
+
+    <select id="exportMatterGoodsRecord" parameterType="com.yimao.cloud.pojo.dto.order.AfterSalesConditionDTO"
+            resultType="com.yimao.cloud.pojo.dto.order.RentalGoodsExportDTO">
+        select
+        aso.id as salesId,
+        aso.order_id as orderId,
+        aso.main_order_id as mainOrderId,
+        DATE_FORMAT(aso.create_time,'%Y-%m-%d %H:%i:%s') as createTime,
+        os.cancel_reason as cancelReason,
+        aso.buyer,
+        DATE_FORMAT(oal.create_time,'%Y-%m-%d %H:%i:%s') as handleTime,
+        CASE oal.operation_status
+        WHEN 0 THEN '审核不通过'
+        WHEN 1 THEN '审核通过' END AS operationStatus,
+        oal.audit_reason as auditReason,
+        aso.remark
+        from
+        order_audit_log oal
+        INNER JOIN after_sales_order aso ON oal.sales_id = aso.id
+        INNER JOIN order_sub os ON os.id = oal.order_id
+        where 1=1 and os.product_type = '1'
+        <if test="salesId != null and salesId != ''">
+            and oal.sales_id like concat('%',#{salesId},'%')
+        </if>
+        <if test="orderId != null and orderId != ''">
+            and (oal.order_id like concat('%',#{orderId},'%') or aso.main_order_id like concat('%',#{orderId},'%') or os.refer like concat('%',#{orderId},'%'))
+        </if>
+        <if test="startTime != null and startTime != ''">
+            and aso.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != '' ">
+            and aso.create_time &lt;= #{endTime}
+        </if>
+        <if test="operationStatus != null">
+            and oal.operation_status = #{operationStatus}
+        </if>
+        and aso.product_type = '1'
+    </select>
+
+    <!-- 更新售后单状态信息  状态  时间-->
+    <update id="updateAfterSalesOrderStatus" parameterType="com.yimao.cloud.order.po.AfterSalesOrder">
+    	UPDATE after_sales_order 
+			SET status=#{status},
+			finance_audit_status=#{financeAuditStatus},
+			finance_time=#{financeTime},
+			financer=#{financer}
+		WHERE
+			id=#{id}
+    </update>
+
+    <!-- 根据售后单号查询退款详情 -->
+    <select id="getRefunddetailById" resultType="com.yimao.cloud.pojo.dto.order.RefundDetailDTO">
+    	SELECT
+			a.id,
+			a.main_order_id as mainOrderId,
+			a.product_company_name as productCompanyName,
+			a.order_id as orderId,
+			a.refund_fee as refundFee,
+			a.formalities_fee as fee,
+			a.real_refund_fee as realRefundFee,
+			a.refund_reason as refundReason,
+			b.cancel_time as refundTime,
+			b.terminal ,
+			d.refund_trade_no as tradeNo,
+			c.user_id as userId,
+			c.user_name userName,
+			c.user_type_name as userTypeName,
+			c.user_phone as userPhone,
+  			a.finance_time as refundVerifyTime
+		FROM
+			after_sales_order a
+		LEFT JOIN order_sub b ON (a.order_id = b.id)
+		LEFT JOIN order_sub_detail c ON (a.order_id = c.sub_order_id)
+		LEFT JOIN finance_refund_record d ON (a.id = d.out_refund_no)
+		WHERE
+			a.id = #{id}
+    </select>
+
+    <select id="selectCountAfterSalesOrder4Condition" resultType="java.lang.Integer">
+        SELECT
+        count(*)
+        FROM
+        after_sales_order aso
+        LEFT JOIN order_sub os ON os.id = aso.order_id
+        <where>
+            os.status in (6,7)
+            <if test="productType != null">
+                and aso.product_type = #{productType}
+            </if>
+            <if test="salesType != null">
+                and aso.sales_type = #{salesType}
+            </if>
+            <if test="auditStatus != null">
+                and aso.customer_service_audit_status = #{auditStatus}
+            </if>
+            <if test="status != null and status != ''">
+                and aso.status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <select id="getSalesReturnOrderNum" resultType="java.lang.Integer">
+        select
+        count(1) as salesReturnOrderNum
+        from
+        after_sales_order aso
+        left join order_sub os ON os.id = aso.order_id
+        left join order_sub_detail osd on osd.sub_order_id = aso.order_id
+        where 1 = 1
+        <choose>
+            <when test="areas != null and areas.size >0">
+                and osd.distributor_area_id in (
+                <foreach collection="areas" item="areaId" index="index"
+                         separator=",">
+                    #{areaId}
+                </foreach>
+                )
+            </when>
+            <otherwise>
+                and 0 = 1
+            </otherwise>
+        </choose>
+        and os.status in (6,7)
+    </select>
+</mapper>

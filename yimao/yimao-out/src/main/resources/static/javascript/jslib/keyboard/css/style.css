@@ -1,0 +1,5 @@
+@charset "utf-8";
+
+#nameKey,#telKey,#addressKey { margin: 25px auto 0; }
+#nameKey div,#telKey div,#addressKey div{display:inline-block}
+

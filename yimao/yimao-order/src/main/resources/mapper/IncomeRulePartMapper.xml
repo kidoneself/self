@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yimao.cloud.order.mapper.IncomeRulePartMapper">
+
+    <!--批量插入-->
+    <insert id="batchInsert" parameterType="java.util.List">
+        insert into income_rule_part (
+        rule_id,
+        subject_id,
+        subject_code,
+        `value`,
+        creator,
+        create_time,
+        updater,
+        update_time,
+        deleted
+        )
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.ruleId},
+            #{item.subjectId},
+            #{item.subjectCode},
+            #{item.value},
+            #{item.creator},
+            #{item.createTime},
+            #{item.updater},
+            #{item.updateTime},
+            #{item.deleted}
+            )
+        </foreach>
+    </insert>
+
+    <select id="getIncomeRulePartByIncomeRuleId" parameterType="java.lang.Integer"
+            resultType="com.yimao.cloud.pojo.dto.order.IncomeRulePartDTO">
+                SELECT id,
+               subject_code AS subjectCode,
+               value,
+               money
+        FROM income_rule_part
+        where rule_id = #{ruleId}
+        	and deleted = 0
+    </select>
+</mapper>

@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.water.mapper.TrafficStatisticsMapper">
+
+    <select id="queryTrafficListByPlatform" resultType="com.yimao.cloud.pojo.dto.water.TrafficStatisticsDTO">
+        SELECT
+        DATE_FORMAT(create_time , '%Y%m%d') as createDate,
+        <if test="sn != null and sn !='' ">
+            sn,
+        </if>
+        sum(total_traffic) as totalTraffic,
+        sum(request_amount) as requestAmount,
+        sum(request_traffic) as requestTraffic,
+        sum(downloads_traffic) as downloadsTraffic,
+        sum(downloads_amount) as downloadsAmount,
+        sum(callback_amount) as callbackAmount,
+        sum(callback_traffic) as callbackTraffic
+        FROM
+        <if test="platform != null and platform ==0 ">
+            traffic_statistics_ym
+        </if>
+        <if test="platform != null and platform ==1 ">
+            traffic_statistics_baidu
+        </if>
+        <if test="platform != null and platform ==2 ">
+            traffic_statistics_jingdong
+        </if>
+        <if test="platform != null and platform ==3 ">
+            traffic_statistics_kdxf
+        </if>
+        <if test="platform != null and platform ==4 ">
+            traffic_statistics_jianshi
+        </if>
+        <if test="platform != null and platform ==5 ">
+            traffic_statistics_haida
+        </if>
+        <if test="platform != null and platform ==6 ">
+            traffic_statistics_system
+        </if>
+        <if test="platform != null and platform ==7 ">
+            traffic_statistics_yishou
+        </if>
+        <if test="platform != null and platform ==10 ">
+            traffic_statistics_other
+        </if>
+        <trim prefix="WHERE (" suffix=")" prefixOverrides="AND |OR ">
+            <if test="sn != null and sn !='' ">
+                sn = #{sn}
+            </if>
+            <if test="source != null  ">
+                and source = #{source}
+            </if>
+            and DATE_SUB(CURDATE(), INTERVAL 7 DAY) &lt;= create_time
+        </trim>
+        GROUP BY
+        createDate
+        <if test="sn != null and sn !=''">
+            ,sn
+        </if>
+    </select>
+
+    <select id="queryTrafficListBySn" resultType="com.yimao.cloud.pojo.vo.water.TrafficStatisticsVO">
+        SELECT
+        system.sn AS sn,
+        sum(system.total_traffic) as systemTotal,
+        (select sum(hd.total_traffic) from traffic_statistics_haida hd where system.sn = hd.sn
+        <if test="source != null  ">
+            AND hd.source = #{source}
+        </if>
+        ) as haidaTotal,
+        (select sum(ym.total_traffic) from traffic_statistics_ym ym where system.sn = ym.sn
+        <if test="source != null  ">
+            AND ym.source = #{source}
+        </if>
+        ) as yimaoTotal,
+        (select sum(jd.total_traffic) from traffic_statistics_jingdong jd where system.sn = jd.sn
+        <if test="source != null  ">
+            AND jd.source = #{source}
+        </if>
+        ) as jingdongTotal,
+        (select sum(kdxf.total_traffic) from traffic_statistics_kdxf kdxf where system.sn = kdxf.sn
+        <if test="source != null  ">
+            AND kdxf.source = #{source}
+        </if>
+        ) as kdxfTotal,
+        (select sum(js.total_traffic) from traffic_statistics_jianshi js where system.sn = js.sn
+        <if test="source != null  ">
+            AND js.source = #{source}
+        </if>
+        ) as jianshiTotal,
+        (select sum(bd.total_traffic) from traffic_statistics_baidu bd where system.sn = bd.sn
+        <if test="source != null  ">
+            AND bd.source = #{source}
+        </if>
+        ) as bdTotal,
+        (select sum(other.total_traffic) from traffic_statistics_other other where system.sn = other.sn
+        <if test="source != null  ">
+            AND other.source = #{source}
+        </if>
+        ) as otherTotal,
+        (select sum(ys.total_traffic) from traffic_statistics_yishou ys where system.sn = ys.sn
+        <if test="source != null  ">
+            AND ys.source = #{source}
+        </if>
+        ) as yishouTotal
+        FROM
+        traffic_statistics_system AS system
+        <trim prefix="WHERE (" suffix=")" prefixOverrides="AND |OR ">
+            <if test="sn != null and sn !='' ">
+                and system.sn = #{sn}
+            </if>
+            <if test="source != null  ">
+                system.source = #{source}
+            </if>
+        </trim>
+        GROUP BY
+        system.sn
+    </select>
+
+    <insert id="insertBatch">
+        insert into
+        <if test="platform != null and platform ==0 ">
+            traffic_statistics_ym
+        </if>
+        <if test="platform != null and platform ==1 ">
+            traffic_statistics_baidu
+        </if>
+        <if test="platform != null and platform ==2 ">
+            traffic_statistics_jingdong
+        </if>
+        <if test="platform != null and platform ==3 ">
+            traffic_statistics_kdxf
+        </if>
+        <if test="platform != null and platform ==4 ">
+            traffic_statistics_jianshi
+        </if>
+        <if test="platform != null and platform ==5 ">
+            traffic_statistics_haida
+        </if>
+        <if test="platform != null and platform ==6 ">
+            traffic_statistics_system
+        </if>
+        <if test="platform != null and platform ==10 ">
+            traffic_statistics_other
+        </if>
+        <if test="platform != null and platform ==7 ">
+            traffic_statistics_yishou
+        </if>
+        (total_traffic,request_amount,request_traffic,downloads_amount,downloads_traffic,callback_amount,callback_traffic,sn,create_time,device_group,source)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.totalTraffic},
+            #{item.requestAmount},
+            #{item.requestTraffic},
+            #{item.downloadsAmount},
+            #{item.downloadsTraffic},
+            #{item.callbackAmount},
+            #{item.callbackTraffic},
+            #{item.sn},
+            #{item.createTime},
+            #{item.deviceGroup},
+            #{item.source}
+            )
+        </foreach>
+    </insert>
+</mapper>

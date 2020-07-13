@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yimao.cloud.water.mapper.MaterialsMapper">
+
+    <select id="pageQueryList" parameterType="com.yimao.cloud.pojo.dto.water.MaterialsDTO"
+            resultType="com.yimao.cloud.pojo.dto.water.MaterialsDTO">
+        SELECT
+        ad.id,
+        ad.size,
+        ad.`name`,
+        ad.screen_location as screenLocation,
+        ad.image,
+        ad.url,
+        ad.create_time as createTime,
+        ad.duration,
+        ad.pay_audit as payAudit,
+        ad.content_audit as contentAudit,
+        ad.specification_audit as specificationAudit,
+        ad.image_size as imageSize,
+        ad.materiel_type  as materielType,
+        ad.description,
+        ad.advertisers
+        FROM
+        ad_materials ad
+        <where>
+             ad.deleted = 0
+            <if test="id !=null  ">
+                and  ad.id= #{id}
+            </if>
+            <if test="screenLocation !=null  ">
+                and  ad.screen_location= #{screenLocation}
+            </if>
+            <if test="payAudit !=null  ">
+                and  ad.pay_audit= #{payAudit}
+            </if>
+            <if test="contentAudit !=null  ">
+                and  ad.content_audit= #{contentAudit}
+            </if>
+            <if test="specificationAudit !=null  ">
+                and  ad.specification_audit= #{specificationAudit}
+            </if>
+            <if test="name !=null and name !='' ">
+                and  ad.`name` like CONCAT('%',trim(#{name}),'%')
+            </if>
+            <if test="upStartTime !=null  ">
+                and  ad.create_time >= #{upStartTime}
+            </if>
+            <if test="upEndTime !=null  ">
+                and  ad.create_time &lt;= #{upEndTime}
+            </if>
+            order by ad.create_time desc
+        </where>
+    </select>
+</mapper>

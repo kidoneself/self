@@ -1,0 +1,14 @@
+server:
+  port: 10080
+  tomcat:
+    uri-encoding: utf-8
+    max-connections: 2000
+    max-threads: 500
+turbine:
+  aggregator:
+    cluster-config: default    #需要监控的服务集群名
+  cluster-name-expression: "'default'"
+  #使同一主机上的多个服务实例可以通过主机名和端口号的组合来进行区分
+  combine-host-port: true
+#  instanceUrlSuffix:
+#    default: actuator/hystrix.stream

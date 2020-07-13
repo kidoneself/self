@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.yimao.cloud.hra.mapper.MiniOptionMapper">
+
+    <!--获取选项 -->
+    <select id="selectOption" resultType="com.yimao.cloud.hra.po.MiniOption">
+        SELECT
+            opt.id AS id,
+            opt.choice_id AS choiceId,
+            opt.option_content AS optionContent,
+            opt.option_index AS optionIndex,
+            opt.option_score AS optionScore,
+            opt.create_time AS createTime
+        FROM
+            healthy_option opt
+        WHERE
+            opt.choice_id = #{choiceId}
+    </select>
+
+</mapper>

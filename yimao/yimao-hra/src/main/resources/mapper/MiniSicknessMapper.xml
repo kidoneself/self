@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.yimao.cloud.hra.mapper.MiniSicknessMapper">
+
+    <select id="selectSickness" resultType="com.yimao.cloud.hra.po.MiniSickness">
+        SELECT
+          ms.`id` AS id,
+          ms.`sick_name` AS sickName
+        FROM healthy_sickness ms
+        WHERE ms.`id` = #{aLong}
+    </select>
+
+</mapper>

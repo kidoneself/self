@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<!--<%@ page import="com.yimao.cloud.out.utils.yunSignUtil.YunSignConfig" %>-->
+<!--<%@ page pageEncoding="UTF-8" language="java" %>-->
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+<form id="form" action="http://17z94467a5.iask.in/wechart/signContractCallBack" method="post" >
+    <input type="hidden" name="userId" th:utext="${userId}"/><br/>
+    <input type="hidden" name="orderId" th:utext="${orderId}"/><br/>
+    <input type="hidden" name="status" th:utext="${status}"/><br/>
+</form>
+<script type="text/javascript" th:inline="javascript">
+    document.getElementById('form').submit();
+</script>
+</body>
+</html>
